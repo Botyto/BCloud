@@ -12,9 +12,20 @@ class Address:
     temporary: bool = False
 
     @classmethod
-    def random(cls, namespace: str, temporary: bool = False):
-        return cls(namespace, str(uuid.uuid4()), temporary=temporary)
+    def random(cls, namespace: str, key_prefix: str = "", temporary: bool = False):
+        return cls(namespace, os.path.join(key_prefix, str(uuid.uuid4())), temporary=temporary)
     
+    @classmethod
+    def unique(cls, manager: "BlobManager", namespace: str, key_prefix: str = "", temporary: bool = False):
+        address = cls.random(namespace, key_prefix, temporary=temporary)
+        original_key = address.key
+        n = 0
+        while True:
+            if not manager.exists(address):
+                return address
+            n += 1
+            address.key = original_key + f"-{n}"
+
     def __str__(self):
         return os.path.join(
             "tempdata" if self.temporary else "appdata",
