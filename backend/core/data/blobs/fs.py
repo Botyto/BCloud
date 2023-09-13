@@ -62,33 +62,25 @@ class FsBlobManager(BlobManager):
                 raise FileNotFoundError(result)
         return result
 
-    def exists(self, address: Address) -> bool:
+    def exists(self, address: Address):
         path = self._addr_to_path(address, create_dirs=False)
         return os.path.isfile(path)
-
-    def read(self, address: Address) -> bytes:
-        path = self._addr_to_path(address)
-        return open(path, "rb").read()
-
-    def write(self, address: Address, data: bytes):
-        path = self._addr_to_path(address)
-        return open(path, "wb").write(data)
 
     def delete(self, address: Address):
         path = self._addr_to_path(address, create_dirs=False)
         if os.path.isfile(path):
             return os.remove(path)
-        
-    def open(self, address: Address, mode: OpenMode) -> BlobFile:
+    
+    def open(self, address: Address, mode: OpenMode):
         path = self._addr_to_path(address, create_dirs=False)
         return FsBlobFile(path, self, address, mode)
-        
+    
     def copy(self, src: Address, dst: Address):
         src_path = self._addr_to_path(src, create_dirs=False)
         dst_path = self._addr_to_path(dst, create_dirs=True)
-        shutil.copyfile(src_path, dst_path, follow_symlinks=False)
+        return shutil.copyfile(src_path, dst_path, follow_symlinks=False)
     
     def rename(self, src: Address, dst: Address):
         src_path = self._addr_to_path(src, create_dirs=False)
         dst_path = self._addr_to_path(dst, create_dirs=True)
-        os.rename(src_path, dst_path)
+        return os.rename(src_path, dst_path)

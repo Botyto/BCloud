@@ -64,12 +64,14 @@ class BlobFile(BinaryIO):
 class BlobManager:
     def exists(self, address: Address) -> bool:
         raise NotImplementedError()
-    
+
     def read(self, address: Address) -> bytes:
-        raise NotImplementedError()
-    
+        with self.open(address, OpenMode.READ) as fh:
+            return fh.read()
+
     def write(self, address: Address, data: bytes):
-        raise NotImplementedError()
+        with self.open(address, OpenMode.READ) as fh:
+            return fh.read()
 
     def delete(self, address: Address):
         raise NotImplementedError()
