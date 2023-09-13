@@ -69,9 +69,9 @@ class BlobManager:
         with self.open(address, OpenMode.READ) as fh:
             return fh.read()
 
-    def write(self, address: Address, data: bytes):
+    def write(self, address: Address, data: bytes|bytearray):
         with self.open(address, OpenMode.READ) as fh:
-            return fh.read()
+            return fh.write(data)
 
     def delete(self, address: Address):
         raise NotImplementedError()
