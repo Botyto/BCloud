@@ -6,7 +6,8 @@ logger = logging.getLogger(__name__)
 
 
 class AppContext(DataContext):
-    pass
+    def __init__(self, base: DataContext):
+        self._extend(base)
 
 
 class App:

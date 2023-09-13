@@ -1,12 +1,15 @@
 import atexit
 from datetime import timedelta
 import logging
+import sys
+from typing import cast
 
 from .env import Environment
 from .context import BaseContext
 from .logging import clear_old_logs, default_setup as setup_logging
 
 from .data.context import SqlSettings, DataContext
+from .data.sql.migrations import MigrationAction
 from .app.main import AppContext, App
 
 env = Environment()
@@ -19,12 +22,32 @@ clear_old_logs("logs", timedelta(days=1))
 log_level = logging.DEBUG if env.debug else logging.INFO
 setup_logging(log_level, "logs")
 logger = logging.getLogger(__name__)
+logger.info("Command line: %s", " ".join(sys.argv[1:]))
 logger.info("Startup (profile: %s)", env.profile)
 atexit.register(lambda: logger.info("Shutdown"))
 
-context = BaseContext()
-sql_settings = SqlSettings("", 0, "", "", "")
-context = DataContext.extend(context, sql=sql_settings)
-context = AppContext.extend(context)
-app = App(context)
-app.run()
+def run_app():
+    sql_settings = SqlSettings(
+        host=cast(str, env.get("DB_HOST")),
+        port=cast(int, env.get("DB_PORT", 3306)),
+        username=cast(str, env.get("DB_USERNAME")),
+        password=cast(str, env.get("DB_PASSWORD")),
+        database=cast(str, env.get("DB_DATABASE", "")),
+    )
+    context = BaseContext(env)
+    context = DataContext(context, sql=sql_settings)
+    context = AppContext(context)
+    app = App(context)
+    app.run()
+
+def run_migration(action: MigrationAction):
+    sql_settings = SqlSettings(
+        host=cast(str, env.get("DB_HOST")),
+        port=cast(int, env.get("DB_PORT", 3306)),
+        username=cast(str, env.get("DB_ADMIN_USERNAME", env.get("DB_USERNAME"))),
+        password=cast(str, env.get("DB_ADMIN_PASSWORD", env.get("DB_PASSWORD"))),
+        database=cast(str, env.get("DB_DATABASE", "")),
+    )
+    context = BaseContext(env)
+    context = DataContext(context, sql=sql_settings)
+    # ...

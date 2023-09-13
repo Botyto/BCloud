@@ -5,3 +5,7 @@ Major components:
 - `data` - tools for dealing with data persistance - be it an SQL database, file system/store or something else.
 - `app` - base container for the rest of the system. You can have more than one running at once.
 - 
+
+The way modules decide how to behave is done using context objects.
+Example: the `App` object uses an `AppContext`.
+The context object is created before being sent to the `App` and shouldn't be modified ever.
