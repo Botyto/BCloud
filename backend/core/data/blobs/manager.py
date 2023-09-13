@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+import os
 from typing import BinaryIO
 import uuid
 
@@ -13,6 +14,16 @@ class Address:
     @classmethod
     def random(cls, namespace: str, temporary: bool = False):
         return cls(namespace, str(uuid.uuid4()), temporary=temporary)
+    
+    def __str__(self):
+        return os.path.join(
+            "tempdata" if self.temporary else "appdata",
+            self.namespace,
+            self.key,
+        )
+    
+    def __repr__(self):
+        return str(self)
 
 
 class OpenMode(Enum):
@@ -70,7 +81,7 @@ class BlobManager:
             return fh.read()
 
     def write(self, address: Address, data: bytes|bytearray):
-        with self.open(address, OpenMode.READ) as fh:
+        with self.open(address, OpenMode.WRITE) as fh:
             return fh.write(data)
 
     def delete(self, address: Address):

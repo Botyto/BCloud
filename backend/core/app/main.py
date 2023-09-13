@@ -17,4 +17,6 @@ class App:
         self.context = context
 
     def run(self):
+        from core.data.blobs.manager import Address
+        self.context.blobs.manager.write(Address.random("app"), b"Hello, world!")
         logger.info("Running app...")

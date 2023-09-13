@@ -17,7 +17,7 @@ class FsBlobFile(BlobFile):
         self._handle = cast(BinaryIO, open(self._path, self.mode))
         return self
 
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_value, traceback):
         self._handle.close()
         del self._handle
 
@@ -47,20 +47,15 @@ class FsBlobManager(BlobManager):
         self.root = root
 
     def _addr_to_path(self, address: Address, create_dirs: bool = True, ensure_exists: bool = False) -> str:
-        result = self.root
-        if address.temporary:
-            result = os.path.join(result, 'tempdata')
-        else:
-            result = os.path.join(result, 'appdata')
-        result = os.path.join(result, address.namespace, address.key + ".blob")
+        path = os.path.join(self.root, str(address) + ".bin")
         if create_dirs:
-            dirname = os.path.dirname(result)
+            dirname = os.path.dirname(path)
             os.makedirs(dirname, exist_ok=True)
         if ensure_exists:
             assert not create_dirs, "Cannot ensure_exists and create_dirs at the same time"
-            if not os.path.isfile(result):
-                raise FileNotFoundError(result)
-        return result
+            if not os.path.isfile(path):
+                raise FileNotFoundError(path)
+        return path
 
     def exists(self, address: Address):
         path = self._addr_to_path(address, create_dirs=False)
@@ -72,7 +67,7 @@ class FsBlobManager(BlobManager):
             return os.remove(path)
     
     def open(self, address: Address, mode: OpenMode):
-        path = self._addr_to_path(address, create_dirs=False)
+        path = self._addr_to_path(address, create_dirs=mode != OpenMode.READ)
         return FsBlobFile(path, self, address, mode)
     
     def copy(self, src: Address, dst: Address):

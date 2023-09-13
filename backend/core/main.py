@@ -8,9 +8,10 @@ from .env import Environment
 from .context import BaseContext
 from .logging import clear_old_logs, default_setup as setup_logging
 
-from .data.context import SqlSettings, DataContext
-from .data.sql.migrations import MigrationAction, MigrationsManager
 from .app.main import AppContext, App
+from .data.blobs.fs import FsBlobManager
+from .data.context import BlobsSettings, SqlSettings, DataContext
+from .data.sql.migrations import MigrationAction, MigrationsManager
 
 env = Environment()
 env.add_cmdline(100)
@@ -36,8 +37,10 @@ def run_app():
         password=cast(str, env.get("DB_PASSWORD")),
         database=cast(str, env.get("DB_DATABASE", "")),
     )
+    blobs_manager = FsBlobManager(".")
+    blobs_settings = BlobsSettings(blobs_manager)
     context = BaseContext(env)
-    context = DataContext(context, sql=sql_settings)
+    context = DataContext(context, sql_settings, blobs_settings)
     context = AppContext(context)
     app = App(context)
     app.run()
@@ -50,8 +53,10 @@ def run_migration(action: MigrationAction):
         password=cast(str, env.get("DB_ADMIN_PASSWORD", env.get("DB_PASSWORD"))),
         database=cast(str, env.get("DB_DATABASE", "")),
     )
+    blobs_manager = FsBlobManager(".")
+    blobs_settings = BlobsSettings(blobs_manager)
     context = BaseContext(env)
-    context = DataContext(context, sql=sql_settings)
+    context = DataContext(context, sql_settings, blobs_settings)
     manager = MigrationsManager()
     match action:
         case MigrationAction.INIT:
