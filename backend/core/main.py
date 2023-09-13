@@ -10,9 +10,10 @@ from .data.context import SqlSettings, DataContext
 from .app.main import AppContext, App
 
 env = Environment()
-env.add_os_env(100)
+env.add_cmdline(100)
 env.add_dotenv(200, ".env", optional=True)
 env.add_json(300, "env.json", optional=True)
+env.add_os_env(400)
 
 clear_old_logs("logs", timedelta(days=1))
 log_level = logging.DEBUG if env.debug else logging.INFO

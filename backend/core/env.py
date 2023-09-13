@@ -1,24 +1,49 @@
+from dataclasses import dataclass
 import json
 import os
+import sys
 from typing import Any, Dict, List, Tuple
 
 
 ValueType = str|bool|int|List[Any]|Dict[str, Any]
 
 
+@dataclass
+class EnvironmentSource:
+    sort_key: int
+    name: str|None
+    data: Dict[str, ValueType]
+
+
 class EnvironmentData:
     case_sensitive: bool
-    configs: List[Tuple[int, dict]]
+    configs: List[EnvironmentSource]
 
     def __init__(self, case_sensitive: bool = False):
         self.case_sensitive = case_sensitive
         self.configs = []
 
-    def add_dict(self, sort_key: int, config: Dict[str, ValueType]):
+    def add_dict(self, sort_key: int, data: Dict[str, ValueType], name: str|None = None):
         if not self.case_sensitive:
-            config = {k.lower(): v for k, v in config.items()}
-        self.configs.append((sort_key, config))
-        self.configs.sort()
+            data = {k.lower(): v for k, v in data.items()}
+        self.configs.append(EnvironmentSource(sort_key, name, data))
+        self.configs.sort(key=lambda x: x.sort_key)
+
+    def add_cmdline(self, sort_key: int):
+        args = sys.argv[1:]
+        config = {}
+        for arg in args:
+            if "=" in arg:
+                key, value = arg.split("=", 1)
+                try:
+                    value = int(value)
+                except ValueError:
+                    pass
+            else:
+                key, value = arg, True
+            assert key not in config, "Duplicate key in command line arguments"
+            config[key] = value
+        self.add_dict(sort_key, config, "cmdline")
 
     def add_dotenv(self, sort_key: int, filepath: str, optional: bool = False):
         if not os.path.isfile(filepath):
@@ -38,7 +63,7 @@ class EnvironmentData:
                 except ValueError:
                     pass
                 config[key] = value
-            self.add_dict(sort_key, config)
+            self.add_dict(sort_key, config, "dotenv")
 
     def add_json(self, sort_key: int, filepath: str, optional: bool = False):
         if not os.path.isfile(filepath):
@@ -47,16 +72,16 @@ class EnvironmentData:
             return
         with open(filepath) as f:
             config = json.load(f)
-            self.add_dict(sort_key, config)
+            self.add_dict(sort_key, config, "json")
 
     def add_os_env(self, sort_key: int):
-        self.add_dict(sort_key, dict(os.environ))
+        self.add_dict(sort_key, dict(os.environ), "os_env")
 
     def get(self, key: str, default: ValueType|None = None) -> ValueType|None:
         if not self.case_sensitive:
             key = key.lower()
-        for (_, config) in self.configs:
-            result = config.get(key, None)
+        for source in self.configs:
+            result = source.data.get(key, None)
             if result is not None:
                 return result
         return default
