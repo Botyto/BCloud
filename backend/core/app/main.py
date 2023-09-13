@@ -1,4 +1,8 @@
+import logging
+
 from core.data.context import DataContext
+
+logger = logging.getLogger(__name__)
 
 
 class AppContext(DataContext):
@@ -12,4 +16,4 @@ class App:
         self.context = context
 
     def run(self):
-        print("Hello world!")
+        logger.info("Running app...")
