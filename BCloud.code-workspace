@@ -20,6 +20,10 @@
 				"program": "${workspaceFolder}/backend/main.py",
 				"cwd": "${workspaceFolder}/backend/",
 				"justMyCode": false,
+				"pythonArgs": [
+					"-X",
+					"pycache_prefix=__pycache__",
+				],
 			},
 		],
 	},
