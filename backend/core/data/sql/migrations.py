@@ -1,5 +1,7 @@
 from enum import Enum
 
+from ..context import DataContext
+
 
 class MigrationAction(Enum):
     INIT = "init"
@@ -9,6 +11,11 @@ class MigrationAction(Enum):
 
 
 class MigrationsManager:
+    context: DataContext
+
+    def __init__(self, context: DataContext):
+        self.context = context
+
     def init(self):
         pass
 

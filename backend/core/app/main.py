@@ -1,13 +1,17 @@
 import logging
 
-from core.data.context import DataContext
+from ..data.context import DataContext
+from ..data.sql.database import DatabaseManager
 
 logger = logging.getLogger(__name__)
 
 
 class AppContext(DataContext):
-    def __init__(self, base: DataContext):
+    database: DatabaseManager
+
+    def __init__(self, base: DataContext, database: DatabaseManager):
         self._extend(base)
+        self.database = database
 
 
 class App:
@@ -18,5 +22,5 @@ class App:
 
     def run(self):
         from core.data.blobs.manager import Address
-        self.context.blobs.manager.write(Address.random("app"), b"Hello, world!")
+        self.context.blobs.write(Address.random("app"), b"Hello, world!")
         logger.info("Running app...")

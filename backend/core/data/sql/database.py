@@ -6,7 +6,6 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker, Session
 from .settings import SqlSettings
 
 from ..context import DataContext
-from ...env import Environment
 
 
 class Model(DeclarativeBase):

@@ -10,7 +10,8 @@ from .logging import clear_old_logs, default_setup as setup_logging
 
 from .app.main import AppContext, App
 from .data.blobs.fs import FsBlobManager
-from .data.context import BlobsSettings, SqlSettings, DataContext
+from .data.context import SqlSettings, DataContext
+from .data.sql.database import DatabaseManager
 from .data.sql.migrations import MigrationAction, MigrationsManager
 
 env = Environment()
@@ -30,18 +31,18 @@ logger.info("Startup (profile: %s)", env.profile)
 atexit.register(lambda: logger.info("Shutdown"))
 
 def run_app():
-    sql_settings = SqlSettings(
-        host=cast(str, env.get("DB_HOST")),
-        port=cast(int, env.get("DB_PORT", 3306)),
-        username=cast(str, env.get("DB_USERNAME")),
-        password=cast(str, env.get("DB_PASSWORD")),
-        database=cast(str, env.get("DB_DATABASE", "")),
-    )
     blobs_manager = FsBlobManager(".")
-    blobs_settings = BlobsSettings(blobs_manager)
+    sql_settings = SqlSettings(
+        host=cast(str, env.get("DB_HOST", "localhost")),
+        port=cast(int, env.get("DB_PORT", 3306)),
+        username=cast(str, env.get("DB_USERNAME", "bcloud")),
+        password=cast(str, env.get("DB_PASSWORD", "bcloud")),
+        database=cast(str, env.get("DB_DATABASE", "bcloud")),
+    )
     context = BaseContext(env)
-    context = DataContext(context, sql_settings, blobs_settings)
-    context = AppContext(context)
+    context = DataContext(context, sql_settings, blobs_manager)
+    database = DatabaseManager(context)
+    context = AppContext(context, database)
     app = App(context)
     app.run()
 
@@ -54,10 +55,9 @@ def run_migration(action: MigrationAction):
         database=cast(str, env.get("DB_DATABASE", "")),
     )
     blobs_manager = FsBlobManager(".")
-    blobs_settings = BlobsSettings(blobs_manager)
     context = BaseContext(env)
-    context = DataContext(context, sql_settings, blobs_settings)
-    manager = MigrationsManager()
+    context = DataContext(context, sql_settings, blobs_manager)
+    manager = MigrationsManager(context)
     match action:
         case MigrationAction.INIT:
             manager.init()
