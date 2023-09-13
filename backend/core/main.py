@@ -9,7 +9,7 @@ from .context import BaseContext
 from .logging import clear_old_logs, default_setup as setup_logging
 
 from .data.context import SqlSettings, DataContext
-from .data.sql.migrations import MigrationAction
+from .data.sql.migrations import MigrationAction, MigrationsManager
 from .app.main import AppContext, App
 
 env = Environment()
@@ -22,7 +22,9 @@ clear_old_logs("logs", timedelta(days=1))
 log_level = logging.DEBUG if env.debug else logging.INFO
 setup_logging(log_level, "logs")
 logger = logging.getLogger(__name__)
-logger.info("Command line: %s", " ".join(sys.argv[1:]))
+cmdline_str = " ".join(sys.argv[1:])
+if cmdline_str:
+    logger.info("Command line: %s", cmdline_str)
 logger.info("Startup (profile: %s)", env.profile)
 atexit.register(lambda: logger.info("Shutdown"))
 
@@ -50,4 +52,13 @@ def run_migration(action: MigrationAction):
     )
     context = BaseContext(env)
     context = DataContext(context, sql=sql_settings)
-    # ...
+    manager = MigrationsManager()
+    match action:
+        case MigrationAction.INIT:
+            manager.init()
+        case MigrationAction.NEW:
+            manager.new()
+        case MigrationAction.UPDATE:
+            manager.update()
+        case MigrationAction.UNINSTALL:
+            manager.uninstall()
