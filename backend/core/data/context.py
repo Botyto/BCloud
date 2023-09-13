@@ -1,15 +1,6 @@
-from dataclasses import dataclass
+from .sql.settings import SqlSettings
 
-from core.context import BaseContext
-
-
-@dataclass
-class SqlSettings:
-    host: str
-    port: int
-    username: str
-    password: str
-    database: str = "bcloud"
+from ..context import BaseContext
 
 
 class DataContext(BaseContext):
