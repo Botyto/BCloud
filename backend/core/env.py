@@ -49,30 +49,32 @@ class EnvironmentData:
         if not os.path.isfile(filepath):
             if not optional:
                 raise FileNotFoundError(f"Env source file `{filepath}` not found")
-            return
-        with open(filepath) as f:
             config = {}
-            for line in f.readlines():
-                line = line.strip()
-                if line.startswith("#") or not line:
-                    continue
-                key, value = line.split("=", 1)
-                assert key not in config, "Duplicate key in .env file"
-                try:
-                    value = int(value)
-                except ValueError:
-                    pass
-                config[key] = value
-            self.add_dict(sort_key, config, "dotenv")
+        else:
+            with open(filepath) as f:
+                config = {}
+                for line in f.readlines():
+                    line = line.strip()
+                    if line.startswith("#") or not line:
+                        continue
+                    key, value = line.split("=", 1)
+                    assert key not in config, "Duplicate key in .env file"
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        pass
+                    config[key] = value
+        self.add_dict(sort_key, config, "dotenv")
 
     def add_json(self, sort_key: int, filepath: str, optional: bool = False):
         if not os.path.isfile(filepath):
             if not optional:
                 raise FileNotFoundError(f"Env source file `{filepath}` not found")
-            return
-        with open(filepath) as f:
-            config = json.load(f)
-            self.add_dict(sort_key, config, "json")
+            config = {}
+        else:
+            with open(filepath) as f:
+                config = json.load(f)
+        self.add_dict(sort_key, config, "json")
 
     def add_os_env(self, sort_key: int):
         self.add_dict(sort_key, dict(os.environ), "os_env")
