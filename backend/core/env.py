@@ -17,17 +17,17 @@ class EnvironmentSource:
 
 class EnvironmentData:
     case_sensitive: bool
-    configs: List[EnvironmentSource]
+    sources: List[EnvironmentSource]
 
     def __init__(self, case_sensitive: bool = False):
         self.case_sensitive = case_sensitive
-        self.configs = []
+        self.sources = []
 
     def add_dict(self, sort_key: int, data: Dict[str, ValueType], name: str|None = None):
         if not self.case_sensitive:
             data = {k.lower(): v for k, v in data.items()}
-        self.configs.append(EnvironmentSource(sort_key, name, data))
-        self.configs.sort(key=lambda x: x.sort_key)
+        self.sources.append(EnvironmentSource(sort_key, name, data))
+        self.sources.sort(key=lambda x: x.sort_key)
 
     def add_cmdline(self, sort_key: int):
         args = sys.argv[1:]
@@ -80,7 +80,7 @@ class EnvironmentData:
     def get(self, key: str, default: ValueType|None = None) -> ValueType|None:
         if not self.case_sensitive:
             key = key.lower()
-        for source in self.configs:
+        for source in self.sources:
             result = source.data.get(key, None)
             if result is not None:
                 return result
