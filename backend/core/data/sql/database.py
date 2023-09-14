@@ -17,17 +17,20 @@ class DatabaseManager:
     engine: Engine
     _sessionmaker: sessionmaker
 
-    def __init__(self, context: DataContext):
+    def __init__(self, context: DataContext, wipe_settings: bool = True):
         self.context = context
         self.engine = create_engine(self.connection_string, pool_recycle=1800)
         self._sessionmaker = sessionmaker(bind=self.engine)
+        if self.context.sql.is_sqlite:
+            Model.metadata.create_all(self.engine)
+        if wipe_settings:
+            self.context.sql.wipe()
 
     @property
     def connection_string(self):
         db_host = self.context.sql.host
-        if db_host.endswith(".sqlite"):
-            sqlite_path = os.path.join("data.sqlite")
-            return f"sqlite:///{sqlite_path}"
+        if self.context.sql.is_sqlite:
+            return f"sqlite:///{db_host}"
         else:
             db_name = self.context.sql.database
             if not db_name:

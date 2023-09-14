@@ -26,3 +26,7 @@ class SqlSettings:
             return cls.DEFAULT_DATABASE
         else:
             return cls.DEFAULT_DATABASE_DEV
+        
+    @property
+    def is_sqlite(self):
+        return self.host.endswith(".sqlite")

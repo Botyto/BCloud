@@ -6,6 +6,7 @@ from ..data.sql.database import DatabaseManager
 
 logger = logging.getLogger(__name__)
 
+from . import pref
 
 class AppContext(DataContext):
     database: DatabaseManager
@@ -25,5 +26,10 @@ class App:
 
     def run(self):
         from core.data.blobs.manager import Address
-        self.context.files.write(Address.random("app"), b"Hello, world!")
+        address = Address.unique(self.context.files, "app")
+        self.context.files.write(address, b"Hello, world!")
+        with self.context.database.make_session() as session:
+            preferences = pref.PreferencesManager(session)
+            preferences.set("test", "test_value")
+            logger.info("Preferences: %s", preferences.get_dict())
         logger.info("Running app...")
