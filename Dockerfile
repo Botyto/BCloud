@@ -8,16 +8,16 @@ ENV GITHUB_USERNAME=$GITHUB_USERNAME
 ENV GITHUB_ACCESS_TOKEN=$GITHUB_ACCESS_TOKEN
 RUN echo "machine github.com login $GITHUB_USERNAME password $GITHUB_ACCESS_TOKEN" > ~/.netrc
 
-RUN git clone --no-checkout https://github.com/Botyto/BCloud.git .
+RUN git clone --no-checkout https://github.com/Botyto/BCloud.git /app
 RUN git sparse-checkout init
 RUN git sparse-checkout set backend frontend docker
 RUN git checkout HEAD
 
 RUN apt-get install -y nodejs npm
-WORKDIR /frontend
+WORKDIR /app/frontend
 RUN npm install
 
-WORKDIR /backend
+WORKDIR /app/backend
 RUN apt-get install -y libmariadb-dev libmariadb3
 RUN pip install -r requirements.txt
 
@@ -31,4 +31,4 @@ COPY docker/nginx.conf /etc/nginx/nginx.conf
 
 CMD []
 USER root
-ENTRYPOINT ["python3", "/docker/entrypoint.py"]
+ENTRYPOINT ["python3", "/app/docker/entrypoint.py"]
