@@ -20,11 +20,14 @@ class Address:
         address = cls.random(namespace, key_prefix, temporary=temporary)
         original_key = address.key
         n = 0
-        while True:
-            if not manager.exists(address):
-                return address
+        while manager.exists(address):
             n += 1
             address.key = original_key + f"-{n}"
+        return address
+
+    @classmethod
+    def join_keys(cls, *keys: str) -> str:
+        return os.path.join(*keys)
 
     def __str__(self):
         return os.path.join(
