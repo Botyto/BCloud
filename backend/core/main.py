@@ -9,7 +9,7 @@ from .context import BaseContext
 from .logging import clear_old_logs, default_setup as setup_logging
 
 from .app.main import AppContext, App
-from .data.blobs.fs import FsBlobManager
+from .data.blobs.settings import BlobSettings
 from .data.context import SqlSettings, DataContext
 from .data.sql.database import DatabaseManager
 from .data.sql.migrations import MigrationAction, MigrationsManager
@@ -31,7 +31,6 @@ logger.info("Startup (profile: %s)", env.profile)
 atexit.register(lambda: logger.info("Shutdown"))
 
 def run_app():
-    blobs_manager = FsBlobManager(".")
     sql_settings = SqlSettings(
         host=cast(str, env.get("DB_HOST", "localhost")),
         port=cast(int, env.get("DB_PORT", 3306)),
@@ -39,10 +38,12 @@ def run_app():
         password=cast(str, env.get("DB_PASSWORD", "bcloud")),
         database=cast(str, env.get("DB_DATABASE", "bcloud")),
     )
+    blob_settings = BlobSettings(".")
     context = BaseContext(env)
-    context = DataContext(context, sql_settings, blobs_manager)
+    context = DataContext(context, sql_settings, blob_settings)
+    blob_manager = blob_settings.build_manager()
     database = DatabaseManager(context)
-    context = AppContext(context, database)
+    context = AppContext(context, database, blob_manager)
     app = App(context)
     app.run()
 
@@ -54,9 +55,9 @@ def run_migration(action: MigrationAction):
         password=cast(str, env.get("DB_ADMIN_PASSWORD", env.get("DB_PASSWORD"))),
         database=cast(str, env.get("DB_DATABASE", "")),
     )
-    blobs_manager = FsBlobManager(".")
+    blob_settings = BlobSettings(".")
     context = BaseContext(env)
-    context = DataContext(context, sql_settings, blobs_manager)
+    context = DataContext(context, sql_settings, blob_settings)
     manager = MigrationsManager(context)
     match action:
         case MigrationAction.INIT:

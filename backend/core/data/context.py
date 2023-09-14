@@ -1,4 +1,4 @@
-from .blobs.manager import BlobManager
+from .blobs.settings import BlobSettings
 from .sql.settings import SqlSettings
 
 from ..context import BaseContext
@@ -6,9 +6,9 @@ from ..context import BaseContext
 
 class DataContext(BaseContext):
     sql: SqlSettings
-    blobs: BlobManager
+    blobs: BlobSettings
 
-    def __init__(self, base: BaseContext, sql: SqlSettings, blobs: BlobManager):
+    def __init__(self, base: BaseContext, sql: SqlSettings, blobs: BlobSettings):
         self._extend(base)
         self.sql = sql
         self.blobs = blobs
