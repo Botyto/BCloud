@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
-from .manager import BlobManager
-from .fs import FsBlobManager
+from .manager import Blobs
+from .fs import FsBlobs
 
 
 @dataclass
 class BlobSettings:
     fs_root: str
 
-    def build_manager(self) -> BlobManager:
-        return FsBlobManager(self.fs_root)
+    def build_manager(self) -> Blobs:
+        return FsBlobs(self.fs_root)

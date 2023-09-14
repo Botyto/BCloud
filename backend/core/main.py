@@ -1,4 +1,5 @@
 import atexit
+from enum import Enum
 from datetime import timedelta
 import logging
 import sys
@@ -11,8 +12,8 @@ from .logging import clear_old_logs, default_setup as setup_logging
 from .app.main import AppContext, App
 from .data.blobs.settings import BlobSettings
 from .data.context import SqlSettings, DataContext
-from .data.sql.database import DatabaseManager
-from .data.sql.migrations import MigrationAction, MigrationsManager
+from .data.sql.database import Database
+from .data.sql.migrations import Migrations
 
 env = Environment()
 env.add_cmdline(100)
@@ -41,11 +42,18 @@ def run_app():
     blob_settings = BlobSettings(cast(str, env.get("BLOB_FS_ROOT", ".")))
     context = BaseContext(env)
     context = DataContext(context, sql_settings, blob_settings)
-    blob_manager = blob_settings.build_manager()
-    database = DatabaseManager(context)
-    context = AppContext(context, database, blob_manager)
+    files = blob_settings.build_manager()
+    database = Database(context)
+    context = AppContext(context, database, files)
     app = App(context)
     app.run()
+
+
+class MigrationAction(Enum):
+    INIT = "init"
+    NEW = "new"
+    UPDATE = "update"
+    UNINSTALL = "uninstall"
 
 def run_migration(action: MigrationAction):
     sql_settings = SqlSettings(
@@ -58,7 +66,7 @@ def run_migration(action: MigrationAction):
     blob_settings = BlobSettings(cast(str, env.get("BLOB_FS_ROOT", ".")))
     context = BaseContext(env)
     context = DataContext(context, sql_settings, blob_settings)
-    manager = MigrationsManager(context)
+    manager = Migrations(context)
     match action:
         case MigrationAction.INIT:
             manager.init()

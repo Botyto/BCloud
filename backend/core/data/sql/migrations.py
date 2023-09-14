@@ -1,16 +1,7 @@
-from enum import Enum
-
 from ..context import DataContext
 
 
-class MigrationAction(Enum):
-    INIT = "init"
-    NEW = "new"
-    UPDATE = "update"
-    UNINSTALL = "uninstall"
-
-
-class MigrationsManager:
+class Migrations:
     context: DataContext
 
     def __init__(self, context: DataContext):

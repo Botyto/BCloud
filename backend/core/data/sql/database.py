@@ -10,7 +10,7 @@ class Model(DeclarativeBase):
     pass
 
 
-class DatabaseManager:
+class Database:
     context: DataContext
     engine: Engine
     _sessionmaker: sessionmaker

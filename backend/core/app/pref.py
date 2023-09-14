@@ -12,7 +12,7 @@ class Preference(Model):
     value: Mapped[str] = mapped_column(String)
 
 
-class PreferencesManager:
+class Preferences:
     session: Session
 
     def __init__(self, session: Session):

@@ -16,7 +16,7 @@ class Address:
         return cls(namespace, os.path.join(key_prefix, str(uuid.uuid4())), temporary=temporary)
     
     @classmethod
-    def unique(cls, manager: "BlobManager", namespace: str, key_prefix: str = "", temporary: bool = False):
+    def unique(cls, manager: "Blobs", namespace: str, key_prefix: str = "", temporary: bool = False):
         address = cls.random(namespace, key_prefix, temporary=temporary)
         original_key = address.key
         n = 0
@@ -46,12 +46,12 @@ class OpenMode(Enum):
     APPEND = "append"
 
 
-class BlobFile(BinaryIO):
-    _manager: "BlobManager"
+class BlobIO(BinaryIO):
+    _manager: "Blobs"
     _address: Address
     _mode: OpenMode
 
-    def __init__(self, manager: "BlobManager", address: Address, mode: OpenMode):
+    def __init__(self, manager: "Blobs", address: Address, mode: OpenMode):
         self._manager = manager
         self._address = address
         self._mode = mode
@@ -86,7 +86,7 @@ class BlobFile(BinaryIO):
         raise NotImplementedError()
 
 
-class BlobManager:
+class Blobs:
     def exists(self, address: Address) -> bool:
         raise NotImplementedError()
 
@@ -101,7 +101,7 @@ class BlobManager:
     def delete(self, address: Address):
         raise NotImplementedError()
     
-    def open(self, address: Address, mode: OpenMode) -> BlobFile:
+    def open(self, address: Address, mode: OpenMode) -> BlobIO:
         raise NotImplementedError()
     
     def copy(self, src: Address, dst: Address):

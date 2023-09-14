@@ -1,7 +1,6 @@
 from argparse import ArgumentParser
 
-from core.data.sql.migrations import MigrationAction
-from core import main
+from core.main import MigrationAction, run_migration, run_app
 
 parser = ArgumentParser(
     prog="Backend server",
@@ -16,6 +15,6 @@ args = parser.parse_args()
 if __name__ == '__main__':
     if args.migration:
         action = MigrationAction(args.migration)
-        main.run_migration(action)
+        run_migration(action)
     else:
-        main.run_app()
+        run_app()

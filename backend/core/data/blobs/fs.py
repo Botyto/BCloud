@@ -2,14 +2,14 @@ import os
 import shutil
 from typing import BinaryIO, cast
 
-from .manager import Address, BlobFile, OpenMode, BlobManager
+from .manager import Address, BlobIO, OpenMode, Blobs
 
 
-class FsBlobFile(BlobFile):
+class FsBlobIO(BlobIO):
     _path: str
     _handle: BinaryIO
 
-    def __init__(self, path: str, manager: BlobManager, address: Address, mode: OpenMode):
+    def __init__(self, path: str, manager: Blobs, address: Address, mode: OpenMode):
         super().__init__(manager, address, mode)
         self._path = path
 
@@ -40,7 +40,7 @@ class FsBlobFile(BlobFile):
         return self._handle.write(data)
 
 
-class FsBlobManager(BlobManager):
+class FsBlobs(Blobs):
     root: str
 
     def __init__(self, root: str):
@@ -68,7 +68,7 @@ class FsBlobManager(BlobManager):
     
     def open(self, address: Address, mode: OpenMode):
         path = self._addr_to_path(address, create_dirs=mode != OpenMode.READ)
-        return FsBlobFile(path, self, address, mode)
+        return FsBlobIO(path, self, address, mode)
     
     def copy(self, src: Address, dst: Address):
         src_path = self._addr_to_path(src, create_dirs=False)
