@@ -1,7 +1,5 @@
-import os
 from sqlalchemy import create_engine, Engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker, Session
-
 
 from .settings import SqlSettings
 
