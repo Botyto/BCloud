@@ -1,12 +1,13 @@
 import logging
 
+from . import pref
+
 from ..data.blobs.manager import BlobManager
 from ..data.context import DataContext
 from ..data.sql.database import DatabaseManager
 
 logger = logging.getLogger(__name__)
 
-from . import pref
 
 class AppContext(DataContext):
     database: DatabaseManager
