@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import json
 import os
 import sys
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 
 ValueType = str|bool|int|List[Any]|Dict[str, Any]

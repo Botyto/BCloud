@@ -38,7 +38,7 @@ def run_app():
         password=cast(str, env.get("DB_PASSWORD", "bcloud")),
         database=cast(str, env.get("DB_DATABASE", "bcloud")),
     )
-    blob_settings = BlobSettings(".")
+    blob_settings = BlobSettings(cast(str, env.get("BLOB_FS_ROOT", ".")))
     context = BaseContext(env)
     context = DataContext(context, sql_settings, blob_settings)
     blob_manager = blob_settings.build_manager()
@@ -49,13 +49,13 @@ def run_app():
 
 def run_migration(action: MigrationAction):
     sql_settings = SqlSettings(
-        host=cast(str, env.get("DB_HOST")),
+        host=cast(str, env.get("DB_HOST", "localhost")),
         port=cast(int, env.get("DB_PORT", 3306)),
-        username=cast(str, env.get("DB_ADMIN_USERNAME", env.get("DB_USERNAME"))),
-        password=cast(str, env.get("DB_ADMIN_PASSWORD", env.get("DB_PASSWORD"))),
-        database=cast(str, env.get("DB_DATABASE", "")),
+        username=cast(str, env.get("DB_ADMIN_USERNAME", env.get("DB_USERNAME", "bcloud"))),
+        password=cast(str, env.get("DB_ADMIN_PASSWORD", env.get("DB_PASSWORD", "bcloud"))),
+        database=cast(str, env.get("DB_DATABASE", "bcloud")),
     )
-    blob_settings = BlobSettings(".")
+    blob_settings = BlobSettings(cast(str, env.get("BLOB_FS_ROOT", ".")))
     context = BaseContext(env)
     context = DataContext(context, sql_settings, blob_settings)
     manager = MigrationsManager(context)
