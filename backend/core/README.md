@@ -9,3 +9,4 @@ Major components:
 The way modules decide how to behave is done using context objects.
 Example: the `App` object uses an `AppContext`.
 The context object is created before being sent to the `App` and shouldn't be modified ever.
+At places where you have to create/extend a context, the program is designed to be able to "branch".
