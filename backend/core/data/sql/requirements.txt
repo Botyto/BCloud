@@ -1,5 +1,1 @@
 sqlalchemy==2.0.20
-mariadb
-mysql-connector-python
-pymysql
-mysqlclient
