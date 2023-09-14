@@ -25,4 +25,4 @@ COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/entrypoint.py /entrypoint.py
 CMD []
 USER root
-ENTRYPOINT ["/venv/synapse/bin/python", "/entrypoint.py"]
+ENTRYPOINT ["python3", "/entrypoint.py"]

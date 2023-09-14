@@ -1,6 +1,7 @@
 import logging
 import os
 import shlex
+import shutil
 import subprocess
 import sys
 import threading
@@ -42,17 +43,19 @@ def exec(mode, cmd: str, *, prefix: str|None = None, cwd: str|None = None):
     return proc
 
 def execpy(mode, file: str, args: str, prefix: str|None = None, cwd: str|None = None):
-    python_path = os.path.join("/", "venv", "bin", "python")
+    python_path = shutil.which("python3")
     return exec(mode, f"{python_path} {file} {args}", prefix=prefix, cwd=cwd)
 
 def start_backend():
     logging.info("Starting backend")
-    main_path = os.path.join("/", "app", "backend", "main.py")
-    execpy(BG, main_path, "", prefix="backend", cwd="app/backend")
+    root = os.path.join("/", "app", "backend")
+    main_path = os.path.join(root, "main.py")
+    execpy(BG, main_path, "", prefix="backend", cwd=root)
 
 def start_frontend():
     logging.info("Starting frontend")
-    exec(BG, "npm start", prefix="frontend", cwd="app/frontend")
+    root = os.path.join("/", "app", "frontend")
+    exec(BG, "npm start", prefix="frontend", cwd=root)
 
 def start_nginx():
     logging.info("Starting nginx")
