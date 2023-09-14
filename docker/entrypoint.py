@@ -54,7 +54,7 @@ def start_backend():
 def start_frontend():
     logging.info("Starting frontend")
     root = os.path.join("/", "app", "frontend")
-    exec(BG, "npm start", prefix="frontend", cwd=root)
+    exec(BG, "npm run preview", prefix="frontend", cwd=root)
 
 def start_nginx():
     logging.info("Starting nginx")
