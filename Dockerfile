@@ -1,16 +1,23 @@
 FROM python:3.11.5-slim-bullseye
 RUN apt-get update
-RUN apt-get install -y wget curl
+RUN apt-get install -y wget curl git
 
-COPY frontend /app/frontend
-COPY docker/frontend.nginx.conf /frontend.nginx.conf
+ARG GITHUB_USERNAME
+ARG GITHUB_ACCESS_TOKEN
+ENV GITHUB_USERNAME=$GITHUB_USERNAME
+ENV GITHUB_ACCESS_TOKEN=$GITHUB_ACCESS_TOKEN
+RUN echo "machine github.com login $GITHUB_USERNAME password $GITHUB_ACCESS_TOKEN" > ~/.netrc
+
+RUN git clone --no-checkout https://github.com/Botyto/BCloud.git .
+RUN git sparse-checkout init
+RUN git sparse-checkout set backend frontend docker
+RUN git checkout HEAD
+
 RUN apt-get install -y nodejs npm
-WORKDIR /app/frontend
+WORKDIR /frontend
 RUN npm install
 
-COPY backend /app/backend
-COPY docker/backend.nginx.conf /backend.nginx.conf
-WORKDIR /app/backend
+WORKDIR /backend
 RUN apt-get install -y libmariadb-dev libmariadb3
 RUN pip install -r requirements.txt
 
@@ -22,7 +29,6 @@ RUN chmod -R 777 /var/log/nginx
 RUN rm /etc/nginx/nginx.conf
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 
-COPY docker/entrypoint.py /entrypoint.py
 CMD []
 USER root
-ENTRYPOINT ["python3", "/entrypoint.py"]
+ENTRYPOINT ["python3", "/docker/entrypoint.py"]
