@@ -25,6 +25,14 @@
 					"pycache_prefix=__pycache__",
 				],
 			},
+			{
+				"name": "Frontend",
+				"type": "node",
+				"request": "launch",
+				"cwd": "${workspaceFolder}/frontend/",
+				"runtimeExecutable": "npm",
+				"runtimeArgs": ["start"]
+			},
 		],
 	},
 }
