@@ -28,7 +28,7 @@ RUN chmod -R 777 /var/lib/nginx
 RUN mkdir -p /var/log/nginx
 RUN chmod -R 777 /var/log/nginx
 RUN rm /etc/nginx/nginx.conf
-COPY docker/nginx.conf /etc/nginx/nginx.conf
+RUN mv /app/docker/nginx.conf /etc/nginx/nginx.conf
 
 CMD []
 USER root
