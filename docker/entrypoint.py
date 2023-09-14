@@ -48,9 +48,8 @@ def execpy(mode, file: str, args: str, prefix: str|None = None, cwd: str|None = 
 
 def start_backend():
     logging.info("Starting backend")
-    root = os.path.join("/", "app", "backend")
-    main_path = os.path.join(root, "main.py")
-    execpy(BG, main_path, "", prefix="backend", cwd=root)
+    main_path = os.path.join("/", "app", "backend", "main.py")
+    execpy(BG, main_path, "", prefix="backend", cwd="/data")
 
 def start_frontend():
     logging.info("Starting frontend")
