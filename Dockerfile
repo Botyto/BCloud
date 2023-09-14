@@ -9,6 +9,7 @@ ENV GITHUB_ACCESS_TOKEN=$GITHUB_ACCESS_TOKEN
 RUN echo "machine github.com login $GITHUB_USERNAME password $GITHUB_ACCESS_TOKEN" > ~/.netrc
 
 RUN git clone --no-checkout https://github.com/Botyto/BCloud.git /app
+WORKDIR /app
 RUN git sparse-checkout init
 RUN git sparse-checkout set backend frontend docker
 RUN git checkout HEAD
