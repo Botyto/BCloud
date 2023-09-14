@@ -19,22 +19,22 @@ class PreferencesManager:
         self.session = session
 
     def get(self, key: str, default: str = ""):
-        statement = select(Preference) \
+        statement = select(Preference.value) \
             .where(Preference.key == key)
         preference = self.session.scalars(statement).first()
         if preference is not None:
-            return preference.value
+            return preference
         return default
     
     def set(self, key: str, value: str):
-        statement = update(Preference) \
-            .where(Preference.key == key) \
-            .values(value=value)
-        result = self.session.execute(statement)
-        if result.rowcount == 0:
-            preference = Preference(key=key, value=value)
-            self.session.add(preference)
-        self.session.commit()
+        with self.session.begin():
+            statement = update(Preference) \
+                .where(Preference.key == key) \
+                .values(value=value)
+            result = self.session.execute(statement)
+            if result.rowcount == 0:
+                preference = Preference(key=key, value=value)
+                self.session.add(preference)
 
     def get_dict(self):
         statement = select(Preference)
