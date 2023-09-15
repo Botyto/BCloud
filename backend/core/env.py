@@ -92,7 +92,7 @@ class EnvironmentData:
 class Environment(EnvironmentData):
     @property
     def profile(self):
-        return self.get("profile", "prod")
+        return self.get("PROFILE", "prod")
 
     @property
     def debug(self):
