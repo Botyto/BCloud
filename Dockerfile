@@ -5,7 +5,7 @@ RUN apt-get update
 RUN apt-get install -y git
 
 ARG GITHUB_ACCESS_TOKEN
-RUN echo "Token: $GITHUB_ACCESS_TOKEN" && git clone --no-checkout https://$GITHUB_ACCESS_TOKEN@github.com/Botyto/BCloud.git /app
+RUN git clone --no-checkout https://$GITHUB_ACCESS_TOKEN@github.com/Botyto/BCloud.git /app
 WORKDIR /app
 RUN git sparse-checkout init
 RUN git sparse-checkout set frontend
@@ -28,7 +28,7 @@ RUN mkdir -p /var/log/nginx && chmod -R 777 /var/log/nginx
 RUN apt-get install -y libmariadb-dev libmariadb3
 
 ARG GITHUB_ACCESS_TOKEN
-RUN echo "Token: $GITHUB_ACCESS_TOKEN" && git clone --no-checkout https://$GITHUB_ACCESS_TOKEN@github.com/Botyto/BCloud.git /app
+RUN git clone --no-checkout https://$GITHUB_ACCESS_TOKEN@github.com/Botyto/BCloud.git /app
 WORKDIR /app
 RUN git sparse-checkout init
 RUN git sparse-checkout set backend docker
