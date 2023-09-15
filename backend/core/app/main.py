@@ -1,23 +1,11 @@
 import logging
 
-from . import pref
+from .context import AppContext
 
-from ..data.blobs.base import Blobs
-from ..data.context import DataContext
-from ..data.sql.database import Database
+from ..http.context import ServerContext
+from ..http.server import Server
 
 logger = logging.getLogger(__name__)
-
-
-class AppContext(DataContext):
-    database: Database
-    files: Blobs
-
-    def __init__(self, base: DataContext, database: Database, files: Blobs):
-        self._extend(base)
-        self.database = database
-        self.files = files
-
 
 class App:
     context: AppContext
@@ -26,11 +14,6 @@ class App:
         self.context = context
 
     def run(self):
-        from core.data.blobs.base import Address
-        address = Address.unique(self.context.files, "app")
-        self.context.files.write(address, b"Hello, world!")
-        with self.context.database.make_session() as session:
-            preferences = pref.Preferences(session)
-            preferences.set("test", "test_value")
-            logger.info("Preferences: %s", preferences.get_dict())
-        logger.info("Running app...")
+        server_context = ServerContext(self.context)
+        server = Server(server_context)
+        server.run()

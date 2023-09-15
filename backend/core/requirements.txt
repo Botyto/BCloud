@@ -1,1 +1,2 @@
 -r data/requirements.txt
+-r http/requirements.txt
