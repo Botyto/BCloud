@@ -5,14 +5,15 @@ import shutil
 import subprocess
 import sys
 import threading
-from typing import List
+from typing import List, Tuple
 
 logging.basicConfig(level=logging.DEBUG, format="entrypoint | %(asctime)s %(levelname)s %(message)s")
 
-background_processes: List[subprocess.Popen] = []
+background_processes: List[Tuple[str, subprocess.Popen]] = []
 def wait_all():
-    for proc in background_processes:
+    for prefix, proc in background_processes:
         proc.wait()
+        logging.info("%s exited with code %d", prefix, proc.returncode)
 
 BG = 0
 FG = 1
@@ -37,9 +38,10 @@ def exec(mode, cmd: str, *, prefix: str|None = None, cwd: str|None = None):
         threading.Thread(target=relay, args=(proc.stdout, sys.stdout, prefix)).start()
     threading.Thread(target=relay, args=(proc.stderr, sys.stderr, prefix)).start()
     if mode == BG:
-        background_processes.append(proc)
+        background_processes.append((prefix, proc))
     elif mode == FG:
         proc.wait()
+        logging.info("%s exited with code %d", prefix, proc.returncode)
     return proc
 
 def execpy(mode, file: str, args: str, prefix: str|None = None, cwd: str|None = None):
