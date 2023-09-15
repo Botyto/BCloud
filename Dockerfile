@@ -41,7 +41,7 @@ WORKDIR /app/backend
 RUN pip install -r requirements.txt
 
 RUN rm /etc/nginx/nginx.conf
-RUN echo "include /app/docker/nginx.conf;" >> /etc/nginx/nginx.conf
+RUN mv /app/docker/nginx.conf /etc/nginx/nginx.conf
 
 RUN mkdir /data
 WORKDIR /data
