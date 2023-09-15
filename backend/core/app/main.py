@@ -2,7 +2,7 @@ import logging
 
 from . import pref
 
-from ..data.blobs.manager import Blobs
+from ..data.blobs.base import Blobs
 from ..data.context import DataContext
 from ..data.sql.database import Database
 
@@ -26,7 +26,7 @@ class App:
         self.context = context
 
     def run(self):
-        from core.data.blobs.manager import Address
+        from core.data.blobs.base import Address
         address = Address.unique(self.context.files, "app")
         self.context.files.write(address, b"Hello, world!")
         with self.context.database.make_session() as session:

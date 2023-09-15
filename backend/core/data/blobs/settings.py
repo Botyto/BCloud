@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from .manager import Blobs
+from .base import Blobs
 from .fs import FsBlobs
 
 

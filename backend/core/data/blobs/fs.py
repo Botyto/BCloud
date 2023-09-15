@@ -2,7 +2,7 @@ import os
 import shutil
 from typing import BinaryIO, cast
 
-from .manager import Address, BlobIO, OpenMode, Blobs
+from .base import Address, BlobIO, OpenMode, Blobs
 
 
 class FsBlobIO(BlobIO):
