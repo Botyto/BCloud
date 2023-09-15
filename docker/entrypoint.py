@@ -51,11 +51,6 @@ def start_backend():
     main_path = os.path.join("/", "app", "backend", "main.py")
     execpy(BG, main_path, "", prefix="backend", cwd="/data")
 
-def start_frontend():
-    logging.info("Starting frontend")
-    root = os.path.join("/", "app", "frontend")
-    exec(BG, "npm run preview", prefix="frontend", cwd=root)
-
 def start_nginx():
     logging.info("Starting nginx")
     exec(BG, "nginx", prefix="nginx")
@@ -63,7 +58,6 @@ def start_nginx():
 def main():
     logging.info("Starting")
     start_backend()
-    start_frontend()
     start_nginx()
 
     logging.info("Done")
