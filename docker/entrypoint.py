@@ -49,7 +49,8 @@ def execpy(mode, file: str, args: str, prefix: str|None = None, cwd: str|None = 
 def start_backend():
     logging.info("Starting backend")
     main_path = os.path.join("/", "app", "backend", "main.py")
-    execpy(BG, main_path, "", prefix="backend", cwd="/data")
+    workdir = os.path.join("/", "data")
+    execpy(BG, main_path, "", prefix="backend", cwd=workdir)
 
 def start_nginx():
     logging.info("Starting nginx")
