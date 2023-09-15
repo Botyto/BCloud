@@ -1,9 +1,8 @@
 from datetime import datetime, timezone
 import logging
-from sqlalchemy import create_engine, Engine
-import sqlalchemy.event
+from sqlalchemy import create_engine, Engine, event, DateTime, Column
 from sqlalchemy.orm import DeclarativeBase, sessionmaker, Session
-from types import MethodType
+from typing import List
 
 from .settings import SqlSettings
 
@@ -47,21 +46,49 @@ class Database:
 
     def make_session(self, info: dict|None = None) -> Session:
         return self._sessionmaker(info=info)
-    
-    def _activate_debug(self):
-        def on_connect(dbapi_con, connection_record):
-            logger.debug("Connecting to database: %s", dbapi_con)
-        sqlalchemy.event.listen(self.engine, "connect", on_connect)
-        
-        def on_detch(dbapi_con, connection_record):
-            logger.debug("Disconnecting from database: %s", dbapi_con)
-        sqlalchemy.event.listen(self.engine, "detach", on_detch)
 
-        def on_before_execute(conn, clauseelement, multiparams, params, execution_options):
+    def _activate_debug(self):
+        def dbg_print_connect(dbapi_con, connection_record):
+            logger.debug("Connecting to database: %s", dbapi_con)
+        event.listen(self.engine, "connect", dbg_print_connect)
+        
+        def dbg_print_disconnect(dbapi_con, connection_record):
+            logger.debug("Disconnecting from database: %s", dbapi_con)
+        event.listen(self.engine, "detach", dbg_print_disconnect)
+
+        def dbg_print_sql(conn, clauseelement, multiparams, params, execution_options):
             sql = str(clauseelement).replace("\n", " ")
             logger.debug("Executing SQL: %s", sql)
-        sqlalchemy.event.listen(self.engine, "before_execute", on_before_execute)
+        event.listen(self.engine, "before_execute", dbg_print_sql)
+
+        def dbg_datetime_asserts(mapper, cls):
+            cls_name = cls.__name__
+            columns: List[Column] = cls.__table__.columns
+            for column in columns:
+                if not isinstance(column.type, DateTime):
+                    continue
+                assert column.name.endswith("_utc"), f"DateTime column {cls_name}.{column.name} must end with _utc"
+        event.listen(Model, "instrument_class", dbg_datetime_asserts, propagate=True)
 
         for cls in Model.__subclasses__():
             table_name = getattr(cls, "__tablename__", getattr(cls, "__table__"))
             assert table_name == cls.__name__, "Table name must be the same as the model class name"
+
+def apply_timezone_guard(mapper, cls):
+    cls_name = cls.__name__
+    columns: List[Column] = cls.__table__.columns
+    for column in columns:
+        if not isinstance(column.type, DateTime):
+            continue
+        def guarded_set(target, value, oldvalue, initiator):
+            if not isinstance(value, datetime):
+                return value
+            if value.tzinfo is None:
+                raise ValueError(f"Cannot assign timezone naive datetime to {cls_name}.{column.name}")
+            if value.tzinfo != timezone.utc:
+                logger.warning("Converting timezone from %s to UTC for %s.%s", value.tzinfo, cls_name, column.name)
+                return value.astimezone(timezone.utc)
+            return value
+        attr = getattr(cls, column.name)
+        event.listen(attr, "set", guarded_set, retvalue=True)
+event.listen(Model, "instrument_class", apply_timezone_guard, propagate=True)
