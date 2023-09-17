@@ -3,7 +3,7 @@ from sqlalchemy import Boolean, Enum, Float, Integer, String, Text
 from sqlalchemy import Date, DateTime, Interval, Time
 from sqlalchemy import JSON, UUID
 from sqlalchemy.dialects.mysql import LONGBLOB as Bytes
-from sqlalchemy.orm import InstrumentedAttribute, Mapped, mapped_column
+from sqlalchemy.orm import InstrumentedAttribute, Mapped, mapped_column, relationship
 
 STRING_MAX = 2**12 - 1
 

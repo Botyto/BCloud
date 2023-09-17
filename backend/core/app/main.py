@@ -9,6 +9,8 @@ from ..miniapp.engine import Manager as MiniappsManager
 
 logger = logging.getLogger(__name__)
 
+import core.identity.data
+
 
 class App:
     context: AppContext

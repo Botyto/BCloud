@@ -24,8 +24,7 @@ class Database:
         self.context = context
         self.engine = create_engine(self.connection_string, pool_recycle=1800)
         self._sessionmaker = sessionmaker(bind=self.engine)
-        if self.context.sql.is_sqlite:
-            Model.metadata.create_all(self.engine)
+        Model.metadata.create_all(self.engine)
         if wipe_settings:
             self.context.sql.wipe()
         if self.context.env.debug:
