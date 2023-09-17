@@ -44,6 +44,7 @@ class Server:
     def run(self):
         logger.info("Listening on port %d", self.port)
         self.app.listen(self.port)
+        self.context.msg.emit("startup")
         self.loop.start()
 
     @property
