@@ -85,8 +85,12 @@ class Manager:
                     fn = app.update_fns[version]
                     if version > current.version:
                         logger.info(f"Installing miniapp `{app.id}` v{version}")
-                        # TODO catch exceptions and rollback the session
-                        fn(self.context)
+                        try:
+                            fn(self.context)
+                        except Exception as e:
+                            logger.error(f"Failed to install miniapp `{app.id}` v{version}")
+                            logger.exception(e)
+                            raise e
                         current.version = version
                 logger.debug(f"Miniapp `{app.id}` is up to date (v{current.version})")
 
