@@ -1,2 +1,3 @@
 -r data/requirements.txt
 -r http/requirements.txt
+-r identity/requirements.txt
