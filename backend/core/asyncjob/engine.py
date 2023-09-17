@@ -16,7 +16,7 @@ from ..data.sql.columns import ensure_str_fit
 logger = logging.getLogger(__name__)
 
 
-class Engine:
+class AsyncJobs:
     context: AppContext
     states: Dict[int, State]
     threads: Dict[int, Thread]
