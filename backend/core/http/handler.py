@@ -2,6 +2,7 @@ import logging
 from sqlalchemy.exc import PendingRollbackError
 import traceback
 from tornado.web import RequestHandler
+from tornado.websocket import WebSocketHandler
 from typing import Any
 
 from .context import ServerContext
@@ -11,7 +12,7 @@ from ..data.sql.database import Session
 logger = logging.getLogger(__name__)
 
 
-class SessionHandler(RequestHandler):
+class SessionHandlerMixin(RequestHandler):
     _session: Session
 
     def _make_session_info(self):
@@ -45,10 +46,26 @@ class SessionHandler(RequestHandler):
             self._session.close()
 
 
-class ApiHandler(SessionHandler):
+class ApiHandler(SessionHandlerMixin, RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "authorization, content-type")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, PUT, PATCH, DELETE, OPTIONS')
+        return super().set_default_headers()
+
+    def options(self, *args, **kwargs):
+        self.set_status(204)
+        self.finish()
+
     def write_error(self, status_code: int, **kwargs: Any) -> None:
         result = {"code": status_code, "error": self._reason}
         if self.settings.get("serve_traceback") and "exc_info" in kwargs:
             result["traceback"] = traceback.format_exception(*kwargs["exc_info"])
         self.write(result)
         self.finish()
+
+
+class WebSocketApiHandler(SessionHandlerMixin, WebSocketHandler):
+    def check_origin(self, origin):
+        # TODO check documentation of super function
+        return True
