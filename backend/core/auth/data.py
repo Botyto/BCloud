@@ -1,4 +1,8 @@
 from datetime import datetime, timedelta, timezone
+from enum import Enum
+import hashlib
+from tornado.httputil import HTTPServerRequest
+import user_agents
 from uuid import UUID as PyUUID
 
 from ..data.sql.columns import Boolean, Bytes, DateTime, String, UUID
@@ -30,6 +34,52 @@ class User(Model):
         if not Passwords.compare(old_password, self.password):
             raise ValueError("Password mismatch")
         self.password = Passwords.hash(new_password)
+
+
+class DeviceKind(Enum):
+    DESKTOP = "desktop"
+    LAPTOP = "laptop"
+    MOBILE = "mobile"
+    TABLET = "tablet"
+    WEARABLE = "wearable"
+    IOT = "iot"
+    TV = "tv"
+    BOT = "bot"
+    UNKNOWN = "unknown"
+
+
+class Device(Model):
+    __tablename__ = "Device"
+    id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True)
+    created_at_utc: Mapped[datetime] = mapped_column(DateTime)
+    user_id: Mapped[PyUUID] = mapped_column(UUID)
+    user: Mapped[User] = relationship(User, uselist=True, backref="devices")
+    fingerprint: Mapped[str] = mapped_column(String(256))
+    user_agent: Mapped[str] = mapped_column(String(256))
+
+    def __init__(self, request: HTTPServerRequest):
+        now = datetime.utcnow().replace(tzinfo=timezone.utc)
+        self.created_at = now
+        user_agent = request.headers.get("User-Agent", "Unknown")
+        self.user_agent = user_agent
+        self.fingerprint = self.get_fingerprint(request)
+        agent = user_agents.parse(user_agent)
+        if agent.is_pc:
+            self.kind = DeviceKind.DESKTOP
+        elif agent.is_tablet:
+            self.kind = DeviceKind.TABLET
+        elif agent.is_mobile:
+            self.kind = DeviceKind.MOBILE
+        elif agent.is_bot:
+            self.kind = DeviceKind.BOT
+        else:
+            self.kind = DeviceKind.UNKNOWN
+
+    @classmethod
+    def get_fingerprint(cls, request: HTTPServerRequest) -> str:
+        m = hashlib.sha256()
+        m.update(request.headers.get("User-Agent", "Unknown").encode("utf-8"))
+        return m.hexdigest()
 
 
 class UserSession(Model):
