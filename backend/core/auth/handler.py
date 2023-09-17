@@ -29,11 +29,11 @@ class AuthHandlerMixin:
     @property
     def jwt_secret(self):
         return "test"
-    
+
     @property
     def sensitive_authentication_errors(self):
         return self.context.env.debug
-    
+
     @property
     def session_validity(self):
         return timedelta(days=30)
@@ -43,14 +43,14 @@ class AuthHandlerMixin:
         if header is None:
             return None
         return jwt.decode(header, self.jwt_secret, algorithms=["HS256"])
-    
+
     def get_current_user(self):
         if self._user_id is None:
             data = self._get_session_data()
             if data is None:
                 return None
             return self.authenticate(data)
-        
+
     def authenticate(self, data: dict):
         if self._user_id is not None:
             logger.warning("User already authenticated")
