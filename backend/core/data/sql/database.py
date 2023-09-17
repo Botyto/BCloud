@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import logging
 from sqlalchemy import create_engine, Engine, event, DateTime, Column
-from sqlalchemy.orm import DeclarativeBase, sessionmaker, Session
+from sqlalchemy.orm import DeclarativeBase, MappedColumn, sessionmaker, Session
 from typing import List
 
 from .settings import SqlSettings
@@ -89,6 +89,6 @@ def apply_timezone_guard(mapper, cls):
                 logger.warning("Converting timezone from %s to UTC for %s.%s", value.tzinfo, cls_name, column.name)
                 return value.astimezone(timezone.utc)
             return value
-        attr = getattr(cls, column.name)
-        event.listen(attr, "set", guarded_set, retvalue=True)
+        attr: MappedColumn = getattr(cls, column.name)
+        event.listens_for(attr, "set", guarded_set, retvalue=True)
 event.listen(Model, "instrument_class", apply_timezone_guard, propagate=True)

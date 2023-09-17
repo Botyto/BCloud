@@ -4,7 +4,7 @@ from ..data.sql.database import Model
 
 
 class MiniappEnable(Model):
-    __tablename__ = "MiniappVersion"
+    __tablename__ = "MiniappEnable"
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     enabled: Mapped[bool] = mapped_column(Boolean)
 

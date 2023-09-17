@@ -35,7 +35,7 @@ class Manager:
 
     def start(self):
         if self.enabled is None:
-            self.__fetch_enabled()
+            self.enabled = self.__fetch_enabled()
         self.__ensure_mandatory_enabled()
         self.__ensure_dependencies_enabled()
         self.__update_apps()

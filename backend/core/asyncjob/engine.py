@@ -129,11 +129,10 @@ class AsyncJobs:
 
     def __resume_jobs(self):
         with self.context.database.make_session() as session:
-            promises = session \
-                .query(JobPromise) \
-                .filter(JobPromise.completed_at_utc == None) \
-                .filter(not_(JobPromise.id.in_(self.threads))) \
-                .all()
+            statement = select(JobPromise) \
+                .where(JobPromise.completed_at_utc == None) \
+                .where(not_(JobPromise.id.in_(self.threads)))
+            promises = session.scalars(statement).all()
             for promise in promises:
                 self.__start_job(promise)
 
