@@ -32,7 +32,7 @@ def ensure_str_fit(
         if not accept_none:
             if not should_raise:
                 return False
-            raise ValueError(f"{name} is None")
+            raise TypeError(f"{name} is None")
         return text
     if not isinstance(text, str):
         if not should_raise:
