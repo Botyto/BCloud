@@ -9,7 +9,7 @@ from .handler import AuthError
 from ..app.context import AppContext
 
 
-class IdentityManager:
+class UserManager:
     context: AppContext
     session: Session|None
 
