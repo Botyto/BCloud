@@ -15,7 +15,7 @@ class Manager:
     apps: Set[Miniapp]
     enabled: Set[str]|None
 
-    def __init___(self, context: MiniappContext):
+    def __init__(self, context: MiniappContext):
         self.context = context
         self.apps = set()
         self.enabled = None

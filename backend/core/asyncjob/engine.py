@@ -27,9 +27,11 @@ class AsyncJobs:
         self.states = {}
         self.threads = {}
         self.handlers = JobHandlers()
-        self.context.msg.register("startup", self.__resume_jobs)
+
+    def start(self):
         self.context.cron.schedule(self.__resume_jobs, Schedule.hourly())
         self.context.cron.schedule(self.__delete_expired_jobs, Schedule.daily())
+        self.__resume_jobs()
 
     # TODO limit number of jobs running at once
     def schedule(self, issuer: str, type: str, payload: dict, valid_for: timedelta|None = None) -> int:
