@@ -37,7 +37,7 @@ class Server:
 
     def _gather_handlers(self):
         handlers = []
-        msg.emit("gather_http_handlers", handlers)
+        self.context.msg.emit("gather_http_handlers", handlers)
         assert(all(isinstance(h, URLSpec) for h in handlers))
         return handlers
 
