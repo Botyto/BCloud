@@ -8,7 +8,7 @@ Major components (ordered by their dependencies):
 - `asyncjob` - System for executing jobs that take a long time (many minutes or even hours) and are prone to interruption.
 - `miniapp` - System for easily separating, enabling/disabling and versioning miniapps within the server.
 - `http` - the HTTP server part of the system.
-- `identity` - Authentication and authorization code built on top of the HTTP server.
+- `auth` - Authentication and authorization built on top of the HTTP server.
 
 The way modules decide how to behave is done using context objects.
 Example: the `App` object uses an `AppContext`.
