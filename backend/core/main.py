@@ -1,4 +1,5 @@
 import atexit
+import asyncio
 from enum import Enum
 from datetime import timedelta
 import logging
@@ -10,10 +11,12 @@ from .context import BaseContext
 from .logging import clear_old_logs, default_setup as setup_logging
 
 from .app.main import AppContext, App
+from .cronjob.engine import Scheduler
 from .data.blobs.settings import BlobSettings
 from .data.context import SqlSettings, DataContext
 from .data.sql.database import Database
 from .data.sql.migrations import Migrations
+from .msg import Messages
 
 env = Environment()
 env.add_cmdline(100)
@@ -44,7 +47,9 @@ def run_app():
     context = DataContext(context, sql_settings, blob_settings)
     files = blob_settings.build_manager()
     database = Database(context)
-    context = AppContext(context, database, files)
+    msg = Messages()
+    cron = Scheduler(asyncio.get_event_loop())
+    context = AppContext(context, database, files, msg, cron)
     app = App(context)
     app.run()
 
