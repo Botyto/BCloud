@@ -9,7 +9,7 @@ from ..miniapp.engine import Manager as MiniappsManager
 
 logger = logging.getLogger(__name__)
 
-import core.identity.data
+import core.auth.data
 
 
 class App:
