@@ -100,7 +100,6 @@ class AsyncJobs:
                         logger.error("Job #%d failed to delete", job_id)
                     session.delete(promise)
                     state.complete()
-                session.commit()
             del self.threads[job_id]
             del self.states[job_id]
 
@@ -151,4 +150,3 @@ class AsyncJobs:
                     except Exception as e:
                         logger.error("Job #%d failed to delete", job.id, exc_info=e)
                 session.delete(job)
-            session.commit()
