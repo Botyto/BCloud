@@ -13,7 +13,9 @@ background_processes: List[Tuple[str, subprocess.Popen]] = []
 def wait_all():
     for prefix, proc in background_processes:
         proc.wait()
-        logging.info("%s exited with code %d", prefix, proc.returncode)
+        if proc.returncode == 0:
+            continue
+        logging.error("%s exited with code %d", prefix, proc.returncode)
 
 BG = 0
 FG = 1
@@ -54,18 +56,18 @@ def start_backend():
     workdir = os.path.join("/", "data")
     execpy(BG, main_path, "", prefix="backend", cwd=workdir)
 
-def start_nginx():
-    logging.info("Starting nginx")
-    exec(BG, "nginx", prefix="nginx")
-
 def main():
+    print(os.getcwd())
+    for file in os.listdir(os.getcwd()):
+        print(file)
+
     logging.info("Starting")
     start_backend()
-    start_nginx()
 
     logging.info("Done")
     wait_all()
 
+    threading.Event().wait()
+
 if __name__ == "__main__":
     main()
-
