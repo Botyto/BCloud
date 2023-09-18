@@ -60,18 +60,8 @@ class UserManager(BaseManager):
             if self.sensitive_authentication_errors:
                 raise AuthError("Invalid password")
             raise AuthError()
-        # device resolution
-        statement = select(Device) \
-            .where(Device.user_id == user.id) \
-            .where(Device.fingerprint == Device.get_fingerprint(http_request))
-        device = self.session.scalars(statement).one_or_none()
-        if device is None:
-            device = Device(http_request)
-            device.user_id = user.id
-            device.user = user
-            self.session.add(device)
         # login creation
-        login = Login(device)
+        login = Login(user)
         self.session.add(login)
         self.session.commit()
         data = {"sub": str(login.id)}
@@ -89,18 +79,17 @@ class UserManager(BaseManager):
 
     def change_password(self, login_id: UUID, old_password: str, new_password: str, logout_all: bool = True):
         assert self.session is not None, "Session not initialized"
-        statement = select(Login, Device, User) \
+        statement = select(Login, User) \
             .where(Login.id == login_id) \
-            .join(Login.device) \
-            .join(Device.user)
+            .join(Login.user).add_columns(User)
         login: Login|None = self.session.scalars(statement).one_or_none()
         if login is None:
             if self.sensitive_authentication_errors:
                 raise AuthError("Invalid login")
             raise AuthError()
-        login.device.user.change_password(old_password, new_password)
+        login.user.change_password(old_password, new_password)
         if logout_all:
-            statement = delete(Login).where(Login.device_id == login.device_id)
+            statement = delete(Login).where(Login.user_id == login.user_id)
             self.session.execute(statement)
 
     def delete_user(self, user_id: UUID):

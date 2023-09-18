@@ -20,7 +20,7 @@ class User(Model):
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     username: Mapped[str] = mapped_column(String(256), unique=True)
     password: Mapped[bytes] = mapped_column(Bytes(2**32 - 1))
-    devices: Mapped[List["Device"]] = relationship(back_populates="user")
+    logins: Mapped[List["Login"]] = relationship(back_populates="user")
 
     def __init__(self, username: str, password: str):
         super().__init__()
@@ -38,53 +38,6 @@ class User(Model):
         self.password = Passwords.hash(new_password)
 
 
-class DeviceKind(Enum):
-    DESKTOP = "desktop"
-    LAPTOP = "laptop"
-    MOBILE = "mobile"
-    TABLET = "tablet"
-    WEARABLE = "wearable"
-    IOT = "iot"
-    TV = "tv"
-    BOT = "bot"
-    UNKNOWN = "unknown"
-
-
-class Device(Model):
-    __tablename__ = "Device"
-    id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True)
-    created_at_utc: Mapped[datetime] = mapped_column(DateTime)
-    user_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id"), info={"owner": True})
-    user: Mapped[User] = relationship(back_populates="devices")
-    fingerprint: Mapped[str] = mapped_column(String(256))
-    user_agent: Mapped[str] = mapped_column(String(256))
-    logins: Mapped[List["Login"]] = relationship(back_populates="device")
-
-    def __init__(self, request: HTTPServerRequest):
-        now = datetime.utcnow().replace(tzinfo=timezone.utc)
-        self.created_at = now
-        user_agent = request.headers.get("User-Agent", "Unknown")
-        self.user_agent = user_agent
-        self.fingerprint = self.get_fingerprint(request)
-        agent = user_agents.parse(user_agent)
-        if agent.is_pc:
-            self.kind = DeviceKind.DESKTOP
-        elif agent.is_tablet:
-            self.kind = DeviceKind.TABLET
-        elif agent.is_mobile:
-            self.kind = DeviceKind.MOBILE
-        elif agent.is_bot:
-            self.kind = DeviceKind.BOT
-        else:
-            self.kind = DeviceKind.UNKNOWN
-
-    @classmethod
-    def get_fingerprint(cls, request: HTTPServerRequest) -> str:
-        m = hashlib.sha256()
-        m.update(request.headers.get("User-Agent", "Unknown").encode("utf-8"))
-        return m.hexdigest()
-
-
 class Login(Model):
     VALID_DURATION = timedelta(days=30)
 
@@ -94,21 +47,13 @@ class Login(Model):
     expire_at_utc: Mapped[datetime] = mapped_column(DateTime)
     last_used_utc: Mapped[datetime] = mapped_column(DateTime)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
-    device_id: Mapped[PyUUID] = mapped_column(ForeignKey("Device.id"), info={"owner": True})
-    device: Mapped[Device] = relationship(back_populates="logins", foreign_keys=[device_id])
+    user_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id"), info={"owner": True})
+    user: Mapped[User] = relationship(back_populates="logins", foreign_keys=[user_id])
 
-    @property
-    def user_id(self):
-        return self.device.user_id
-    
-    @property
-    def user(self):
-        return self.device.user
-
-    def __init__(self, device: Device):
+    def __init__(self, user: User):
         self.id = PyUUID()
-        self.device_id = device.id
-        self.device = device
+        self.user_id = user.id
+        self.user = user
         now = datetime.utcnow().replace(tzinfo=timezone.utc)
         self.created_at_utc = now
         self.expire_at_utc = now + self.VALID_DURATION
