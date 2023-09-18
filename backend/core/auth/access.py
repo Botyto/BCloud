@@ -7,7 +7,7 @@ from uuid import UUID
 
 from .data import User
 from .handler import AuthError, AuthHandlerMixin
-from .owner import OwnerInfo, traverse_ownership_chain
+from .owner import OwnerInfo, traverse_chain
 
 from ..data.sql.database import Model
 
@@ -94,14 +94,14 @@ def get_own_access_level(entity: Model) -> AccessLevel:
             return implicit
     return AccessLevel.PRIVATE
 
-def get_access_level_and_owner(entity: Model) -> Tuple[AccessLevel, User|None, OwnerInfo]:
+def get_access_level_and_owner(entity: Model) -> Tuple[AccessLevel, User|None, OwnerInfo|None]:
     max_access = AccessLevel.min()
     def update_access(entity):
         nonlocal max_access
         access = get_own_access_level(entity)
         if access > max_access:
             max_access = access
-    owner, owner_info = traverse_ownership_chain(entity, update_access)
+    owner, owner_info = traverse_chain(entity, update_access)
     return max_access, owner, owner_info
 
 def ensure_access(user_id: UUID, target: Model, min_access: AccessLevel, should_raise: bool = True):
@@ -142,8 +142,7 @@ class EnsureAccessContextManager:
         self.session.info.pop(self.TAG)
 
 def resolve_user_id(session: Session):
-    if session.info.get(manual.DisableOwnershipChecksContextManager.TAG):
-        return
+    # TODO disable access checks due to manual management
     if session.info.get(EnsureAccessContextManager.TAG):
         return
     handler = session.info.get("handler")
