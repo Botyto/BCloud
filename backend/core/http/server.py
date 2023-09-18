@@ -7,8 +7,6 @@ from typing import cast
 
 from .context import ServerContext
 
-from .. import msg
-
 logger = logging.getLogger(__name__)
 
 
