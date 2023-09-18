@@ -10,7 +10,7 @@ from .handler import AuthError
 from ..app.context import AppContext
 
 
-class UserManager:
+class BaseManager:
     context: AppContext
     session: Session|None
 
@@ -30,6 +30,8 @@ class UserManager:
         else:
             self.session.commit()
 
+
+class UserManager(BaseManager):
     @property
     def sensitive_authentication_errors(self):
         return self.context.env.debug
