@@ -97,6 +97,14 @@ class Login(Model):
     device_id: Mapped[PyUUID] = mapped_column(ForeignKey("Device.id"), info={"owner": True})
     device: Mapped[Device] = relationship(backref="logins")
 
+    @property
+    def user_id(self):
+        return self.device.user_id
+    
+    @property
+    def user(self):
+        return self.device.user
+
     def __init__(self, device: Device):
         self.id = PyUUID()
         self.device_id = device.id
