@@ -5,11 +5,11 @@ from sqlalchemy.orm import object_session
 from threading import current_thread, Thread
 from typing import Dict
 
+from .context import AsyncJobContext
 from .data import JobPromise
 from .handlers import Action, JobHandlers, HandlerType
 from .state import State
 
-from ..app.context import AppContext
 from ..cronjob.schedule import Schedule
 from ..data.sql.columns import ensure_str_fit
 
@@ -17,12 +17,12 @@ logger = logging.getLogger(__name__)
 
 
 class AsyncJobs:
-    context: AppContext
+    context: AsyncJobContext
     states: Dict[int, State]
     threads: Dict[int, Thread]
     handlers: JobHandlers
 
-    def __init__(self, context: AppContext):
+    def __init__(self, context: AsyncJobContext):
         self.context = context
         self.states = {}
         self.threads = {}

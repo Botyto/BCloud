@@ -11,11 +11,15 @@ from .context import BaseContext
 from .logging import clear_old_logs, default_setup as setup_logging
 
 from .app.main import AppContext, App
+from .asyncjob.context import AsyncJobContext
+from .asyncjob.engine import AsyncJobs
 from .cronjob.engine import Scheduler
 from .data.blobs.settings import BlobSettings
 from .data.context import SqlSettings, DataContext
 from .data.sql.database import Database
 from .data.sql.migrations import Migrations
+from .miniapp.context import MiniappContext
+from .miniapp.engine import Manager as MiniappsManager
 from .msg import Messages
 
 env = Environment()
@@ -34,7 +38,9 @@ if cmdline_str:
 logger.info("Startup (profile: %s)", env.profile)
 atexit.register(lambda: logger.info("Shutdown"))
 
-def run_app():
+def build_app():
+    context = BaseContext(env)
+
     sql_settings = SqlSettings(
         host=cast(str, env.get("DB_HOST", "localhost")),
         port=cast(int, env.get("DB_PORT", 3306)),
@@ -43,14 +49,24 @@ def run_app():
         database=cast(str, env.get("DB_DATABASE", "bcloud")),
     )
     blob_settings = BlobSettings(cast(str, env.get("BLOB_FS_ROOT", ".")))
-    context = BaseContext(env)
     context = DataContext(context, sql_settings, blob_settings)
-    files = blob_settings.build_manager()
+
     database = Database(context)
     msg = Messages()
     cron = Scheduler(asyncio.get_event_loop())
-    context = AppContext(context, database, files, msg, cron)
-    app = App(context)
+    context = AsyncJobContext(context, database, msg, cron)
+
+    files = blob_settings.build_manager()
+    asyncjobs = AsyncJobs(context)
+    context = MiniappContext(context, files, asyncjobs)
+
+    miniapps = MiniappsManager(context)
+    context = AppContext(context, miniapps)
+
+    return App(context)
+
+def run_app():
+    app = build_app()
     app.run()
 
 

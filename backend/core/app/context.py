@@ -1,25 +1,13 @@
-from ..data.blobs.base import Blobs
-from ..data.context import DataContext
-from ..data.sql.database import Database
-from ..msg import Messages
-from ..cronjob.engine import Scheduler
+from ..miniapp.context import MiniappContext
+from ..miniapp.engine import Manager as MiniappsManager
 
 
-class AppContext(DataContext):
-    database: Database
-    files: Blobs
-    msg: Messages
-    cron: Scheduler
+class AppContext(MiniappContext):
+    miniapps: MiniappsManager
 
     def __init__(self,
-        base: DataContext,
-        database: Database,
-        files: Blobs,
-        msg: Messages,
-        cron: Scheduler,
+        base: MiniappContext,
+        miniapps: MiniappsManager,
     ):
         self._extend(base)
-        self.database = database
-        self.files = files
-        self.msg = msg
-        self.cron = cron
+        self.miniapps = miniapps
