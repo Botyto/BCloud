@@ -28,6 +28,9 @@ class Manager:
         assert self.enabled is not None, "Enabled apps are not fetched"
         return set(app for app in self.apps if app.id in self.enabled)
     
+    def register(self, app: Miniapp):
+        self.apps.add(app)
+    
     def get(self, id: str):
         for app in self.apps:
             if app.id == id:
