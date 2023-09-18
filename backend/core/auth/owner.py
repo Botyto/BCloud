@@ -1,53 +1,64 @@
-from sqlalchemy import event
-from sqlalchemy.orm import Session, QueryContext
+from sqlalchemy import select
+from sqlalchemy.orm import MappedColumn, object_session
+from typing import Callable, Dict, List, Tuple, Type
 
-from .handler import AuthError, AuthHandlerMixin
+from .data import User
 
 from ..data.sql.database import Model
 
 
-class CheckingOwnershipContextManager:
-    TAG = "checking_ownership"
-    session: Session
+class OwnerInfo:
+    member: str
+    optional: bool
 
-    def __init__(self, session: Session):
-        self.session = session
+    def __init__(self, member: str, optional: bool):
+        self.member = member
+        self.optional = optional
 
-    def __enter__(self):
-        self.session.info[self.TAG] = True
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.session.info.pop(self.TAG)
-
-def resolve_user_id(session: Session):
-    if session.info.get(manual.DisableOwnershipChecksContextManager.TAG):
-        return
-    if session.info.get(CheckingOwnershipContextManager.TAG):
-        return
-    handler = session.info.get("handler")
-    if handler is None:
-        return
-    if not isinstance(handler, AuthHandlerMixin):
-        raise AuthError("Not authenticated")
-    user_id = handler.get_current_user()
-    if user_id is None:
-        raise AuthError("Not authenticated")
-    return user_id
-
-@event.listens_for(Model, "load", propagate=True)
-def on_instance_load(target: Model, context: QueryContext):
-    session: Session = context.session
-    user_id = resolve_user_id(session)
-    if user_id is None:
-        return
-    with CheckingOwnershipContextManager(session):
-        sharing.ensure_read_access(user_id, target)
-
-@event.listens_for(Session, "before_flush")
-def on_before_flush(session: Session, flush_context, instances):
-    user_id = resolve_user_id(session)
-    if user_id is None:
-        return
-    with CheckingOwnershipContextManager(session):
-        for target in session.dirty:
-            sharing.ensure_write_access(user_id, target)
+TYPE_OWNER_INFO: Dict[Type, OwnerInfo] = {}
+TYPE_OWNER_CHAIN: Dict[Type[Model], List[Tuple[MappedColumn, OwnerInfo]]] = {}
+def traverse_ownership_chain(
+    entity: Model,
+    fn: Callable[[Model], None]|None,
+) -> Tuple[User|None, OwnerInfo|None]:
+    session = object_session(entity)
+    assert session is not None, "Entity must be attached to a session"
+    entity_class = type(entity)
+    owner_info = TYPE_OWNER_INFO.get(entity_class)
+    if owner_info is None:
+        return None, None
+    chain = TYPE_OWNER_CHAIN.get(entity_class)
+    if chain is None:
+        chain = []
+        current_cls = entity_class
+        visited = set()
+        while owner_info:
+            # TODO make this check static
+            if current_cls in visited:
+                raise RuntimeError(f"Ownership chain for {entity_class} is circular")
+            visited.add(current_cls)
+            member: MappedColumn = getattr(current_cls, owner_info.member)
+            owner_class = member.column.type.python_type
+            assert current_cls is not owner_class, f"Class {current_cls} cannot be its own owner"
+            chain.append((member, owner_info))
+            current_cls = owner_class
+            owner_info = TYPE_OWNER_INFO.get(owner_class)
+        TYPE_OWNER_CHAIN[entity_class] = chain
+    statement = select(entity_class)
+    for member, _ in chain:
+        statement = statement.join(member).add_columns(member.column.type.python_type)
+    for key in entity_class.__mapper__.primary_key:
+        primary_key_attr = getattr(entity_class, key.name)
+        primary_key_value = getattr(entity, key.name)
+        statement = statement.filter(primary_key_attr == primary_key_value)
+    entity2 = session.scalars(statement).one()
+    assert entity is entity2
+    assert isinstance(entity, User)
+    owner = entity
+    for member, info in chain:
+        if fn is not None:
+            fn(owner)
+        owner = getattr(owner, member.column.key)
+        if owner is None:
+            break
+    return owner, info
