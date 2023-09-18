@@ -1,5 +1,5 @@
 import logging
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from typing import Set
 
 from .data import MiniappEnable, MiniappVersion
@@ -40,6 +40,29 @@ class Manager:
         self.__ensure_dependencies_enabled()
         self.__update_apps()
         self.__start_apps()
+
+    def set_enabled(self, id: str, enabled: bool):
+        assert self.enabled is not None, "Enabled apps are not fetched"
+        miniapp = self.get(id)
+        assert miniapp is not None, f"Miniapp `{id}` is not present"
+        if enabled:
+            if id in self.enabled:
+                return
+            logger.info(f"Enabling miniapp `{id}`")
+            with self.context.database.make_session() as session:
+                enable_obj = MiniappEnable(id=id, enabled=enabled)
+                session.add(enable_obj)
+            miniapp.start(self.context)
+            self.enabled.add(id)
+        else:
+            if id not in self.enabled:
+                return
+            logger.info(f"Disabling miniapp `{id}`")
+            with self.context.database.make_session() as session:
+                statement = delete(MiniappEnable).where(MiniappEnable.id == id)
+                session.execute(statement)
+            miniapp.stop(self.context)
+            self.enabled.remove(id)
 
     def __fetch_enabled(self):
         with self.context.database.make_session() as session:
