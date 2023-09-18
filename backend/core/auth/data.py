@@ -95,7 +95,7 @@ class Login(Model):
     last_used_utc: Mapped[datetime] = mapped_column(DateTime)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     device_id: Mapped[PyUUID] = mapped_column(ForeignKey("Device.id"), info={"owner": True})
-    device: Mapped[Device] = relationship(backref="logins")
+    device: Mapped[Device] = relationship(back_populates="logins", foreign_keys=[device_id])
 
     @property
     def user_id(self):
