@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from tornado.httputil import HTTPServerRequest
 from uuid import UUID
 
-from .data import UserSession
+from .data import Login
 
 from ..http.context import ServerContext
 
@@ -35,10 +35,10 @@ class AuthHandlerMixin:
         return self.context.env.debug
 
     @property
-    def session_validity(self):
+    def login_validity(self):
         return timedelta(days=30)
 
-    def _get_session_data(self) -> dict|None:
+    def _get_login_data(self) -> dict|None:
         header = self.request.headers.get("Authorization", None)
         if header is None:
             return None
@@ -46,7 +46,7 @@ class AuthHandlerMixin:
 
     def get_current_user(self):
         if self._user_id is None:
-            data = self._get_session_data()
+            data = self._get_login_data()
             if data is None:
                 return None
             return self.authenticate(data)
@@ -54,24 +54,24 @@ class AuthHandlerMixin:
     def authenticate(self, data: dict):
         if self._user_id is not None:
             logger.warning("User already authenticated")
-        session_id = data["sub"]
-        session_obj = self.session.get(UserSession, session_id)
-        if session_obj is None:
+        login_id = data["sub"]
+        login = self.session.get(Login, login_id)
+        if login is None:
             if self.sensitive_authentication_errors:
-                raise AuthError("Session not found")
+                raise AuthError("Login not found")
             raise AuthError()
-        if not session_obj.enabled:
+        if not login.enabled:
             if self.sensitive_authentication_errors:
-                raise AuthError("Session disabled")
+                raise AuthError("Login disabled")
             raise AuthError()
         now = datetime.utcnow().replace(tzinfo=timezone.utc)
-        if session_obj.expire_at_utc.replace(tzinfo=timezone.utc) < now:
+        if login.expire_at_utc.replace(tzinfo=timezone.utc) < now:
             if self.sensitive_authentication_errors:
-                raise AuthError("Session expired")
+                raise AuthError("Login expired")
             raise AuthError()
-        # TODO ensure session is trustworthy
-        self._login_id = session_id
-        self._user_id = session_obj.user_id
-        session_obj.last_used_utc = now
-        session_obj.expire_at_utc = now + self.session_validity
+        # TODO ensure login is trustworthy
+        self._login_id = login_id
+        self._user_id = login.user_id
+        login.last_used_utc = now
+        login.expire_at_utc = now + self.login_validity
         return self._user_id

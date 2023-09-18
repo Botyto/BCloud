@@ -2,10 +2,11 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 import hashlib
 from tornado.httputil import HTTPServerRequest
+from typing import List
 import user_agents
 from uuid import UUID as PyUUID
 
-from ..data.sql.columns import Boolean, Bytes, DateTime, String, UUID
+from ..data.sql.columns import Boolean, Bytes, DateTime, String, UUID, ForeignKey
 from ..data.sql.columns import Mapped, mapped_column, relationship
 from ..data.sql.database import Model
 
@@ -19,6 +20,7 @@ class User(Model):
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     username: Mapped[str] = mapped_column(String(256), unique=True)
     password: Mapped[bytes] = mapped_column(Bytes(2**32 - 1))
+    devices: Mapped[List["Device"]] = relationship(back_populates="user")
 
     def __init__(self, username: str, password: str):
         super().__init__()
@@ -52,10 +54,11 @@ class Device(Model):
     __tablename__ = "Device"
     id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True)
     created_at_utc: Mapped[datetime] = mapped_column(DateTime)
-    user_id: Mapped[PyUUID] = mapped_column(UUID)
-    user: Mapped[User] = relationship(User, uselist=True, backref="devices")
+    user_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id"), info={"owner": True})
+    user: Mapped[User] = relationship(back_populates="devices")
     fingerprint: Mapped[str] = mapped_column(String(256))
     user_agent: Mapped[str] = mapped_column(String(256))
+    logins: Mapped[List["Login"]] = relationship(back_populates="device")
 
     def __init__(self, request: HTTPServerRequest):
         now = datetime.utcnow().replace(tzinfo=timezone.utc)
@@ -82,22 +85,22 @@ class Device(Model):
         return m.hexdigest()
 
 
-class UserSession(Model):
+class Login(Model):
     VALID_DURATION = timedelta(days=30)
 
-    __tablename__ = "UserSession"
+    __tablename__ = "Login"
     id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True)
     created_at_utc: Mapped[datetime] = mapped_column(DateTime)
     expire_at_utc: Mapped[datetime] = mapped_column(DateTime)
     last_used_utc: Mapped[datetime] = mapped_column(DateTime)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
-    user_id: Mapped[PyUUID] = mapped_column(UUID)
-    user: Mapped[User] = relationship(User, uselist=True, backref="sessions")
+    device_id: Mapped[PyUUID] = mapped_column(ForeignKey("Device.id"), info={"owner": True})
+    device: Mapped[Device] = relationship(backref="logins")
 
-    def __init__(self, user: User):
+    def __init__(self, device: Device):
         self.id = PyUUID()
-        self.user_id = user.id
-        self.user = user
+        self.device_id = device.id
+        self.device = device
         now = datetime.utcnow().replace(tzinfo=timezone.utc)
         self.created_at_utc = now
         self.expire_at_utc = now + self.VALID_DURATION

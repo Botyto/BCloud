@@ -1,9 +1,10 @@
 from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
+from tornado.httputil import HTTPServerRequest
 from uuid import UUID
 
 from .crypto import Passwords
-from .data import User, UserSession
+from .data import Device, Login, User
 from .handler import AuthError
 
 from ..app.context import AppContext
@@ -43,45 +44,61 @@ class UserManager:
         self.session.add(user)
         return user
 
-    def login(self, username: str, password: str):
+    def login(self, username: str, password: str, http_request: HTTPServerRequest):
         assert self.session is not None, "Session not initialized"
+        # user resolution
         statement = select(User).where(User.username == username)
         user = self.session.scalars(statement).one_or_none()
         if user is None:
             if self.sensitive_authentication_errors:
                 raise AuthError("Invalid username")
             raise AuthError()
+        # validation
         if not Passwords.compare(password, user.password):
             if self.sensitive_authentication_errors:
                 raise AuthError("Invalid password")
             raise AuthError()
-        session_obj = UserSession(user)
-        self.session.add(session_obj)
+        # device resolution
+        statement = select(Device) \
+            .where(Device.user_id == user.id) \
+            .where(Device.fingerprint == Device.get_fingerprint(http_request))
+        device = self.session.scalars(statement).one_or_none()
+        if device is None:
+            device = Device(http_request)
+            device.user_id = user.id
+            device.user = user
+            self.session.add(device)
+        # login creation
+        login = Login(device)
+        self.session.add(login)
         self.session.commit()
-        data = {"sub": str(session_obj.id)}
+        data = {"sub": str(login.id)}
         return user, data
-    
-    def logout(self, session_id: UUID):
-        assert self.session is not None, "Session not initialized"
-        statement = select(UserSession).where(UserSession.id == session_id)
-        session_obj = self.session.scalars(statement).one_or_none()
-        if session_obj is None:
-            if self.sensitive_authentication_errors:
-                raise AuthError("Invalid session")
-            raise AuthError()
-        self.session.delete(session_obj)
 
-    def change_password(self, session_id: UUID, old_password: str, new_password: str, logout_all: bool = True):
+    def logout(self, login_id: UUID):
         assert self.session is not None, "Session not initialized"
-        statement = select(UserSession).where(UserSession.id == session_id)
-        session_obj = self.session.scalars(statement).one_or_none()
-        if session_obj is None:
+        statement = select(Login).where(Login.id == login_id)
+        login = self.session.scalars(statement).one_or_none()
+        if login is None:
             if self.sensitive_authentication_errors:
-                raise AuthError("Invalid session")
+                raise AuthError("Invalid login")
             raise AuthError()
-        session_obj.user.change_password(old_password, new_password)
+        self.session.delete(login)
+
+    def change_password(self, login_id: UUID, old_password: str, new_password: str, logout_all: bool = True):
+        assert self.session is not None, "Session not initialized"
+        statement = select(Login, Device, User) \
+            .where(Login.id == login_id) \
+            .join(Login.device) \
+            .join(Device.user)
+        login: Login|None = self.session.scalars(statement).one_or_none()
+        if login is None:
+            if self.sensitive_authentication_errors:
+                raise AuthError("Invalid login")
+            raise AuthError()
+        login.device.user.change_password(old_password, new_password)
         if logout_all:
-            statement = delete(UserSession).where(UserSession.user_id == session_obj.user_id)
+            statement = delete(Login).where(Login.device_id == login.device_id)
             self.session.execute(statement)
 
     def delete_user(self, user_id: UUID):
