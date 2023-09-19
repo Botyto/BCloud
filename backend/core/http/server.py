@@ -18,7 +18,7 @@ class Server:
     def __init__(self, context: ServerContext):
         self.context = context
         self.app = Application(
-            handlers=self._gather_handlers(),
+            handlers=self._gather_handlers(),  # type: ignore
             template_path="templates",
             static_path="static",
             cookie_secret=self.env.get("COOKIE_SECRET", "PLACEHOLDER"),
@@ -34,7 +34,7 @@ class Server:
             self.loop.asyncio_loop.set_debug(True)
 
     def _gather_handlers(self):
-        handlers = []
+        handlers = list(self.context.urlspecs)
         self.context.msg.emit("gather_http_handlers", handlers)
         assert(all(isinstance(h, URLSpec) for h in handlers))
         return handlers

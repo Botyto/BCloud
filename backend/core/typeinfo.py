@@ -16,7 +16,19 @@ def is_scalar(obj_type: Type):
     return obj_type in SCALAR_TYPES_SET
 
 
-class TypeInfo(Protocol):
+class TypeInfoProtocol(Protocol):
+    input: bool
+    is_optional: bool
+    is_list: bool
+    is_union: bool
+    is_enum: bool
+    union_types: Type|None
+    non_optional_type: Type|None
+    is_generic: bool
+    generic_args: Dict[str, Type]|None
+
+
+class TypeInfo(TypeInfoProtocol):
     input: bool
     origin_type: Type
     is_optional: bool = False

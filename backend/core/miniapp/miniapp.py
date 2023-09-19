@@ -16,7 +16,7 @@ class MiniappModule:
     def __init__(self, miniapp: "Miniapp"):
         self.miniapp = miniapp
 
-    def start(self):
+    def start(self, context: MiniappContext):
         pass
 
 
@@ -52,7 +52,7 @@ class Miniapp:
     def start(self, context: MiniappContext):
         self._start_fn(context)
         for module in self.modules:
-            module.start()
+            module.start(context)
 
     def update(self, context: MiniappContext):
         for update_fn in self._update_fns.values():

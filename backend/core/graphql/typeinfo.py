@@ -9,7 +9,7 @@ from .scalars import GrapheneJson, GrapheneTimedelta
 from .schema.types import TypesBuilder
 
 from ..auth.typeinfo import OwnedSqlTypeInfo
-from ..typeinfo import SCALAR_TYPES_SET, TypeInfo, MethodInfo
+from ..typeinfo import SCALAR_TYPES_SET, TypeInfoProtocol, TypeInfo, MethodInfo
 
 SCALAR_TYPES_TO_GQL = {
     int: graphene.Int,
@@ -31,7 +31,7 @@ def cap(s: str):
 
 class GqlTypeNameMixin:
     @property
-    def name(self: TypeInfo):
+    def name(self: TypeInfoProtocol):
         result = ""
         if self.input:
             result += "Input"

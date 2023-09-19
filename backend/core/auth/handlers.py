@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 import logging
-import jwt
+import jwt as pyjwt
 from sqlalchemy.orm import Session
 from tornado.httputil import HTTPServerRequest
 from uuid import UUID
@@ -39,17 +39,15 @@ class AuthHandlerMixin:
     def login_validity(self):
         return timedelta(days=30)
 
-    def _get_login_data(self) -> dict|None:
-        header = self.request.headers.get("Authorization", None)
-        if header is None:
-            return None
-        return jwt.decode(header, self.jwt_secret, algorithms=["HS256"])
+    def _get_login_jwt(self) -> str:
+        return self.request.headers.get("Authorization", None)
 
     def get_current_user(self):
         if self.user_id is None:
-            data = self._get_login_data()
-            if data is None:
+            jwt = self._get_login_jwt()
+            if jwt is None:
                 return None
+            data = pyjwt.decode(jwt, self.jwt_secret, algorithms=["HS256"])
             return self.authenticate(data)
 
     def authenticate(self, data: dict):

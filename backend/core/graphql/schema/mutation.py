@@ -1,7 +1,7 @@
 from graphene import Argument, Mutation, ObjectType
 import logging
 
-from .types import TypesBuilder
+from .builder import MethodBuilder
 
 from ..typeinfo import GqlMethodInfo
 
@@ -11,15 +11,7 @@ def cap(s: str):
     return s[0].upper() + s[1:]
 
 
-class MutationBuilder:
-    types: TypesBuilder
-
-    def __init__(self, types: TypesBuilder):
-        self.types = types
-
-    def _collect(self):
-        return []
-    
+class MutationBuilder(MethodBuilder):
     def _build_class(self, minfo: GqlMethodInfo, name: str):
         input_attrs = {}
         for name, param_type in minfo.param_types.items():
@@ -47,11 +39,10 @@ class MutationBuilder:
         return type(mutation_cls_name, (Mutation,), mutation_attrs)
 
     def build(self):
-        mutations = self._collect()
-        if not mutations:
+        if not self.methods:
             logger.warn("No GraphQL mutations found")
         mutation_attrs = {}
-        for method in mutations:
+        for method in self.methods:
             minfo = GqlMethodInfo(self.types, method)
             name = minfo.get_binding_name()
             mutation_cls = self._build_class(minfo, name)

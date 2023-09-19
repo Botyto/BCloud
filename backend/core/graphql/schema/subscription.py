@@ -4,25 +4,19 @@ import logging
 from typing import Callable, Coroutine, Generic, List, Tuple, TypeVar
 from uuid import UUID
 
-from .types import TypesBuilder
+from .builder import MethodBuilder
 
+from ..typeinfo import GqlMethodInfo
+from ...typeinfo import is_scalar
 from ...data.sql.database import Model
 
 logger = logging.getLogger(__name__)
 
 
-class SubscriptionBuilder:
-    types: TypesBuilder
-
-    def __init__(self, types: TypesBuilder)
-        self.types = types
-
-    def _collect(self):
-        return []
-
+class SubscriptionBuilder(MethodBuilder):
     def _build_field(self, minfo: GqlMethodInfo):
         assert minfo.return_type is not None, "Subscriptions must return a value"
-        assert not typeinfo.is_scalar(minfo.return_type), "Subscriptions must return a class"
+        assert not is_scalar(minfo.return_type), "Subscriptions must return a class"
         return_type = self.types.as_output(minfo.return_type)
         args = {}
         for name, type in minfo.param_types.items():
@@ -35,16 +29,16 @@ class SubscriptionBuilder:
         return Field(return_type, description=minfo.method.__doc__, **args)
 
     def build(self):
-        subscriptions = self._collect()
-        if not subscriptions:
+        if not self.methods:
             logger.warn("No GraphQL subscriptions found")
         attrs = {}
-        for method in subscriptions:
+        for method in self.methods:
             minfo = GqlMethodInfo(self.types, method)
             name = minfo.get_binding_name()
             attrs[name] = self._build_field(minfo)
             attrs[f"subscribe_{name}"] = minfo.wrap()
         return type("Subscription", (ObjectType,), attrs)
+
 
 ItemType = TypeVar("ItemType", bound=Model)
 IdType = int|str|UUID
