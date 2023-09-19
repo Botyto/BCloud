@@ -7,8 +7,6 @@ from ..http.server import Server
 
 logger = logging.getLogger(__name__)
 
-import core.auth.data
-
 
 class App:
     context: AppContext
@@ -19,6 +17,7 @@ class App:
     def run(self):
         self.context.miniapps.start()
         self.context.asyncjobs.start()
-        server_context = ServerContext(self.context)
+        graphene_schema = self.context.graphql_schema_builder.build()
+        server_context = ServerContext(self.context, graphene_schema)
         server = Server(server_context)
         server.run()

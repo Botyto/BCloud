@@ -22,6 +22,7 @@ class SchemaBuilder:
         query_cls = self.query.build()
         mutation_cls = self.mutation.build()
         subscription_cls = self.subscription.build()
+        self.types.finish()
         return Schema(
             query=query_cls,
             mutation=mutation_cls,

@@ -16,3 +16,11 @@ The way modules decide how to behave is done using context objects.
 Example: the `App` object uses an `AppContext`.
 The context object is created before being sent to the `App` and shouldn't be modified ever.
 At places where you have to create/extend a context, the program is designed to be able to "branch".
+
+Miniapps are main things the user is concerned with, and the other modules are there to serve the miniapps.
+Miniapps don't really need the server to function, they can exist without an API, but instead, for example, just serve other miniapps.
+
+Note that apps can be turned on and off during runtime without system restart.
+But also note that the source code cannot be updated without a system restart.
+This is because there could be threads running, that use the old DB model.
+Also the server is initialized with a GraphQL schema that reflects the old DB model.
