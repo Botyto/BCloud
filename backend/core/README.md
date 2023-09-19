@@ -10,6 +10,7 @@ Major components (ordered by their dependencies):
 - `http` - the HTTP server part of the system.
 - `auth` - Authentication and authorization built on top of the HTTP server.
 - `graphql` - GraphQL bindings and helpers.
+- `api` - The HTTP/WebSocket interface that any external app can communicate with.
 
 The way modules decide how to behave is done using context objects.
 Example: the `App` object uses an `AppContext`.
