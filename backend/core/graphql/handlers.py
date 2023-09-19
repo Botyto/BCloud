@@ -81,7 +81,7 @@ class GraphQLMixin(ApiHandler):
         result_dict["data"] = execution_result.data
         return result_dict
 
-    def format_error(self, error: Any):
+    def format_error(self, error: Exception):
         if isinstance(error, GraphQLError):
             return graphql_error.format_error(error)
         else:
@@ -304,7 +304,7 @@ class BaseGraphQLSubscriptionHandler(GraphQLMixin, WebSocketApiHandler):
     async def _send_next(self, id: str, result: ExecutionResult):
         return await self._send_message(id, "next", result)
 
-    async def _send_errors(self, id: str, errors: List[GraphQLError]):
+    async def _send_errors(self, id: str, errors: List[Exception]):
         return await self._send_message(id, "error", [self.format_error(e) for e in errors])
 
     async def _send_complete(self, id: str):
