@@ -116,7 +116,7 @@ class RestMiniappModule(MiniappModule):
             wrapped_handler.__name__ = info.verb.value.lower()
             assert method.__name__ not in attrs, "Duplicate verbs for the same URL"
             attrs[method.__name__] = wrapped_handler
-        class_name = ""  # TODO generate
+        class_name = methods[0].__name__.capitalize() + "Handler"
         return type(class_name, (RestApiHandler,), attrs)
     
     def __register_handler(self, context: MiniappContext, methods: List[MethodType], info: RestMethodInfo):
