@@ -61,8 +61,11 @@ def build_app():
     context = MiniappContext(context, files, asyncjobs)
 
     miniapps = MiniappsManager(context)
-    context = AppContext(context, miniapps)
 
+    from api.gql import GraphQLMiniapp
+    miniapps.apps.add(GraphQLMiniapp())
+
+    context = AppContext(context, miniapps)
     return App(context)
 
 def run_app():
