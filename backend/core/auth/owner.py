@@ -8,6 +8,7 @@ from .data import User
 from ..data.sql.database import Model
 
 __all__ = [
+    "resolve_owner_info",
     "traverse_chain",
 ]
 

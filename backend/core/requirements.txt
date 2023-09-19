@@ -1,3 +1,4 @@
 -r data/requirements.txt
 -r http/requirements.txt
 -r auth/requirements.txt
+-r graphql/requirements.txt

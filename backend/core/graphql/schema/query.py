@@ -1,0 +1,42 @@
+from graphene import Argument, Field, ObjectType
+import logging
+
+from .types import TypesBuilder
+
+logger = logging.getLogger(__name__)
+
+
+class QueryBuilder:
+    types: TypesBuilder
+
+    def __init__(self, types: TypesBuilder):
+        self.types = types
+
+    def _collect(self):
+        return []
+
+    def _build_field(self, minfo: GqlMethodInfo):
+        assert minfo.return_type is not None, "Queries must return a value"
+        assert not typeinfo.is_scalar(minfo.return_type), "Queries must return a class"
+        return_type = self.types.as_output(minfo.return_type)
+        args = {}
+        for name, type in minfo.param_types.items():
+            gql_type = self.types.as_input(type)
+            default = minfo.param_defaults.get(name, None)
+            args[name] = Argument(
+                gql_type,
+                default_value=default,
+            )
+        return Field(return_type, description=minfo.method.__doc__, **args)
+
+    def build(self):
+        queries = self._collect()
+        if not queries:
+            logger.warn("No GraphQL queries found")
+        query_attrs = {}
+        for method in queries:
+            minfo = GqlMethodInfo(self.types, method)
+            query_name = minfo.get_binding_name()
+            query_attrs[query_name] = self._build_field(minfo)
+            query_attrs[f"resolve_{query_name}"] = minfo.wrap()
+        return type("Query", (ObjectType,), query_attrs)

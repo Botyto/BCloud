@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from tornado.httputil import HTTPServerRequest
 from uuid import UUID
 
+from .context import AuthContext
 from .data import Login
 
 from ..http.context import ServerContext
@@ -23,8 +24,8 @@ class AuthHandlerMixin:
     request: HTTPServerRequest
     session: Session
     context: ServerContext
-    _user_id: UUID|None = None
-    _login_id: str|None = None
+    user_id: UUID|None = None
+    login_id: str|None = None
 
     @property
     def jwt_secret(self):
@@ -45,14 +46,14 @@ class AuthHandlerMixin:
         return jwt.decode(header, self.jwt_secret, algorithms=["HS256"])
 
     def get_current_user(self):
-        if self._user_id is None:
+        if self.user_id is None:
             data = self._get_login_data()
             if data is None:
                 return None
             return self.authenticate(data)
 
     def authenticate(self, data: dict):
-        if self._user_id is not None:
+        if self.user_id is not None:
             logger.warning("User already authenticated")
         login_id = data["sub"]
         login = self.session.get(Login, login_id)
@@ -70,8 +71,13 @@ class AuthHandlerMixin:
                 raise AuthError("Login expired")
             raise AuthError()
         # TODO ensure login is trustworthy
-        self._login_id = login_id
-        self._user_id = login.user_id
+        self.login_id = login_id
+        self.user_id = login.user_id
         login.last_used_utc = now
         login.expire_at_utc = now + self.login_validity
-        return self._user_id
+        return self.user_id
+    
+    @property
+    def auth_context(self):
+        self.get_current_user()
+        return AuthContext(self.context, self)

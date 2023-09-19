@@ -4,7 +4,7 @@ from tornado.httputil import HTTPServerRequest
 from uuid import UUID
 
 from .crypto import Passwords
-from .data import Device, Login, User
+from .data import Login, User
 from .handler import AuthError
 
 from ..app.context import AppContext
