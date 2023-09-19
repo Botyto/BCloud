@@ -51,21 +51,17 @@ class Manager:
         if enabled:
             if id in self.enabled:
                 return
-            logger.info(f"Enabling miniapp `{id}`")
+            logger.info(f"Enabling miniapp `{id}` - restart required")
             with self.context.database.make_session() as session:
                 enable_obj = MiniappEnable(id=id, enabled=enabled)
                 session.add(enable_obj)
-            miniapp.start(self.context)
-            self.enabled.add(id)
         else:
             if id not in self.enabled:
                 return
-            logger.info(f"Disabling miniapp `{id}`")
+            logger.info(f"Disabling miniapp `{id}` - restart required")
             with self.context.database.make_session() as session:
                 statement = delete(MiniappEnable).where(MiniappEnable.id == id)
                 session.execute(statement)
-            miniapp.stop(self.context)
-            self.enabled.remove(id)
 
     def __fetch_enabled(self):
         with self.context.database.make_session() as session:
@@ -95,7 +91,7 @@ class Manager:
             statement = select(MiniappVersion)
             all_version = session.scalars(statement).all()
             for app in self.enabled_apps:
-                versions = list(app.update_fns)
+                versions = list(app._update_fns)
                 current: MiniappVersion|None = None
                 for version in all_version:
                     if version.id == app.id:
@@ -108,7 +104,7 @@ class Manager:
                     session.add(current)
                 versions.sort()
                 for version in versions:
-                    fn = app.update_fns[version]
+                    fn = app._update_fns[version]
                     if version > current.version:
                         logger.info(f"Installing miniapp `{app.id}` v{version}")
                         try:
