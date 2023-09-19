@@ -6,6 +6,7 @@ from tornado.routing import URLSpec
 from types import MethodType
 from typing import Any, Dict, List
 
+from .api import PartialURLSpec
 from ..handlers import ApiHandler, ApiHandlerMixin, ApiResponse
 
 from ...miniapp.miniapp import MiniappContext, MiniappModule
@@ -15,13 +16,6 @@ from ...typeinfo import MethodInfo, TypeInfo
 class RestVerb(Enum):
     GET = "GET"
     POST = "POST"
-
-
-@dataclass
-class PartialURLSpec:
-    pattern: str|Pattern
-    kwargs: Dict[str, Any]|None
-    name: str|None
 
 
 @dataclass
@@ -121,10 +115,9 @@ class RestMiniappModule(MiniappModule):
     
     def __register_handler(self, context: MiniappContext, methods: List[MethodType], info: RestMethodInfo):
         handler_class = self.__generate_handler(methods, info)
-        urlspec = URLSpec(
+        context.urlspecs.append(URLSpec(
             pattern=info.partial_urlspec.pattern,
             handler=handler_class,
             kwargs=info.partial_urlspec.kwargs,
             name=info.partial_urlspec.name,
-        )
-        context.urlspecs.append(urlspec)
+        ))
