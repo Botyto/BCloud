@@ -1,20 +1,20 @@
-# (r"/graphql/sandbox", None, "graphql/sandbox")
-class GraphQLSandboxHandler(graphql_handlers.ApolloSandboxHandler):
-    pass
+import base64
+
+from .handlers import BaseGraphQLHandler, BaseGraphQLSubscriptionHandler, BaseSchemaHander
 
 
 # (r"/graphql", None, "graphql")
-class GraphQLHandler(ServiceHandlerMixin, graphql_handlers.BaseGraphQLHandler):
+class GraphQLHandler(ServiceHandlerMixin, BaseGraphQLHandler):
     @property
     def graphql_context(self):
-        return self.service_context
+        return self.api_context
 
 
 # (r"/graphql/subscription", None, "graphql/subscription")
-class GraphQLSubscriptionHandler(ServiceHandlerMixin, graphql_handlers.BaseGraphQLSubscriptionHandler):
+class GraphQLSubscriptionHandler(ServiceHandlerMixin, BaseGraphQLSubscriptionHandler):
     @property
     def graphql_context(self):
-        return self.service_context
+        return self.api_context
 
     def _extract_token(self):
         if self.auth_token:
@@ -23,6 +23,7 @@ class GraphQLSubscriptionHandler(ServiceHandlerMixin, graphql_handlers.BaseGraph
             return session_id, session_key
         return None, None
 
+
 # (r"/graphql/schema", None, "graphql/schema")
-class GraphQLSchemaHander(graphql_handlers.BaseSchemaHander):
+class GraphQLSchemaHander(BaseSchemaHander):
     pass
