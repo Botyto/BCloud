@@ -29,10 +29,14 @@ class GraphQLSubscriptionHandler(ApiHandlerMixin, ApiMiniappModule, BaseGraphQLS
 class GraphQLSchemaHander(ApiMiniappModule, BaseSchemaHander):
     pass
 
+def empty_func(_):
+    pass
+
 
 class GraphQLMiniapp(Miniapp):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.modules.append(GraphQLHandler(self))
-        self.modules.append(GraphQLSubscriptionHandler(self))
-        self.modules.append(GraphQLSchemaHander(self))
+    def __init__(self):
+        super().__init__("gql", empty_func, empty_func, [
+            GraphQLHandler(self),
+            GraphQLSubscriptionHandler(self),
+            GraphQLSchemaHander(self),
+        ], {}, True, None)
