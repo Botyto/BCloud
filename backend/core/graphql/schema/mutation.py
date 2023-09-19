@@ -1,8 +1,9 @@
 from graphene import Argument, Mutation, ObjectType
 import logging
-from types import MethodType
 
 from .types import TypesBuilder
+
+from ..typeinfo import GqlMethodInfo
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ class MutationBuilder:
         assert return_type_info.is_class, "Mutations must return a class"
         mutation_attrs["Output"] = self.types.as_output(minfo.return_type)
         
-        mutation_attrs["description"] = minfo.function.__doc__
+        mutation_attrs["description"] = minfo.method.__doc__
 
         mutation_cls_name = f"{name}_mutation"
         mutation_cls_name = "".join(cap(part) for part in mutation_cls_name.split("_"))
