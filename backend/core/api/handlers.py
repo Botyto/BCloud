@@ -2,8 +2,8 @@ from typing import Dict, List
 
 from .context import ApiContext
 
-from ..auth.handler import AuthHandlerMixin
-from ..http.handler import ApiHandler
+from ..auth.handlers import AuthHandlerMixin
+from ..http.handlers import ApiHandler
 
 
 class ApiHandlerMixin(AuthHandlerMixin):

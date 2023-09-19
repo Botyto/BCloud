@@ -6,7 +6,7 @@ from typing import Dict, Tuple, Type
 from uuid import UUID
 
 from .data import User
-from .handler import AuthError, AuthHandlerMixin
+from .handlers import AuthError, AuthHandlerMixin
 from .owner import OwnerInfo, traverse_chain
 
 from ..data.sql.database import Model

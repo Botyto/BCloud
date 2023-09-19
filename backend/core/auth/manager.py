@@ -5,7 +5,7 @@ from uuid import UUID
 
 from .crypto import Passwords
 from .data import Login, User
-from .handler import AuthError
+from .handlers import AuthError
 
 from ..app.context import AppContext
 
