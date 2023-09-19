@@ -11,7 +11,7 @@ from tornado.web import HTTPError
 import traceback
 from typing import Any, AsyncIterator, cast, Dict, List
 
-from ..http.handler import ApiHandler, WebSocketApiHandler
+from ..http.handlers import ApiHandler, WebSocketApiHandler
 
 logger = logging.getLogger(__name__)
 
