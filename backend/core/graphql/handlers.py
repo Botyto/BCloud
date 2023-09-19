@@ -24,26 +24,6 @@ class BaseSchemaHander(ApiHandler):
         self.write(schema_str)
 
 
-class ApolloSandboxHandler(ApiHandler):
-    def get(self):
-        self.set_cookie("Content-Type", "text/html")
-        self.write("""
-        <html>
-            <body style="margin: 0;">
-                <div style="width: 100%; height: 100%;" id='embedded-sandbox'></div>
-                <script src="https://embeddable-sandbox.cdn.apollographql.com/_latest/embeddable-sandbox.umd.production.min.js"></script> 
-                <script>
-                    new window.EmbeddedSandbox({
-                        target: '#embedded-sandbox',
-                        initialEndpoint: 'http://localhost/graphql',
-                        includeCookies: false,
-                    });
-                </script>
-            </body>
-        </html>
-        """)
-
-
 class ExecutionError(Exception):
     def __init__(self, status_code, errors):
         self.status_code = status_code
