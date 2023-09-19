@@ -1,15 +1,15 @@
 import graphql
-import graphql.execution
+from graphql import GraphQLError
+from graphql.error import graphql_error
+from graphql.execution import ExecutionResult
 import inspect
 import json
 import logging
 import sys
 import tornado.escape
-import tornado.httputil
-import tornado.web
-import tornado.websocket
+from tornado.web import HTTPError
 import traceback
-import typing
+from typing import Any, AsyncIterator, cast, Dict, List
 
 from ..http.handler import ApiHandler, WebSocketApiHandler
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class BaseSchemaHander(ApiHandler):
     def get(self):
-        schema = self.server_context.graphene_schema.graphql_schema
+        schema = self.context.graphene_schema.graphql_schema
         schema_str = graphql.print_schema(schema)
         self.set_cookie("Content-Type", "application/graphql")
         self.write(schema_str)
@@ -62,9 +62,9 @@ class GraphQLMixin(ApiHandler):
 
     @property
     def graphql_schema(self):
-        return self.graphene_schema.graphql_schema
+        return self.context.graphql_schema
 
-    def extract_gql_params(self, payload: typing.Dict):
+    def extract_gql_params(self, payload: Dict):
         query = payload.get("query")
         variables = payload.get("variables")
         if isinstance(variables, str):
@@ -74,16 +74,16 @@ class GraphQLMixin(ApiHandler):
             operation_name = None
         return query, variables, operation_name
 
-    def execution_result_to_dict(self, execution_result: graphql.ExecutionResult):
+    def execution_result_to_dict(self, execution_result: ExecutionResult):
         result_dict = {}
         if execution_result.errors:
             result_dict["errors"] = [self.format_error(e) for e in execution_result.errors]
         result_dict["data"] = execution_result.data
         return result_dict
 
-    def format_error(self, error: typing.Any):
-        if isinstance(error, graphql.GraphQLError):
-            return graphql.error.graphql_error.format_error(error)
+    def format_error(self, error: Any):
+        if isinstance(error, GraphQLError):
+            return graphql_error.format_error(error)
         else:
             return {"message": str(error)}
 
@@ -113,7 +113,7 @@ class BaseGraphQLHandler(GraphQLMixin, ApiHandler):
     def _parse_request(self):
         content_type = self.request.headers.get("Content-Type", "text/plain").split(";")[0]
         if content_type != "application/json":
-            raise tornado.web.HTTPError(400, "Unsupported content type")
+            raise HTTPError(400, "Unsupported content type")
         
         try:
             request_str = tornado.escape.to_unicode(self.request.body)
@@ -123,7 +123,7 @@ class BaseGraphQLHandler(GraphQLMixin, ApiHandler):
         try:
             request_json = tornado.escape.json_decode(request_str)
         except (TypeError, ValueError) as e:
-            raise tornado.web.HTTPError(400, "Invalid JSON in request body")
+            raise HTTPError(400, "Invalid JSON in request body")
         
         return request_json
 
@@ -131,17 +131,15 @@ class BaseGraphQLHandler(GraphQLMixin, ApiHandler):
         gql_request = self._parse_request()
         query, variables, operation_name = self.extract_gql_params(gql_request)
         execution_result, valid = self._execute_gql(query, variables, operation_name)
+        if inspect.isawaitable(execution_result):
+            execution_result = await execution_result
+        assert isinstance(execution_result, ExecutionResult)
         if execution_result.errors:
             for error in execution_result.errors:
-                if error.original_error and not isinstance(error.original_error, graphql.GraphQLError):
+                if error.original_error and not isinstance(error.original_error, GraphQLError):
                     logger.exception(error.original_error, exc_info=error.original_error)
         status_code = 200
-        response = None
         if execution_result is not None:
-            if inspect.isawaitable(execution_result) or inspect.iscoroutinefunction(execution_result):
-                execution_result = await execution_result
-            if hasattr(execution_result, "get"):
-                execution_result = execution_result.get()
             response = self.execution_result_to_dict(execution_result)
             if not valid:
                 status_code = 400
@@ -150,23 +148,26 @@ class BaseGraphQLHandler(GraphQLMixin, ApiHandler):
                 response = json.dumps(response, indent=2)
             else:
                 response = tornado.escape.json_encode(response)
+        else:
+            status_code = 400
+            response = ""
         return response, status_code
 
     def _execute_gql(self, query, variables, operation_name):
         if not query:
-            raise tornado.web.HTTPError(400, "All GraphQL requests must contain a query")
+            raise HTTPError(400, "All GraphQL requests must contain a query")
 
         try:
             document = graphql.parse(query)
-        except graphql.GraphQLError as e:
-            return graphql.execution.ExecutionResult(errors=[e], data=None), False
+        except GraphQLError as e:
+            return ExecutionResult(errors=[e], data=None), False
 
         try:
             validation_errors = graphql.validate(self.graphql_schema, document)
-        except graphql.GraphQLError as e:
-            return graphql.execution.ExecutionResult(errors=[e], data=None), False
+        except GraphQLError as e:
+            return ExecutionResult(errors=[e], data=None), False
         if validation_errors:
-            return graphql.execution.ExecutionResult(errors=validation_errors, data=None,), False
+            return ExecutionResult(errors=validation_errors, data=None,), False
 
         try:
             result = graphql.execute(
@@ -177,21 +178,21 @@ class BaseGraphQLHandler(GraphQLMixin, ApiHandler):
                 variable_values=variables,
                 operation_name=operation_name)
             return result, True
-        except graphql.GraphQLError as e:
-            return graphql.execution.ExecutionResult(errors=[e], data=None), False
+        except GraphQLError as e:
+            return ExecutionResult(errors=[e], data=None), False
 
     def _handle_error(self, e: Exception):
-        if not isinstance(e, (tornado.web.HTTPError, ExecutionError, graphql.GraphQLError)):
+        if not isinstance(e, (HTTPError, ExecutionError, GraphQLError)):
             tb = "".join(traceback.format_exception(*sys.exc_info()))
             logger.error(f"GraphQL error {e} {tb}")
         errors = None
         if isinstance(e, ExecutionError):
             # self.set_status(400)
             errors = [{"message": e} for e in e.errors]
-        elif isinstance(e, graphql.GraphQLError):
+        elif isinstance(e, GraphQLError):
             # self.set_status(400)
-            errors = [graphql.error.graphql_error.format_error(e)]
-        elif isinstance(e, tornado.web.HTTPError):
+            errors = [graphql_error.format_error(e)]
+        elif isinstance(e, HTTPError):
             # self.set_status(e.status_code)
             errors = [{"message": e.log_message}]
         else:
@@ -202,18 +203,18 @@ class BaseGraphQLHandler(GraphQLMixin, ApiHandler):
 
 
 class BaseGraphQLSubscriptionHandler(GraphQLMixin, WebSocketApiHandler):
-    operations: typing.Dict[str, typing.AsyncIterator[graphql.execution.ExecutionResult]]
+    operations: Dict[str, AsyncIterator[ExecutionResult]]
     auth_token: str|None = None
 
     SUBPROTOCOL = "graphql-transport-ws"
-    def select_subprotocol(self, subprotocols: typing.List[str]):
+    def select_subprotocol(self, subprotocols: List[str]):
         if self.SUBPROTOCOL in subprotocols:
             return self.SUBPROTOCOL
 
     def open(self):
         self.operations = {}
 
-    def _subscribe(self, id: str, async_iterator: typing.AsyncIterator[graphql.execution.ExecutionResult]):
+    def _subscribe(self, id: str, async_iterator: AsyncIterator[ExecutionResult]):
         if id in self.operations:
             raise Exception("Operation already exists")
         self.operations[id] = async_iterator
@@ -221,17 +222,17 @@ class BaseGraphQLSubscriptionHandler(GraphQLMixin, WebSocketApiHandler):
     def _unsubscribe(self, id: str):
         async_iterator = self.operations.pop(id)
         if hasattr(async_iterator, "dispose"):
-            async_iterator.dispose()
+            async_iterator.dispose()  # type: ignore
 
     def _unsubscribe_all(self):
         for id in self.operations.keys():
             self._unsubscribe(id)
 
     async def on_message(self, message):
-        parsed_message: dict = tornado.escape.json_decode(message)
-        operation_id: str = parsed_message.get("id")
-        operation_type: str = parsed_message.get("type")
-        payload: dict = parsed_message.get("payload")
+        parsed_message = cast(dict, tornado.escape.json_decode(message))
+        operation_id = cast(str, parsed_message.get("id"))
+        operation_type = cast(str, parsed_message.get("type"))
+        payload = cast(dict, parsed_message.get("payload"))
         match operation_type:
             case "connection_init":
                 await self._handle_connection_init(payload)
@@ -240,7 +241,7 @@ class BaseGraphQLSubscriptionHandler(GraphQLMixin, WebSocketApiHandler):
             case "subscribe":
                 await self._handle_subscribe(operation_id, payload)
             case "complete":
-                await self._handle_complete(operation_id)
+                await self._handle_complete(operation_id, payload)
 
     def try_authenticate(self, token: str):
         pass
@@ -262,7 +263,7 @@ class BaseGraphQLSubscriptionHandler(GraphQLMixin, WebSocketApiHandler):
             operation_name=operation_name,
         )
         self._subscribe(operation_id, execution_result)
-        if isinstance(execution_result, graphql.execution.ExecutionResult):
+        if isinstance(execution_result, ExecutionResult):
             if execution_result.errors:
                 return await self._send_errors(operation_id, execution_result.errors)
             else:
@@ -272,7 +273,7 @@ class BaseGraphQLSubscriptionHandler(GraphQLMixin, WebSocketApiHandler):
                 async for item in execution_result:
                     if operation_id not in self.operations:
                         return
-                    assert isinstance(item, graphql.execution.ExecutionResult)
+                    assert isinstance(item, ExecutionResult)
                     await self._send_next(operation_id, item)
             elif inspect.isawaitable(execution_result):
                 execution_result = await execution_result
@@ -287,23 +288,23 @@ class BaseGraphQLSubscriptionHandler(GraphQLMixin, WebSocketApiHandler):
     async def _handle_complete(self, operation_id: str, payload: dict):
         self._unsubscribe(operation_id)
 
-    async def _send_message(self, id: str|None, type: str|None, payload: typing.Any|None):
+    async def _send_message(self, id: str|None, type: str|None, payload: Any|None):
         message = {}
         if id is not None:
             message["id"] = id
         if type is not None:
             message["type"] = type
         if payload is not None:
-            if isinstance(payload, graphql.execution.ExecutionResult):
+            if isinstance(payload, ExecutionResult):
                 payload = self.execution_result_to_dict(payload)
             message["payload"] = payload
         message_str = tornado.escape.json_encode(message)
         await self.write_message(message_str)
 
-    async def _send_next(self, id: str, result: graphql.execution.ExecutionResult):
+    async def _send_next(self, id: str, result: ExecutionResult):
         return await self._send_message(id, "next", result)
 
-    async def _send_errors(self, id: str, errors: typing.List[graphql.GraphQLError]):
+    async def _send_errors(self, id: str, errors: List[GraphQLError]):
         return await self._send_message(id, "error", [self.format_error(e) for e in errors])
 
     async def _send_complete(self, id: str):
