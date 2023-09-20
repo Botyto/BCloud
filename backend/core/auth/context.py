@@ -7,9 +7,9 @@ from ..http.context import ServerContext
 
 
 class AuthContext(ServerContext):
-    handler: AuthHandlerMixin
+    handler: "AuthHandlerMixin"
 
-    def __init__(self, base: ServerContext, handler: AuthHandlerMixin):
+    def __init__(self, base: ServerContext, handler: "AuthHandlerMixin"):
         self._extend(base)
         self.handler = handler
 
