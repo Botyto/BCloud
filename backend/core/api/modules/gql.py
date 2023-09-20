@@ -23,9 +23,9 @@ def query():
         return fn
     return decorator
 
-def method():
+def mutation():
     def decorator(fn):
-        fn.__gql__ = GqlMethodInfo(GqlMethod.QUERY)
+        fn.__gql__ = GqlMethodInfo(GqlMethod.MUTATION)
         return fn
     return decorator
 
