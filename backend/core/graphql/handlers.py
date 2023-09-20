@@ -11,12 +11,12 @@ from tornado.web import HTTPError
 import traceback
 from typing import Any, AsyncIterator, cast, Dict, List
 
-from ..http.handlers import ApiHandler, WebSocketApiHandler
+from ..http.handlers import HttpApiHandler, WebSocketApiHandler
 
 logger = logging.getLogger(__name__)
 
 
-class BaseSchemaHandler(ApiHandler):
+class BaseSchemaHandler(HttpApiHandler):
     def get(self):
         schema = self.context.graphene_schema.graphql_schema
         schema_str = graphql.print_schema(schema)
@@ -31,7 +31,7 @@ class ExecutionError(Exception):
         self.message = "\n".join(self.errors)
 
 
-class GraphQLMixin(ApiHandler):
+class GraphQLMixin(HttpApiHandler):
     @property
     def pretty(self):
         return self.context.env.debug
@@ -76,7 +76,7 @@ class GraphQLMixin(ApiHandler):
         return None
 
 
-class BaseGraphQLHandler(GraphQLMixin, ApiHandler):
+class BaseGraphQLHandler(GraphQLMixin, HttpApiHandler):
     async def post(self):
         try:
             await self._run()

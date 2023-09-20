@@ -25,7 +25,7 @@ class AuthHandlerMixin:
     session: Session
     context: ServerContext
     user_id: UUID|None = None
-    login_id: str|None = None
+    login_id: UUID|None = None
 
     @property
     def jwt_secret(self):
@@ -53,7 +53,7 @@ class AuthHandlerMixin:
     def authenticate(self, data: dict):
         if self.user_id is not None:
             logger.warning("User already authenticated")
-        login_id = data["sub"]
+        login_id: UUID = data["sub"]
         login = self.session.get(Login, login_id)
         if login is None:
             if self.sensitive_authentication_errors:

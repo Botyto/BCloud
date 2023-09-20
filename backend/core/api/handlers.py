@@ -3,13 +3,17 @@ from typing import Dict, List
 from .context import ApiContext
 
 from ..auth.handlers import AuthHandlerMixin
-from ..http.handlers import ApiHandler
+from ..http.handlers import HttpApiHandler
 
 
 class ApiHandlerMixin(AuthHandlerMixin):
     @property
     def api_context(self):
         return ApiContext(self.auth_context)
+
+
+class ApiHandler(ApiHandlerMixin, HttpApiHandler):
+    pass
 
 
 class ApiResponse:
@@ -38,7 +42,7 @@ class ApiResponse:
     def write(self, content: bytes|str):
         self.content = content
 
-    def assign(self, handler: ApiHandler):
+    def assign(self, handler: HttpApiHandler):
         for name, values in self.headers.items():
             for value in values:
                 handler.add_header(name, value)

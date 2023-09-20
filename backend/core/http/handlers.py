@@ -46,7 +46,7 @@ class SessionHandlerMixin(RequestHandler):
             self._session.close()
 
 
-class ApiHandler(SessionHandlerMixin, RequestHandler):
+class HttpApiHandler(SessionHandlerMixin, RequestHandler):
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
         self.set_header("Access-Control-Allow-Headers", "authorization, content-type")

@@ -3,6 +3,7 @@ from enum import Enum
 from types import MethodType
 from typing import cast
 
+from ..gql import GraphQLModule
 from .rest import RestMiniappModule
 
 from ...graphql.context import GraphQLContext
@@ -39,10 +40,11 @@ def subscription():
 
 
 class GqlMiniappModule(RestMiniappModule):
+    handler: GraphQLModule
     context: GraphQLContext
 
-    def __init__(self, root, context: GraphQLContext):
-        assert root == self
+    def __init__(self, handler, context: GraphQLContext):
+        self.handler = handler
         self.context = context
 
     @classmethod

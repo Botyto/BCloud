@@ -1,18 +1,20 @@
+from dataclasses import dataclass
+
 from core.api.modules.gql import GqlMiniappModule, query, mutation
 from core.auth.data import User
+from core.auth.handlers import AuthError
 from core.auth.manager import UserManager
 from core.graphql.context import GraphQLContext
+from core.graphql.result import SuccessResult
 
 
-class RegisterResult:
-    pass
-
-
+@dataclass
 class LoginResult:
-    pass
+    jwt: str
 
 
-class LogoutResult:
+@dataclass
+class RegisterResult(LoginResult):
     pass
 
 
@@ -39,5 +41,8 @@ class AuthModule(GqlMiniappModule):
         self.authenticate(data)
 
     @mutation()
-    def logout(self) -> LogoutResult:
+    def logout(self) -> SuccessResult:
+        if self.login_id is None:
+            raise AuthError("Invalid login")
         self.manager.logout(self.login_id)
+        return SuccessResult()

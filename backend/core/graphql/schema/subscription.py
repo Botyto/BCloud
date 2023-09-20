@@ -31,6 +31,7 @@ class SubscriptionBuilder(MethodBuilder):
     def build(self):
         if not self.methods:
             logger.warn("No GraphQL subscriptions found")
+            return
         attrs = {}
         for method in self.methods:
             minfo = GqlMethodInfo(self.types, method)

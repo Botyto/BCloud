@@ -27,6 +27,7 @@ class QueryBuilder(MethodBuilder):
     def build(self):
         if not self.methods:
             logger.warn("No GraphQL queries found")
+            return
         query_attrs = {}
         for method in self.methods:
             minfo = GqlMethodInfo(self.types, method)

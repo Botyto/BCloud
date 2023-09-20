@@ -8,7 +8,7 @@ from typing import Any, Dict, List
 
 from .api import PartialURLSpec
 from ..context import ApiContext
-from ..handlers import ApiHandler, ApiHandlerMixin, ApiResponse
+from ..handlers import HttpApiHandler, ApiHandlerMixin, ApiResponse
 
 from ...miniapp.miniapp import MiniappContext, MiniappModule, Miniapp
 from ...typeinfo import MethodInfo, TypeInfo
@@ -25,7 +25,7 @@ class RestMethodInfo:
     partial_urlspec: PartialURLSpec
 
 
-class RestApiHandler(ApiHandlerMixin, ApiHandler):
+class RestApiHandler(ApiHandlerMixin, HttpApiHandler):
     pass
 
 
@@ -44,7 +44,7 @@ def post(pattern: str|Pattern, kwargs: Dict[str, Any]|None = None, name: str|Non
     return decorator
 
 
-class RestMiniappModule(MiniappModule, ApiHandler):
+class RestMiniappModule(MiniappModule, RestApiHandler):
     context: ApiContext
 
     def __init__(self, miniapp: Miniapp, context: ApiContext):

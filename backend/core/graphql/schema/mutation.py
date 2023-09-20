@@ -41,6 +41,7 @@ class MutationBuilder(MethodBuilder):
     def build(self):
         if not self.methods:
             logger.warn("No GraphQL mutations found")
+            return
         mutation_attrs = {}
         for method in self.methods:
             minfo = GqlMethodInfo(self.types, method)

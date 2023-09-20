@@ -5,7 +5,7 @@ from tornado.routing import URLSpec
 from tornado.web import Application
 from typing import Any, Dict
 
-from ..handlers import ApiHandler
+from ..handlers import HttpApiHandler
 from ...miniapp.miniapp import MiniappContext, MiniappModule, Miniapp
 
 
@@ -23,10 +23,10 @@ def urlspec(pattern: str|Pattern, kwargs: Dict[str, Any]|None = None, name: str|
     return decorator
 
 
-class ApiMiniappModule(MiniappModule, ApiHandler):
+class ApiMiniappModule(MiniappModule, HttpApiHandler):
     __urlspec__: PartialURLSpec
 
-    @ApiHandler.context.setter
+    @HttpApiHandler.context.setter
     def context(self, _):
         pass
 
