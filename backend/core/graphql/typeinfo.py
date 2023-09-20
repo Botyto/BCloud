@@ -100,19 +100,18 @@ class GqlMethodInfo(MethodInfo):
             return builder.convert_input(value, expected_type)
         def convert_kwargs(**kwargs):
             return {k: convert_input(k, v) for k, v in kwargs.items()}
-        def convert_info(info: GraphQLResolveInfo):
-            return GraphQLContext(info.context, info)
+        
         if not self.is_async:
             if self.is_context_manager:
                 def wrapper_sync_ctx(root, info: GraphQLResolveInfo, **kwargs):
-                    context = convert_info(info)
+                    context = GraphQLContext(info.context, info)
                     kwargs = convert_kwargs(**kwargs)
                     with defining_class(root, context) as obj:
                         return method(obj, **kwargs)
                 return wrapper_sync_ctx
             else:
                 def wrapper_sync(root, info: GraphQLResolveInfo, **kwargs):
-                    context = convert_info(info)
+                    context = GraphQLContext(info.context, info)
                     kwargs = convert_kwargs(**kwargs)
                     obj = defining_class(root, context)
                     return method(obj, **kwargs)
@@ -122,7 +121,7 @@ class GqlMethodInfo(MethodInfo):
                 raise NotImplementedError()
             if self.is_async_gen:
                 async def wrapper_async_gen(root, info: GraphQLResolveInfo, **kwargs):
-                    context = convert_info(info)
+                    context = GraphQLContext(info.context, info)
                     kwargs = convert_kwargs(**kwargs)
                     obj = defining_class(root, context)
                     generator = method(obj, **kwargs)
@@ -131,7 +130,7 @@ class GqlMethodInfo(MethodInfo):
                 return wrapper_async_gen
             else:
                 async def wrapper_async(root, info: GraphQLResolveInfo, **kwargs):
-                    context = convert_info(info)
+                    context = GraphQLContext(info.context, info)
                     kwargs = convert_kwargs(**kwargs)
                     obj = defining_class(root, context)
                     return await method(obj, **kwargs)

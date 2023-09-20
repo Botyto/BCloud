@@ -1,6 +1,7 @@
 from graphene import Schema
 
 from .query import QueryBuilder
+from .methods import MethodCollection
 from .mutation import MutationBuilder
 from .subscription import SubscriptionBuilder
 from .types import TypesBuilder
@@ -12,11 +13,11 @@ class SchemaBuilder:
     mutation: MutationBuilder
     subscription: SubscriptionBuilder
 
-    def __init__(self):
+    def __init__(self, methods: MethodCollection):
         self.types = TypesBuilder()
-        self.query = QueryBuilder(self.types)
-        self.mutation = MutationBuilder(self.types)
-        self.subscription = SubscriptionBuilder(self.types)
+        self.query = QueryBuilder(self.types, methods.queries)
+        self.mutation = MutationBuilder(self.types, methods.mutations)
+        self.subscription = SubscriptionBuilder(self.types, methods.subscriptions)
 
     def build(self):
         query_cls = self.query.build()

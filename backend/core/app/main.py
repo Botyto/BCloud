@@ -1,7 +1,9 @@
 import logging
 
+
 from .context import AppContext
 
+from ..graphql.schema.schema import SchemaBuilder
 from ..http.context import ServerContext
 from ..http.server import Server
 
@@ -17,7 +19,8 @@ class App:
     def run(self):
         self.context.asyncjobs.start()
         self.context.miniapps.start()
-        graphene_schema = self.context.graphql_schema_builder.build()
+        schema_builder = SchemaBuilder(self.context.graphql_methods)
+        graphene_schema = schema_builder.build()
         server_context = ServerContext(self.context, graphene_schema)
         server = Server(server_context)
         server.run()
