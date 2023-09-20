@@ -31,11 +31,10 @@ class ApiMiniappModule(MiniappModule, RequestHandler):
 
     def start(self, context: MiniappContext):
         super().start(context)
-        self_class = self.__class__
         self_miniapp = self.miniapp
         def handler_init(self, application: Application, request: HTTPServerRequest|None = None, **kwargs):
             super(ApiMiniappModule, self).__init__(self_miniapp)
-            super(MiniappModule, self).__init__(application, request, **kwargs)
+            super(MiniappModule, self).__init__(application, request, **kwargs)  # type: ignore
         handler_class = type(self.__class__.__name__ + "Handler", (self.__class__,), {
             "__init__": handler_init,
         })

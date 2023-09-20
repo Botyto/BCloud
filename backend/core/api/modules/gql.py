@@ -48,10 +48,10 @@ class GqlMiniappModule(RestMiniappModule):
     def __register_method(self, context: MiniappContext, method: MethodType, info: GqlMethodInfo):
         match info.method:
             case GqlMethod.QUERY:
-                context.graphql_schema_builder.query.register(method)
+                context.graphql_methods.queries.append(method)
             case GqlMethod.MUTATION:
-                context.graphql_schema_builder.mutation.register(method)
+                context.graphql_methods.mutations.append(method)
             case GqlMethod.SUBSCRIPTION:
-                context.graphql_schema_builder.subscription.register(method)
+                context.graphql_methods.subscriptions.append(method)
             case _:
                 raise ValueError(f"Unknown GraphQL method {info.method}")
