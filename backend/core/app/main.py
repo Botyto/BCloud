@@ -1,5 +1,5 @@
 import logging
-
+import time
 
 from .context import AppContext
 
@@ -23,4 +23,5 @@ class App:
         graphene_schema = schema_builder.build()
         server_context = ServerContext(self.context, graphene_schema)
         server = Server(server_context)
+        logger.info(f"Total startup time: %.3fs", time.time() - self.context.init_time)
         server.run()

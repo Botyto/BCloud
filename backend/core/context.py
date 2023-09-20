@@ -1,10 +1,14 @@
+import time
+
 from .env import Environment
 
 
 class BaseContext:
+    init_time: float
     env: Environment
 
     def __init__(self, env: Environment):
+        self.init_time = time.time()
         self.env = env
 
     def _extend(self, base: "BaseContext"):

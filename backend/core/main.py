@@ -1,13 +1,18 @@
+from .env import Environment
+from .context import BaseContext
+
+env = Environment()
+base_context = BaseContext(env)
+
 import atexit
 import asyncio
 from enum import Enum
 from datetime import timedelta
 import logging
 import sys
+import time
 from typing import cast
 
-from .env import Environment
-from .context import BaseContext
 from .logging import clear_old_logs, default_setup as setup_logging
 
 from .app.main import AppContext, App
@@ -22,7 +27,6 @@ from .miniapp.context import MiniappContext
 from .miniapp.engine import Manager as MiniappsManager
 from .msg import Messages
 
-env = Environment()
 env.add_cmdline(100)
 env.add_dotenv(200, ".env", optional=True)
 env.add_json(300, "env.json", optional=True)
@@ -39,8 +43,6 @@ logger.info("Startup (profile: %s)", env.profile)
 atexit.register(lambda: logger.info("Shutdown"))
 
 def build_app():
-    context = BaseContext(env)
-
     sql_settings = SqlSettings(
         host=cast(str, env.get("DB_HOST", "localhost")),
         port=cast(int, env.get("DB_PORT", 3306)),
@@ -49,7 +51,7 @@ def build_app():
         database=cast(str, env.get("DB_DATABASE", "bcloud")),
     )
     blob_settings = BlobSettings(cast(str, env.get("BLOB_FS_ROOT", ".")))
-    context = DataContext(context, sql_settings, blob_settings)
+    context = DataContext(base_context, sql_settings, blob_settings)
 
     database = Database(context)
     msg = Messages()
@@ -64,6 +66,7 @@ def build_app():
 
     from .api.gql import GraphQLMiniapp
     miniapps.apps.add(GraphQLMiniapp())
+    logger.info(f"Miniapp load time: %.3fs", time.time() - context.miniapp_init_time)
 
     context = AppContext(context, miniapps)
     return App(context)
@@ -88,8 +91,7 @@ def run_migration(action: MigrationAction):
         database=cast(str, env.get("DB_DATABASE", "bcloud")),
     )
     blob_settings = BlobSettings(cast(str, env.get("BLOB_FS_ROOT", ".")))
-    context = BaseContext(env)
-    context = DataContext(context, sql_settings, blob_settings)
+    context = DataContext(base_context, sql_settings, blob_settings)
     manager = Migrations(context)
     match action:
         case MigrationAction.INIT:
