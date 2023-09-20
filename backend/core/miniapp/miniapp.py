@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Type
 
 from .context import MiniappContext
 from .data import MiniappVersion
@@ -12,11 +12,14 @@ UpdateFunc = Callable[[MiniappContext], None]
 
 class MiniappModule:
     miniapp: "Miniapp"
+    context: MiniappContext
 
-    def __init__(self, miniapp: "Miniapp"):
+    def __init__(self, miniapp: "Miniapp", context: MiniappContext):
         self.miniapp = miniapp
+        self.context = context
 
-    def start(self, context: MiniappContext):
+    @classmethod
+    def start(cls, miniapp: "Miniapp", context: MiniappContext):
         pass
 
 
@@ -24,7 +27,7 @@ class Miniapp:
     id: str
     _start_fn: LifetimeFunc|None
     _stop_fn: LifetimeFunc|None
-    modules: List[MiniappModule]|None
+    modules_types: List[Type[MiniappModule]]|None
     _update_fns: Dict[int, UpdateFunc]|None
     mandatory: bool
     dependencies: List[str]|None
@@ -34,7 +37,7 @@ class Miniapp:
         id: str, *,
         start: LifetimeFunc|None = None,
         stop: LifetimeFunc|None = None,
-        modules: List[MiniappModule]|None = None,
+        modules_types: List[Type[MiniappModule]]|None = None,
         update_fns: Dict[int, UpdateFunc]|None = None,
         mandatory: bool = True,
         dependencies: List[str]|None = None,
@@ -44,7 +47,7 @@ class Miniapp:
         self.id = id
         self._start_fn = start
         self._stop_fn = stop
-        self.modules = modules
+        self.modules_types = modules_types
         self._update_fns = update_fns
         self.mandatory = mandatory
         self.dependencies = dependencies
@@ -52,9 +55,9 @@ class Miniapp:
     def start(self, context: MiniappContext):
         if self._start_fn is not None:
             self._start_fn(context)
-        if self.modules is not None:
-            for module in self.modules:
-                module.start(context)
+        if self.modules_types is not None:
+            for module_type in self.modules_types:
+                module_type.start(self, context)
 
     def update(self, context: MiniappContext):
         if self._update_fns is not None:

@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from functools import partial
 from re import Pattern
 from tornado.httputil import HTTPServerRequest
 from tornado.routing import URLSpec
-from tornado.web import Application, RequestHandler
+from tornado.web import Application
 from typing import Any, Dict
 
+from ..handlers import ApiHandler
 from ...miniapp.miniapp import MiniappContext, MiniappModule, Miniapp
 
 
@@ -23,25 +23,26 @@ def urlspec(pattern: str|Pattern, kwargs: Dict[str, Any]|None = None, name: str|
     return decorator
 
 
-class ApiMiniappModule(MiniappModule, RequestHandler):
+class ApiMiniappModule(MiniappModule, ApiHandler):
     __urlspec__: PartialURLSpec
 
-    def __init__(self, miniapp: Miniapp):
-        super().__init__(miniapp)
+    @ApiHandler.context.setter
+    def context(self, _):
+        pass
 
-    def start(self, context: MiniappContext):
-        super().start(context)
-        assert self.__urlspec__ is not None, "ApiMiniappModule must be decorated with @urlspec"
-        self_miniapp = self.miniapp
+    @classmethod
+    def start(cls, miniapp: Miniapp, context: MiniappContext):
+        super().start(miniapp, context)
+        assert cls.__urlspec__ is not None, "ApiMiniappModule must be decorated with @urlspec"
         def handler_init(self, application: Application, request: HTTPServerRequest|None = None, **kwargs):
-            super(ApiMiniappModule, self).__init__(self_miniapp)
+            super(ApiMiniappModule, self).__init__(miniapp, context)
             super(MiniappModule, self).__init__(application, request, **kwargs)  # type: ignore
-        handler_class = type(self.__class__.__name__ + "Handler", (self.__class__,), {
+        handler_class = type(cls.__name__ + "Handler", (cls,), {
             "__init__": handler_init,
         })
         context.urlspecs.append(URLSpec(
-            pattern=self.__urlspec__.pattern,
+            pattern=cls.__urlspec__.pattern,
             handler=handler_class,
-            kwargs=self.__urlspec__.kwargs,
-            name=self.__urlspec__.name,
+            kwargs=cls.__urlspec__.kwargs,
+            name=cls.__urlspec__.name,
         ))

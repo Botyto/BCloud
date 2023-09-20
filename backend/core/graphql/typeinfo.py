@@ -101,7 +101,6 @@ class GqlMethodInfo(MethodInfo):
             return builder.convert_input(value, expected_type)
         def convert_kwargs(**kwargs):
             return {k: convert_input(k, v) for k, v in kwargs.items()}
-        
         if not self.is_async:
             if self.is_context_manager:
                 def wrapper_sync_ctx(root, info: GraphQLResolveInfo, **kwargs):

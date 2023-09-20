@@ -1,10 +1,13 @@
+
 from dataclasses import dataclass
 from enum import Enum
 from types import MethodType
 
+
 from .rest import RestMiniappModule
 
-from ...miniapp.miniapp import MiniappContext
+from ...graphql.context import GraphQLContext
+from ...miniapp.miniapp import MiniappContext, Miniapp
 
 
 class GqlMethod(Enum):
@@ -37,15 +40,22 @@ def subscription():
 
 
 class GqlMiniappModule(RestMiniappModule):
-    def start(self, context: MiniappContext):
-        super().start(context)
-        for method in self._all_own_methods():
+    context: GraphQLContext
+
+    def __init__(self, root, context: GraphQLContext):
+        self.context = context
+
+    @classmethod
+    def start(cls, miniapp: Miniapp, context: MiniappContext):
+        super().start(miniapp, context)
+        for method in cls._all_own_methods():
             info = getattr(method, "__gql__", None)
             if not isinstance(info, GqlMethodInfo):
                 continue
-            self.__register_method(context, method, info)
+            cls.__register_method(miniapp, context, method, info)
 
-    def __register_method(self, context: MiniappContext, method: MethodType, info: GqlMethodInfo):
+    @classmethod
+    def __register_method(cls, miniapp: Miniapp, context: MiniappContext, method: MethodType, info: GqlMethodInfo):
         match info.method:
             case GqlMethod.QUERY:
                 context.graphql_methods.queries.append(method)

@@ -16,7 +16,7 @@ from ..http.handlers import ApiHandler, WebSocketApiHandler
 logger = logging.getLogger(__name__)
 
 
-class BaseSchemaHander(ApiHandler):
+class BaseSchemaHandler(ApiHandler):
     def get(self):
         schema = self.context.graphene_schema.graphql_schema
         schema_str = graphql.print_schema(schema)

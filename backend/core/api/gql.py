@@ -1,7 +1,7 @@
 from .modules.api import ApiMiniappModule, urlspec
 
 from ..api.handlers import ApiHandlerMixin
-from ..graphql.handlers import BaseGraphQLHandler, BaseGraphQLSubscriptionHandler, BaseSchemaHander
+from ..graphql.handlers import BaseGraphQLHandler, BaseGraphQLSubscriptionHandler, BaseSchemaHandler
 from ..miniapp.miniapp import Miniapp
 
 def empty_func(_):
@@ -9,14 +9,14 @@ def empty_func(_):
 
 
 @urlspec(r"/graphql", None, "graphql")
-class GraphQLHandler(ApiMiniappModule, ApiHandlerMixin, BaseGraphQLHandler):
+class GraphQLModule(ApiMiniappModule, ApiHandlerMixin, BaseGraphQLHandler):
     @property
     def graphql_context(self):
         return self.api_context
 
 
 @urlspec(r"/graphql/subscription", None, "graphql/subscription")
-class GraphQLSubscriptionHandler(ApiMiniappModule, ApiHandlerMixin, BaseGraphQLSubscriptionHandler):
+class GraphQLSubscriptionModule(ApiMiniappModule, ApiHandlerMixin, BaseGraphQLSubscriptionHandler):
     @property
     def graphql_context(self):
         return self.api_context
@@ -28,16 +28,16 @@ class GraphQLSubscriptionHandler(ApiMiniappModule, ApiHandlerMixin, BaseGraphQLS
 
 
 @urlspec(r"/graphql/schema", None, "graphql/schema")
-class GraphQLSchemaHander(ApiMiniappModule, BaseSchemaHander):
+class GraphQLSchemaModule(ApiMiniappModule, BaseSchemaHandler):
     pass
 
 
 class GraphQLMiniapp(Miniapp):
     def __init__(self):
         super().__init__("GraphQL API",
-            modules=[
-                GraphQLHandler(self),
-                GraphQLSubscriptionHandler(self),
-                GraphQLSchemaHander(self),
+            modules_types=[
+                GraphQLModule,
+                GraphQLSubscriptionModule,
+                GraphQLSchemaModule,
             ],
         )
