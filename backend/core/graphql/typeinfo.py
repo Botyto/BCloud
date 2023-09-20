@@ -2,11 +2,12 @@ from datetime import datetime, date, time, timedelta
 import graphene
 from graphql import GraphQLResolveInfo
 import inspect
-from typing import Any, Callable
+from typing import Any, Callable, TYPE_CHECKING
 
 from .context import GraphQLContext
 from .scalars import GrapheneJson, GrapheneTimedelta
-from .schema.types import TypesBuilder
+if TYPE_CHECKING:
+    from .schema.types import TypesBuilder
 
 from ..auth.typeinfo import OwnedSqlTypeInfo
 from ..typeinfo import SCALAR_TYPES_SET, TypeInfoProtocol, TypeInfo, MethodInfo
@@ -66,9 +67,9 @@ class GqlSqlTypeInfo(GqlTypeNameMixin, OwnedSqlTypeInfo):
 
 
 class GqlMethodInfo(MethodInfo):
-    builder: TypesBuilder
+    builder: "TypesBuilder"
 
-    def __init__(self, builder: TypesBuilder, method: Callable):
+    def __init__(self, builder: "TypesBuilder", method: Callable):
         super().__init__(method)
         self.builder = builder
 
