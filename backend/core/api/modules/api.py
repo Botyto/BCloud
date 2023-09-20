@@ -31,6 +31,7 @@ class ApiMiniappModule(MiniappModule, RequestHandler):
 
     def start(self, context: MiniappContext):
         super().start(context)
+        assert self.__urlspec__ is not None, "ApiMiniappModule must be decorated with @urlspec"
         self_miniapp = self.miniapp
         def handler_init(self, application: Application, request: HTTPServerRequest|None = None, **kwargs):
             super(ApiMiniappModule, self).__init__(self_miniapp)
