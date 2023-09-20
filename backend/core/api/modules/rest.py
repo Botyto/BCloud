@@ -44,7 +44,7 @@ def post(pattern: str|Pattern, kwargs: Dict[str, Any]|None = None, name: str|Non
     return decorator
 
 
-class RestMiniappModule(MiniappModule):
+class RestMiniappModule(MiniappModule, ApiHandler):
     context: ApiContext
 
     def __init__(self, miniapp: Miniapp, context: ApiContext):
@@ -70,7 +70,7 @@ class RestMiniappModule(MiniappModule):
     @classmethod
     def _all_own_methods(cls):
         all_attributes = [getattr(cls, m) for m in dir(cls)]
-        return [m for m in all_attributes if isinstance(m, MethodType)]
+        return [m for m in all_attributes if callable(m)]
     
     @staticmethod
     def __get_query_args(list_args: List[bool], param_names: List[str], defaults: Dict[str, Any], handler: RestApiHandler):

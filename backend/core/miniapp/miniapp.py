@@ -37,7 +37,7 @@ class Miniapp:
         id: str, *,
         start: LifetimeFunc|None = None,
         stop: LifetimeFunc|None = None,
-        modules_types: List[Type[MiniappModule]]|None = None,
+        module_types: List[Type[MiniappModule]]|None = None,
         update_fns: Dict[int, UpdateFunc]|None = None,
         mandatory: bool = True,
         dependencies: List[str]|None = None,
@@ -47,7 +47,7 @@ class Miniapp:
         self.id = id
         self._start_fn = start
         self._stop_fn = stop
-        self.modules_types = modules_types
+        self.modules_types = module_types
         self._update_fns = update_fns
         self.mandatory = mandatory
         self.dependencies = dependencies

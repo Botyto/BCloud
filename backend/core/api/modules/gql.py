@@ -1,7 +1,7 @@
-
 from dataclasses import dataclass
 from enum import Enum
 from types import MethodType
+from typing import cast
 
 
 from .rest import RestMiniappModule
@@ -22,19 +22,19 @@ class GqlMethodInfo:
 
 def query():
     def decorator(fn):
-        fn.__gql__ = GqlMethodInfo(GqlMethod.QUERY)
+        setattr(fn, "__gql__", GqlMethodInfo(GqlMethod.QUERY))
         return fn
     return decorator
 
 def mutation():
     def decorator(fn):
-        fn.__gql__ = GqlMethodInfo(GqlMethod.MUTATION)
+        setattr(fn, "__gql__", GqlMethodInfo(GqlMethod.MUTATION))
         return fn
     return decorator
 
 def subscription():
     def decorator(fn):
-        fn.__gql__ = GqlMethodInfo(GqlMethod.SUBSCRIPTION)
+        setattr(fn, "__gql__", GqlMethodInfo(GqlMethod.SUBSCRIPTION))
         return fn
     return decorator
 
@@ -43,15 +43,16 @@ class GqlMiniappModule(RestMiniappModule):
     context: GraphQLContext
 
     def __init__(self, root, context: GraphQLContext):
+        assert root == self
         self.context = context
 
     @classmethod
     def start(cls, miniapp: Miniapp, context: MiniappContext):
         super().start(miniapp, context)
         for method in cls._all_own_methods():
-            info = getattr(method, "__gql__", None)
-            if not isinstance(info, GqlMethodInfo):
+            if not hasattr(method, "__gql__"):
                 continue
+            info = cast(GqlMethodInfo, getattr(method, "__gql__", None))
             cls.__register_method(miniapp, context, method, info)
 
     @classmethod

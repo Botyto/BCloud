@@ -5,10 +5,11 @@ import inspect
 from types import NoneType, UnionType
 from typing import Any, Callable, Dict, List, Optional, Protocol, Tuple, Type, TypeVar
 import typing
+from uuid import UUID
 
 
 SCALAR_TYPES_SET = {
-    int, float, str, bool, bytes, dict,
+    int, float, str, bool, bytes, dict, UUID,
     datetime, date, time, timedelta,
 }
 
