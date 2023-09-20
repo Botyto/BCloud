@@ -34,8 +34,10 @@ class GraphQLSchemaHander(ApiMiniappModule, BaseSchemaHander):
 
 class GraphQLMiniapp(Miniapp):
     def __init__(self):
-        super().__init__("gql", empty_func, empty_func, [
-            GraphQLHandler(self),
-            GraphQLSubscriptionHandler(self),
-            GraphQLSchemaHander(self),
-        ], {}, True, None)
+        super().__init__("GraphQL API",
+            modules=[
+                GraphQLHandler(self),
+                GraphQLSubscriptionHandler(self),
+                GraphQLSchemaHander(self),
+            ],
+        )

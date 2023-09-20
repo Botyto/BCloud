@@ -91,6 +91,8 @@ class Manager:
             statement = select(MiniappVersion)
             all_version = session.scalars(statement).all()
             for app in self.enabled_apps:
+                if app._update_fns is None:
+                    continue
                 versions = list(app._update_fns)
                 current: MiniappVersion|None = None
                 for version in all_version:

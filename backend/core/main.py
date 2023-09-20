@@ -65,7 +65,9 @@ def build_app():
     miniapps = MiniappsManager(context)
 
     from .api.gql import GraphQLMiniapp
+    from miniapps.profile.app import ProfileMiniapp
     miniapps.apps.add(GraphQLMiniapp())
+    miniapps.apps.add(ProfileMiniapp())
     logger.info(f"Miniapp load time: %.3fs", time.time() - context.miniapp_init_time)
 
     context = AppContext(context, miniapps)

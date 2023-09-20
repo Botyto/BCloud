@@ -22,22 +22,22 @@ class MiniappModule:
 
 class Miniapp:
     id: str
-    _start_fn: LifetimeFunc
-    _stop_fn: LifetimeFunc
-    modules: List[MiniappModule]
-    _update_fns: Dict[int, UpdateFunc]
+    _start_fn: LifetimeFunc|None
+    _stop_fn: LifetimeFunc|None
+    modules: List[MiniappModule]|None
+    _update_fns: Dict[int, UpdateFunc]|None
     mandatory: bool
     dependencies: List[str]|None
 
     def __init__(
         self,
-        id: str,
-        start: LifetimeFunc,
-        stop: LifetimeFunc,
-        modules: List[MiniappModule],
-        update_fns: Dict[int, UpdateFunc],
-        mandatory: bool,
-        dependencies: List[str]|None,
+        id: str, *,
+        start: LifetimeFunc|None = None,
+        stop: LifetimeFunc|None = None,
+        modules: List[MiniappModule]|None = None,
+        update_fns: Dict[int, UpdateFunc]|None = None,
+        mandatory: bool = True,
+        dependencies: List[str]|None = None,
     ):
         assert id, "App ID cannot be empty"
         assert ensure_str_fit("App ID", id, MiniappVersion.id)
@@ -50,10 +50,13 @@ class Miniapp:
         self.dependencies = dependencies
 
     def start(self, context: MiniappContext):
-        self._start_fn(context)
-        for module in self.modules:
-            module.start(context)
+        if self._start_fn is not None:
+            self._start_fn(context)
+        if self.modules is not None:
+            for module in self.modules:
+                module.start(context)
 
     def update(self, context: MiniappContext):
-        for update_fn in self._update_fns.values():
-            update_fn(context)
+        if self._update_fns is not None:
+            for update_fn in self._update_fns.values():
+                update_fn(context)
