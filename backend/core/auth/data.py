@@ -22,6 +22,9 @@ class User(Model):
     password: Mapped[bytes] = mapped_column(Bytes(2**32 - 1))
     logins: Mapped[List["Login"]] = relationship(back_populates="user")
 
+    # project-specific fields
+    display_name: Mapped[str] = mapped_column(String(256))
+
     def __init__(self, username: str, password: str):
         super().__init__()
         Passwords.validate(password)
@@ -30,6 +33,8 @@ class User(Model):
         self.enabled = True
         self.username = username
         self.password = Passwords.hash(password)
+        # project-specific fields
+        self.display_name = username
 
     def change_password(self, old_password: str, new_password: str):
         Passwords.validate(new_password)

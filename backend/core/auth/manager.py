@@ -65,7 +65,7 @@ class UserManager(BaseManager):
         self.session.add(login)
         self.session.commit()
         data = {"sub": str(login.id)}
-        return user, data
+        return login, data
 
     def logout(self, login_id: UUID):
         assert self.session is not None, "Session not initialized"
