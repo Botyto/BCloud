@@ -27,9 +27,9 @@ class MutationBuilder(MethodBuilder):
             "Arguments": input_cls,
             "mutate": minfo.wrap(),
         }
-        assert minfo.return_type is not None, "Mutations must return a value"
+        assert minfo.return_type is not None, f"Mutation {minfo.method} must return a value"
         return_type_info = self.types.typeinfo(minfo.return_type, False)
-        assert return_type_info.is_class, "Mutations must return a class"
+        assert return_type_info.is_class, f"Mutation {minfo.method} must return a class"
         mutation_attrs["Output"] = self.types.as_output(minfo.return_type)
         
         mutation_attrs["description"] = minfo.method.__doc__

@@ -4,6 +4,7 @@ from enum import Enum
 import inspect
 from types import NoneType, UnionType
 from typing import Any, Callable, Dict, List, Optional, Protocol, Tuple, Type, TypeVar
+from typing import _GenericAlias, _UnionGenericAlias
 import typing
 from uuid import UUID
 
@@ -47,7 +48,7 @@ class TypeInfo(TypeInfoProtocol):
         self.input = input
         self.origin_type = obj_type
         # strip optional type
-        if isinstance(self.origin_type, UnionGenericAlias) or isinstance(self.origin_type, UnionType):
+        if isinstance(self.origin_type, _UnionGenericAlias) or isinstance(self.origin_type, UnionType):
             args = typing.get_args(self.origin_type)
             if NoneType in args:
                 self.is_optional = True
@@ -59,7 +60,7 @@ class TypeInfo(TypeInfoProtocol):
                 self.union_types = non_optional_types
             else:
                 self.non_optional_type = non_optional_types[0]
-        elif isinstance(self.origin_type, GenericAlias) and typing.get_origin(self.origin_type) is Optional:
+        elif isinstance(self.origin_type, _GenericAlias) and typing.get_origin(self.origin_type) is Optional:
             self.is_optional = True
             self.non_optional_type = typing.get_args(self.origin_type)[0]
         else:
@@ -69,7 +70,7 @@ class TypeInfo(TypeInfoProtocol):
             return
         while True:
             last_type = self.non_optional_type
-            if isinstance(self.non_optional_type, GenericAlias):
+            if isinstance(self.non_optional_type, _GenericAlias):
                 origin = typing.get_origin(self.non_optional_type)
                 args = typing.get_args(self.non_optional_type)
                 assert not origin is Dict, "Dictionaries cannot be represented in GraphQL"

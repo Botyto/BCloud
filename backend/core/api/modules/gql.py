@@ -3,7 +3,6 @@ from enum import Enum
 from types import MethodType
 from typing import cast
 
-
 from .rest import RestMiniappModule
 
 from ...graphql.context import GraphQLContext
