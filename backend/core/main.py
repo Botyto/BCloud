@@ -62,7 +62,7 @@ def build_app():
 
     miniapps = MiniappsManager(context)
 
-    from api.gql import GraphQLMiniapp
+    from .api.gql import GraphQLMiniapp
     miniapps.apps.add(GraphQLMiniapp())
 
     context = AppContext(context, miniapps)

@@ -1,9 +1,9 @@
-from ..graphql.handlers import BaseGraphQLHandler, BaseGraphQLSubscriptionHandler, BaseSchemaHander
 
-from modules.api import ApiMiniappModule, urlspec
+from .modules.api import ApiMiniappModule, urlspec
 
-from ..miniapp.miniapp import Miniapp
 from ..api.handlers import ApiHandlerMixin
+from ..graphql.handlers import BaseGraphQLHandler, BaseGraphQLSubscriptionHandler, BaseSchemaHander
+from ..miniapp.miniapp import Miniapp
 
 
 @urlspec(r"/graphql", None, "graphql")
