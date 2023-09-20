@@ -2,12 +2,17 @@ import logging
 import tornado.ioloop
 from tornado.platform.asyncio import AsyncIOMainLoop
 from tornado.routing import URLSpec
-from tornado.web import Application
+from tornado.web import Application, RequestHandler
 from typing import cast
 
 from .context import ServerContext
 
 logger = logging.getLogger(__name__)
+
+
+class PingHandler(RequestHandler):
+    def get(self):
+        return self.finish("pong")
 
 
 class Server:
@@ -35,6 +40,7 @@ class Server:
 
     def _gather_handlers(self):
         handlers = list(self.context.urlspecs)
+        handlers.append(URLSpec(r"/ping", PingHandler))
         self.context.msg.emit("gather_http_handlers", handlers)
         assert(all(isinstance(h, URLSpec) for h in handlers))
         return handlers

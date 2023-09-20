@@ -1,20 +1,22 @@
-
 from .modules.api import ApiMiniappModule, urlspec
 
 from ..api.handlers import ApiHandlerMixin
 from ..graphql.handlers import BaseGraphQLHandler, BaseGraphQLSubscriptionHandler, BaseSchemaHander
 from ..miniapp.miniapp import Miniapp
 
+def empty_func(_):
+    pass
+
 
 @urlspec(r"/graphql", None, "graphql")
-class GraphQLHandler(ApiHandlerMixin, ApiMiniappModule, BaseGraphQLHandler):
+class GraphQLHandler(ApiMiniappModule, ApiHandlerMixin, BaseGraphQLHandler):
     @property
     def graphql_context(self):
         return self.api_context
 
 
 @urlspec(r"/graphql/subscription", None, "graphql/subscription")
-class GraphQLSubscriptionHandler(ApiHandlerMixin, ApiMiniappModule, BaseGraphQLSubscriptionHandler):
+class GraphQLSubscriptionHandler(ApiMiniappModule, ApiHandlerMixin, BaseGraphQLSubscriptionHandler):
     @property
     def graphql_context(self):
         return self.api_context
@@ -27,9 +29,6 @@ class GraphQLSubscriptionHandler(ApiHandlerMixin, ApiMiniappModule, BaseGraphQLS
 
 @urlspec(r"/graphql/schema", None, "graphql/schema")
 class GraphQLSchemaHander(ApiMiniappModule, BaseSchemaHander):
-    pass
-
-def empty_func(_):
     pass
 
 

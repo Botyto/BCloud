@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class SessionHandlerMixin(RequestHandler):
-    _session: Session
+    _session: Session|None = None
 
     def _make_session_info(self):
         return {"handler": self}
