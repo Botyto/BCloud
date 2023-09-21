@@ -26,8 +26,8 @@ class AuthModule(GqlMiniappModule):
         self.manager = UserManager(self.context, self.session)
 
     @query()
-    def get_user(self) -> User:
-        pass
+    def get_user(self) -> User|None:
+        return None
 
     @mutation()
     def register(self, username: str, password: str) -> RegisterResult:

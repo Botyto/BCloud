@@ -4,10 +4,9 @@ from types import MethodType
 from typing import cast
 
 from ..gql import GraphQLModule
-from .rest import RestMiniappModule
 
 from ...graphql.context import GraphQLContext
-from ...miniapp.miniapp import MiniappContext, Miniapp
+from ...miniapp.miniapp import MiniappContext, MiniappModule, Miniapp
 
 
 class GqlMethod(Enum):
@@ -39,13 +38,37 @@ def subscription():
     return decorator
 
 
-class GqlMiniappModule(RestMiniappModule):
+class GqlMiniappModule(MiniappModule):
     handler: GraphQLModule
     context: GraphQLContext
 
     def __init__(self, handler, context: GraphQLContext):
         self.handler = handler
         self.context = context
+
+    @property
+    def session(self):
+        return self.handler.session
+    
+    @property
+    def request(self):
+        return self.handler.request
+    
+    @property
+    def user_id(self):
+        return self.handler.user_id
+    
+    @property
+    def login_id(self):
+        return self.handler.login_id
+    
+    def authenticate(self, data: dict):
+        return self.handler.authenticate(data)
+
+    @classmethod
+    def _all_own_methods(cls):
+        all_attributes = [getattr(cls, m) for m in dir(cls)]
+        return [m for m in all_attributes if callable(m)]
 
     @classmethod
     def start(cls, miniapp: Miniapp, context: MiniappContext):
