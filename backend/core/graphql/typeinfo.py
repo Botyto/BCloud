@@ -95,8 +95,8 @@ class GqlMethodInfo(MethodInfo):
         param_types = self.param_types
         signature = inspect.signature(defining_class)
         params = list(signature.parameters.values())
-        assert len(params) == 2, f"Class {defining_class} must have only 2 parameters: root, info"
-        assert params[0].name == "root", f"Clsas {defining_class} has no root parameter"
+        assert len(params) == 2, f"Class {defining_class} must have only 2 parameters: handler, info"
+        assert params[0].name == "handler", f"Clsas {defining_class} has no handler parameter"
         assert params[1].name == "context", f"Class {defining_class} has no context parameter"
         def convert_input(param: str, value: Any):
             expected_type = param_types.get(param)

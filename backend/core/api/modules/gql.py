@@ -3,7 +3,7 @@ from enum import Enum
 from types import MethodType
 from typing import cast
 
-from ..gql import GraphQLModule
+from ..gql import GraphQLModule, GraphQLSubscriptionModule
 
 from ...graphql.context import GraphQLContext
 from ...miniapp.miniapp import MiniappContext, MiniappModule, Miniapp
@@ -39,20 +39,16 @@ def subscription():
 
 
 class GqlMiniappModule(MiniappModule):
-    handler: GraphQLModule
+    handler: GraphQLModule|GraphQLSubscriptionModule
     context: GraphQLContext
 
-    def __init__(self, handler, context: GraphQLContext):
+    def __init__(self, handler: GraphQLModule|GraphQLSubscriptionModule, context: GraphQLContext):
         self.handler = handler
         self.context = context
 
     @property
     def session(self):
         return self.handler.session
-    
-    @property
-    def request(self):
-        return self.handler.request
     
     @property
     def user_id(self):
@@ -62,9 +58,6 @@ class GqlMiniappModule(MiniappModule):
     def login_id(self):
         return self.handler.login_id
     
-    def authenticate(self, data: dict):
-        return self.handler.authenticate(data)
-
     @classmethod
     def _all_own_methods(cls):
         all_attributes = [getattr(cls, m) for m in dir(cls)]
