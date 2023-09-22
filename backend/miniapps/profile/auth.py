@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from sqlalchemy import select
 
 from core.api.modules.gql import GqlMiniappModule, query, mutation
 from core.auth.data import User
@@ -12,32 +13,38 @@ class LoginResult:
     jwt: str
 
 
-@dataclass
-class RegisterResult(LoginResult):
-    pass
-
-
 class AuthModule(GqlMiniappModule):
-    manager: UserManager
+    _manager: UserManager|None = None
 
     def __init__(self, handler, context):
         super().__init__(handler, context)
-        self.manager = UserManager(self.context, self.session)
+
+    @property
+    def manager(self):
+        if self._manager is None:
+            self._manager = UserManager(self.context, self.session)
+        return self._manager
 
     @query()
     def get_user(self) -> User|None:
-        return None
+        user_id = self.handler.current_user
+        if user_id is None:
+            return None
+        statement = select(User).where(User.id == user_id)
+        return self.session.scalars(statement).one_or_none()
 
     @mutation()
-    def register(self, username: str, password: str) -> RegisterResult:
+    def register(self, username: str, password: str) -> LoginResult:
         user = self.manager.register(username, password)
         login, data = self.manager.login(username, password, self.handler.request)
         self.handler.authenticate(data)
+        return LoginResult(jwt=self.handler.encode_jwt(data))
 
     @mutation()
     def login(self, username: str, password: str) -> LoginResult:
         login, data = self.manager.login(username, password, self.handler.request)
         self.handler.authenticate(data)
+        return LoginResult(jwt=self.handler.encode_jwt(data))
 
     @mutation()
     def logout(self) -> SuccessResult:
