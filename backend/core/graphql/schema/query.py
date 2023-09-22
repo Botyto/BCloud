@@ -29,9 +29,9 @@ class QueryBuilder(MethodBuilder):
             logger.warn("No GraphQL queries found")
             return
         query_attrs = {}
-        for method in self.methods:
-            minfo = GqlMethodInfo(self.types, method)
-            query_name = minfo.get_binding_name()
-            query_attrs[query_name] = self._build_field(minfo)
-            query_attrs[f"resolve_{query_name}"] = minfo.wrap()
+        for chain in self._method_chains():
+            minfo = chain.method_info
+            name = chain.binding_name
+            query_attrs[name] = self._build_field(minfo)
+            query_attrs[f"resolve_{name}"] = minfo.wrap()
         return type("Query", (ObjectType,), query_attrs)

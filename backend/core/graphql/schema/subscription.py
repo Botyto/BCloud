@@ -33,9 +33,9 @@ class SubscriptionBuilder(MethodBuilder):
             logger.warn("No GraphQL subscriptions found")
             return
         attrs = {}
-        for method in self.methods:
-            minfo = GqlMethodInfo(self.types, method)
-            name = minfo.get_binding_name()
+        for chain in self._method_chains():
+            minfo = chain.method_info
+            name = chain.binding_name
             attrs[name] = self._build_field(minfo)
             attrs[f"subscribe_{name}"] = minfo.wrap()
         return type("Subscription", (ObjectType,), attrs)

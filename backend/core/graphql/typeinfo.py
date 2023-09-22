@@ -75,19 +75,6 @@ class GqlMethodInfo(MethodInfo):
         super().__init__(method)
         self.builder = builder
 
-    def get_binding_name(self):
-        def cap(s: str):
-            return s[0].upper() + s[1:]
-        def decap(s: str):
-            return s[0].lower() + s[1:]
-
-        prefix = None  # TODO extract from defining class
-        if prefix is None:
-            prefix = self.package.split('.')[-1]
-        prefix = "".join(cap(part) for part in prefix.split("_"))
-        name = "".join(cap(part) for part in self.method.__name__.split("_"))
-        return decap(prefix + name)
-
     def wrap(self):
         method = self.method
         defining_class = self.defining_class

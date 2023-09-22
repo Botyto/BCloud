@@ -22,6 +22,33 @@ class PackageNode:
     classes: List[ClassNode]
 
 
+@dataclass
+class MethodChain:
+    method_info: GqlMethodInfo
+    class_type: Type
+    package: ModuleType
+
+    def def_binding_name(self):
+        return self._to_gql_name(
+            self.package.__name__.split(".")[-1],
+            self.class_type.__name__,
+            self.method_info.method.__name__,
+        )
+
+    @classmethod
+    def _to_gql_name(cls, *parts: str):
+        def cap(s: str):
+            return s[0].upper() + s[1:]
+        def decap(s: str):
+            return s[0].lower() + s[1:]
+        split_parts = [p for whole in parts for p in whole.split("_")]
+        split_parts = [p for whole in split_parts for p in whole.split(".")]
+        split_parts = [p.lower() for p in split_parts]
+        split_parts = [p.replace("module", "") for p in split_parts]
+        return decap("".join(cap(part) for part in split_parts))
+
+
+
 class MethodBuilder:
     types: TypesBuilder
     methods: List[MethodType]
@@ -58,6 +85,14 @@ class MethodBuilder:
         classes = [ClassNode(class_type, list(methods)) for class_type, methods in by_class]
         by_module = itertools.groupby(classes, lambda c: self._find_package(c.class_type))
         return [PackageNode(module, list(classes)) for module, classes in by_module]
-
+    
+    def _method_chains(self) -> List[MethodChain]:
+        chains = []
+        for package in self._structured_methods():
+            for class_node in package.classes:
+                for method_info in class_node.method_infos:
+                    chains.append(MethodChain(method_info, class_node.class_type, package.module))
+        return chains
+    
     def build(self) -> Type:
         raise NotImplementedError()
