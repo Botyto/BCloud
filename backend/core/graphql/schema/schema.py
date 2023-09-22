@@ -13,11 +13,11 @@ class SchemaBuilder:
     mutation: MutationBuilder
     subscription: SubscriptionBuilder
 
-    def __init__(self, methods: MethodCollection):
+    def __init__(self, methods: MethodCollection, package_prefix: str):
         self.types = TypesBuilder()
-        self.query = QueryBuilder(self.types, methods.queries)
-        self.mutation = MutationBuilder(self.types, methods.mutations)
-        self.subscription = SubscriptionBuilder(self.types, methods.subscriptions)
+        self.query = QueryBuilder(self.types, methods.queries, package_prefix)
+        self.mutation = MutationBuilder(self.types, methods.mutations, package_prefix)
+        self.subscription = SubscriptionBuilder(self.types, methods.subscriptions, package_prefix)
 
     def build(self):
         query_cls = self.query.build()

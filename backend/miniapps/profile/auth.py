@@ -26,7 +26,7 @@ class AuthModule(GqlMiniappModule):
         return self._manager
 
     @query()
-    def get_user(self) -> User|None:
+    def user(self) -> User|None:
         user_id = self.handler.current_user
         if user_id is None:
             return None
