@@ -61,6 +61,8 @@ class Login(Model):
     user: Mapped[User] = relationship(back_populates="logins", foreign_keys=[user_id])
 
     def __init__(self, user: User):
+        if user.role == UserRole.NEW:
+            raise ValueError("Cannot login with NEW user")
         self.id = uuid4()
         self.user_id = user.id
         self.user = user
