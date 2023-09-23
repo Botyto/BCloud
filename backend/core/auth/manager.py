@@ -20,7 +20,7 @@ class BaseManager:
 
     def __enter__(self):
         if self.session is None:
-            self.context.database.make_session()
+            self.session = self.context.database.make_session()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.session is None:
