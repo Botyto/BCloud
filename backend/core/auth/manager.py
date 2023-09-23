@@ -4,7 +4,7 @@ from tornado.httputil import HTTPServerRequest
 from uuid import UUID
 
 from .crypto import Passwords
-from .data import Login, User
+from .data import Login, User, UserRole
 from .handlers import AuthError
 
 from ..app.context import AppContext
@@ -36,13 +36,13 @@ class UserManager(BaseManager):
     def sensitive_authentication_errors(self):
         return self.context.env.debug
 
-    def register(self, username: str, password: str):
+    def register(self, username: str, password: str, role: UserRole = UserRole.NEW):
         assert self.session is not None, "Session not initialized"
         statement = select(User).where(User.username == username)
         user = self.session.execute(statement).one_or_none()
         if user is not None:
             raise ValueError("Username taken")
-        user = User(username, password)
+        user = User(username, password, role)
         self.session.add(user)
         return user
 

@@ -1,12 +1,19 @@
 from datetime import datetime, timedelta, timezone
+from enum import Enum as PyEnum
 from typing import List
 from uuid import UUID as PyUUID, uuid4
 
-from ..data.sql.columns import Boolean, Bytes, DateTime, String, UUID, ForeignKey
+from ..data.sql.columns import Boolean, Bytes, DateTime, String, UUID, ForeignKey, Enum
 from ..data.sql.columns import Mapped, mapped_column, relationship
 from ..data.sql.database import Model
 
 from .crypto import Passwords
+
+
+class UserRole(PyEnum):
+    NEW = "new"
+    USER = "user"
+    ADMIN = "admin"
 
 
 class User(Model):
@@ -16,12 +23,13 @@ class User(Model):
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     username: Mapped[str] = mapped_column(String(256), unique=True)
     password: Mapped[bytes] = mapped_column(Bytes(2**32 - 1))
+    role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.NEW)
     logins: Mapped[List["Login"]] = relationship(back_populates="user")
 
     # project-specific fields
     display_name: Mapped[str] = mapped_column(String(256))
 
-    def __init__(self, username: str, password: str):
+    def __init__(self, username: str, password: str, role: UserRole = UserRole.NEW):
         super().__init__()
         Passwords.validate(password)
         self.id = uuid4()
@@ -29,6 +37,7 @@ class User(Model):
         self.enabled = True
         self.username = username
         self.password = Passwords.hash(password)
+        self.role = role
         # project-specific fields
         self.display_name = username
 
