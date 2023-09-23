@@ -71,7 +71,7 @@ class Migrations:
         logger.info("Initializing migrations")
         alembic.command.init(self.config, self.MIGRATIONS_PATH)
         # automatically edit ./migrations/env.py
-        env_py_path = "./migrations/env.py"
+        env_py_path = os.path.join(self.MIGRATIONS_PATH, "env.py")
         with open(env_py_path, "rt") as envf:
             env_py_code = envf.read()
         env_py_code = env_py_code.replace(
@@ -81,11 +81,13 @@ class Migrations:
         with open(env_py_path, "wt") as envf:
             envf.write(env_py_code)
         # delete unnecessary README
-        readme_path = "./migrations/README"
+        readme_path = os.path.join(self.MIGRATIONS_PATH, "README")
         if os.path.isfile(readme_path):
             os.remove(readme_path)
 
     def new(self, title: str):
+        versions_path = os.path.join(self.MIGRATIONS_PATH, "versions")
+        os.makedirs(versions_path, exist_ok=True)
         logger.info("Creating new migration")
         alembic.command.revision(self.config, title, True)
 

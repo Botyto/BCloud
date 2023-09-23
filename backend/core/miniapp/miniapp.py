@@ -52,6 +52,10 @@ class Miniapp:
         self.mandatory = mandatory
         self.dependencies = dependencies
 
+    @property
+    def name(self):
+        return type(self).__name__
+
     def start(self, context: MiniappContext):
         if self._start_fn is not None:
             self._start_fn(context)

@@ -82,4 +82,4 @@ class Activity(Model):
     user: Mapped[User] = relationship(back_populates="activities", foreign_keys=[user_id])
     issuer: Mapped[str] = mapped_column(String(64))
     type: Mapped[str] = mapped_column(String(512))
-    payload: Mapped[dict] = mapped_column(JSON)
+    payload: Mapped[dict] = mapped_column(JSON, nullable=True, default=None)

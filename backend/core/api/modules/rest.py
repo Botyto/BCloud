@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from enum import Enum
 from functools import partial
 from re import Pattern
@@ -10,6 +11,7 @@ from .api import PartialURLSpec
 from ..context import ApiContext
 from ..handlers import HttpApiHandler, ApiHandlerMixin, ApiResponse
 
+from ...auth.data import Activity
 from ...miniapp.miniapp import MiniappContext, MiniappModule, Miniapp
 from ...typeinfo import MethodInfo, TypeInfo
 
@@ -31,15 +33,15 @@ class RestApiHandler(ApiHandlerMixin, HttpApiHandler):
 
 def get(pattern: str|Pattern, kwargs: Dict[str, Any]|None = None, name: str|None = None):
     def decorator(fn):
-        rest_info = RestMethodInternals(RestVerb.GET, PartialURLSpec(pattern, kwargs, name))
-        setattr(fn, "__rest__", rest_info)
+        internals = RestMethodInternals(RestVerb.GET, PartialURLSpec(pattern, kwargs, name))
+        setattr(fn, "__rest__", internals)
         return fn
     return decorator
 
 def post(pattern: str|Pattern, kwargs: Dict[str, Any]|None = None, name: str|None = None):
     def decorator(fn):
-        rest_info = RestMethodInternals(RestVerb.POST, PartialURLSpec(pattern, kwargs, name))
-        setattr(fn, "__rest__", rest_info)
+        internals = RestMethodInternals(RestVerb.POST, PartialURLSpec(pattern, kwargs, name))
+        setattr(fn, "__rest__", internals)
         return fn
     return decorator
 
@@ -49,6 +51,18 @@ class RestMiniappModule(MiniappModule, RestApiHandler):
 
     def __init__(self, miniapp: Miniapp, context: ApiContext):
         super().__init__(miniapp, context)
+
+    def log_activity(self, type: str, payload: dict|None = None):
+        self.get_current_user()
+        activity = Activity(
+            created_at_utc=datetime.now().astimezone(timezone.utc),
+            issuer=self.miniapp.name,
+            user_id=self.user_id,
+            type=type,
+            payload=payload,
+        )
+        self.session.add(activity)
+        return activity
 
     @classmethod
     def start(cls, miniapp: Miniapp, context: MiniappContext):

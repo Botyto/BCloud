@@ -1,10 +1,12 @@
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from enum import Enum
 from types import MethodType
 from typing import cast
 
 from ..gql import GraphQLModule, GraphQLSubscriptionModule
 
+from ...auth.data import Activity
 from ...graphql.context import GraphQLContext
 from ...graphql.typeinfo import GqlMethodInfo
 from ...miniapp.miniapp import MiniappContext, MiniappModule, Miniapp
@@ -58,6 +60,18 @@ class GqlMiniappModule(MiniappModule):
     @property
     def login_id(self):
         return self.handler.login_id
+    
+    def log_activity(self, type: str, payload: dict|None = None):
+        self.handler.get_current_user()
+        activity = Activity(
+            created_at_utc=datetime.now().astimezone(timezone.utc),
+            issuer=self.miniapp.name,
+            user_id=self.user_id,
+            type=type,
+            payload=payload,
+        )
+        self.session.add(activity)
+        return activity
     
     @classmethod
     def _all_own_methods(cls):
