@@ -28,7 +28,8 @@ class MethodChain:
     class_type: Type
     package: ModuleType
 
-    def def_binding_name(self):
+    @property
+    def binding_name(self):
         return self._to_gql_name(
             self.package.__name__.split(".")[-1],
             self.class_type.__name__,
