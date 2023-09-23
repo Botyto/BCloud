@@ -92,6 +92,14 @@ class UserManager(BaseManager):
             statement = delete(Login).where(Login.user_id == login.user_id)
             self.session.execute(statement)
 
+    def set_role(self, user_id: UUID, role: UserRole):
+        assert self.session is not None, "Session not initialized"
+        statement = select(User).where(User.id == user_id)
+        user = self.session.scalars(statement).one_or_none()
+        if user is None:
+            raise ValueError("Invalid user")
+        user.role = role
+
     def delete_user(self, user_id: UUID):
         assert self.session is not None, "Session not initialized"
         statement = delete(User).where(User.id == user_id)
