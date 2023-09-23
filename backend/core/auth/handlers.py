@@ -39,8 +39,11 @@ class AuthHandlerMixin:
     def login_validity(self):
         return timedelta(days=30)
 
-    def _get_login_jwt(self) -> str:
-        return self.request.headers.get("Authorization", None)
+    def _get_login_jwt(self) -> str|None:
+        header: str|None = self.request.headers.get("Authorization", None)
+        if header is not None and header.startswith("Bearer "):
+            header = header[len("Bearer "):]
+        return header
     
     def get_current_user(self):
         if self.user_id is None:
@@ -49,6 +52,7 @@ class AuthHandlerMixin:
                 return None
             data = pyjwt.decode(jwt, self.jwt_secret, algorithms=["HS256"])
             return self.authenticate(data)
+        return self.user_id
         
     def encode_jwt(self, data: dict) -> str:
         return pyjwt.encode(data, self.jwt_secret, algorithm="HS256")

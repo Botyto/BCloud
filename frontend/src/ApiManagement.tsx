@@ -55,10 +55,10 @@ const link = split(
 	concat(authMiddleware, httpLink),
 );
 
-persistCache({
+/*persistCache({
 	cache,
-	storage: new LocalStorageWrapper(window.localStorage),
-})
+	storage: new LocalStorageWrapper(localStorage),
+})*/
 
 const client = new ApolloClient({
 	cache: cache,

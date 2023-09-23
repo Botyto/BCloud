@@ -2,14 +2,14 @@ import React, { useState, MouseEvent } from 'react';
 import { gql, useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router';
 
-const LOGIN_MUTATION = gql`
+const LOGIN = gql`
 mutation Login($username: String!, $password: String!) {
     profileAuthLogin(username: $username, password: $password) {
         jwt
     }
 }`;
 
-const REGISTER_MUTATION = gql`
+const REGISTER = gql`
 mutation Register($username: String!, $password: String!) {
     profileAuthRegister(username: $username, password: $password) {
         jwt
@@ -20,8 +20,8 @@ export default function Login() {
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [error, setError] = useState<string>('');
-    const [login, loginVars] = useMutation(LOGIN_MUTATION);
-    const [register, registerVars] = useMutation(REGISTER_MUTATION);
+    const [login, loginVars] = useMutation(LOGIN);
+    const [register, registerVars] = useMutation(REGISTER);
     const navigate = useNavigate();
 
     function onLogin(e: MouseEvent<HTMLButtonElement>) {
@@ -39,7 +39,7 @@ export default function Login() {
             },
             onCompleted(data, clientOptions) {
                 const token = data.profileAuthLogin.jwt;
-                console.log(token);
+                localStorage.setItem("authentication-token", token);
                 navigate("/");
             },
             onError(error) {
@@ -63,7 +63,7 @@ export default function Login() {
             },
             onCompleted(data, clientOptions) {
                 const token = data.profileAuthRegister.jwt;
-                console.log(token);
+                localStorage.setItem("authentication-token", token);
                 navigate("/");
             },
             onError(error) {
