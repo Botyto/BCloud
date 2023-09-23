@@ -1,3 +1,4 @@
+import logging
 from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
 from tornado.httputil import HTTPServerRequest
@@ -8,6 +9,8 @@ from .data import Login, User, UserRole
 from .handlers import AuthError
 
 from ..app.context import AppContext
+
+logger = logging.getLogger(__name__)
 
 
 class BaseManager:
@@ -42,6 +45,10 @@ class UserManager(BaseManager):
         user = self.session.execute(statement).one_or_none()
         if user is not None:
             raise ValueError("Username taken")
+        is_first_user = self.session.execute(select(User)).first() is not None
+        if is_first_user:
+            logger.warn("Registering first user '%s' as ADMIN", username)
+            role = UserRole.ADMIN
         user = User(username, password, role)
         self.session.add(user)
         return user

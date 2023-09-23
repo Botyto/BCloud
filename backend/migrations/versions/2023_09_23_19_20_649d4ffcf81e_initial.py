@@ -1,8 +1,8 @@
 """initial
 
-Revision ID: dc5e4f8f0032
+Revision ID: 649d4ffcf81e
 Revises: 
-Create Date: 2023-09-23 19:00:43.402781
+Create Date: 2023-09-23 19:20:26.737829
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = 'dc5e4f8f0032'
+revision = '649d4ffcf81e'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -45,6 +45,7 @@ def upgrade() -> None:
     sa.Column('enabled', sa.Boolean(), nullable=False),
     sa.Column('username', sa.String(length=256), nullable=False),
     sa.Column('password', mysql.LONGBLOB(length=4294967295), nullable=False),
+    sa.Column('role', sa.Enum('NEW', 'USER', 'ADMIN', name='userrole'), nullable=False),
     sa.Column('display_name', sa.String(length=256), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('username')
