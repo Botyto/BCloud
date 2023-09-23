@@ -48,29 +48,29 @@ class Database:
     def _activate_debug(self):
         def dbg_print_connect(dbapi_con, connection_record):
             logger.debug("Connecting to database: %s", dbapi_con)
-        event.listen(self.engine, "connect", dbg_print_connect)
+        event.listen(Engine, "connect", dbg_print_connect)
         
         def dbg_print_disconnect(dbapi_con, connection_record):
             logger.debug("Disconnecting from database: %s", dbapi_con)
-        event.listen(self.engine, "detach", dbg_print_disconnect)
+        event.listen(Engine, "detach", dbg_print_disconnect)
 
         def dbg_print_sql(conn, clauseelement, multiparams, params, execution_options):
             sql = str(clauseelement).replace("\n", " ")
             logger.debug("Executing SQL: %s", sql)
-        event.listen(self.engine, "before_execute", dbg_print_sql)
+        event.listen(Engine, "before_execute", dbg_print_sql)
 
-        def dbg_datetime_asserts(mapper, cls):
+        def datetime_asserts(cls):
             cls_name = cls.__name__
             columns: List[Column] = cls.__table__.columns
             for column in columns:
                 if not isinstance(column.type, DateTime):
                     continue
                 assert column.name.endswith("_utc"), f"DateTime column {cls_name}.{column.name} must end with _utc"
-        event.listen(Model, "instrument_class", dbg_datetime_asserts, propagate=True)
 
         for cls in Model.__subclasses__():
             table_name = getattr(cls, "__tablename__", getattr(cls, "__table__"))
             assert table_name == cls.__name__, "Table name must be the same as the model class name"
+            datetime_asserts(cls)
 
 def apply_timezone_guard(mapper, cls):
     cls_name = cls.__name__

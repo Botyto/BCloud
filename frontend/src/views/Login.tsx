@@ -9,14 +9,24 @@ mutation Login($username: String!, $password: String!) {
     }
 }`;
 
+const REGISTER_MUTATION = gql`
+mutation Register($username: String!, $password: String!) {
+    profileAuthRegister(username: $username, password: $password) {
+        jwt
+    }
+}`;
+
 export default function Login() {
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
-    const [login, { loading, error, data}] = useMutation(LOGIN_MUTATION);
+    const [error, setError] = useState<string>('');
+    const [login, loginVars] = useMutation(LOGIN_MUTATION);
+    const [register, registerVars] = useMutation(REGISTER_MUTATION);
     const navigate = useNavigate();
 
     function onLogin(e: MouseEvent<HTMLButtonElement>) {
         e.preventDefault();
+        setError("");
         login({
             context: {
                 headers: {
@@ -28,27 +38,48 @@ export default function Login() {
                 password,
             },
             onCompleted(data, clientOptions) {
-                const token = data.identityLogin.token;
+                const token = data.profileAuthLogin.jwt;
                 console.log(token);
                 navigate("/");
             },
             onError(error) {
-                console.log("failed");
-                console.error(error);
+                setError("Login failed: " + error.message);
             },
-        })
+        });
     }
 
-    function onSignup(e: MouseEvent<HTMLButtonElement>) {
+    function onRegister(e: MouseEvent<HTMLButtonElement>) {
         e.preventDefault();
-        console.log("Signup...");
+        setError("");
+        register({
+            context: {
+                headers: {
+                    authorization: "",
+                },
+            },
+            variables: {
+                username,
+                password,
+            },
+            onCompleted(data, clientOptions) {
+                const token = data.profileAuthRegister.jwt;
+                console.log(token);
+                navigate("/");
+            },
+            onError(error) {
+                setError("Registration failed: " + error.message);
+            },
+        });
     }
 
-    return <form>
-        Login<br/>
-        Username: <input type="text" value={username} onChange={(v) => setUsername(v.target.value)}/><br/>
-        Password: <input type="password" value={password} onChange={(v) => setPassword(v.target.value)}/><br/>
-        <button onClick={onLogin}>Login</button>
-        <button onClick={onSignup}>Signup</button>
-    </form>;
+    return <>
+        <form>
+            Login<br/>
+            Username: <input type="text" value={username} onChange={(v) => setUsername(v.target.value)}/><br/>
+            Password: <input type="password" value={password} onChange={(v) => setPassword(v.target.value)}/><br/>
+            <button onClick={onLogin}>Login</button>
+            <button onClick={onRegister}>Register</button>
+        </form>
+        <span style={{color: "red"}}>{error}</span>
+    </>;
 }

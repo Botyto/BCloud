@@ -1,10 +1,6 @@
 from datetime import datetime, timedelta, timezone
-from enum import Enum
-import hashlib
-from tornado.httputil import HTTPServerRequest
 from typing import List
-import user_agents
-from uuid import UUID as PyUUID
+from uuid import UUID as PyUUID, uuid4
 
 from ..data.sql.columns import Boolean, Bytes, DateTime, String, UUID, ForeignKey
 from ..data.sql.columns import Mapped, mapped_column, relationship
@@ -16,7 +12,7 @@ from .crypto import Passwords
 class User(Model):
     __tablename__ = "User"
     id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime)
+    created_at_utc: Mapped[datetime] = mapped_column(DateTime)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     username: Mapped[str] = mapped_column(String(256), unique=True)
     password: Mapped[bytes] = mapped_column(Bytes(2**32 - 1))
@@ -28,7 +24,7 @@ class User(Model):
     def __init__(self, username: str, password: str):
         super().__init__()
         Passwords.validate(password)
-        self.id = PyUUID()
+        self.id = uuid4()
         self.created_at_utc = datetime.utcnow()
         self.enabled = True
         self.username = username
@@ -56,9 +52,10 @@ class Login(Model):
     user: Mapped[User] = relationship(back_populates="logins", foreign_keys=[user_id])
 
     def __init__(self, user: User):
-        self.id = PyUUID()
+        self.id = uuid4()
         self.user_id = user.id
         self.user = user
         now = datetime.utcnow().replace(tzinfo=timezone.utc)
         self.created_at_utc = now
         self.expire_at_utc = now + self.VALID_DURATION
+        self.last_used_utc = now
