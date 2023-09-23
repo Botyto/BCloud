@@ -43,7 +43,7 @@ class GqlMiniappModule(MiniappModule):
     handler: GraphQLModule|GraphQLSubscriptionModule
     context: GraphQLContext
 
-    def __init__(self, miniapp: Miniapp, handler: GraphQLModule|GraphQLSubscriptionModule, context: GraphQLContext):
+    def __init__(self, handler: GraphQLModule|GraphQLSubscriptionModule, context: GraphQLContext, miniapp: Miniapp):
         super().__init__(miniapp, context)
         self.handler = handler
 
@@ -76,7 +76,7 @@ class GqlMiniappModule(MiniappModule):
     @classmethod
     def __make_wrapper(cls, miniapp: Miniapp):
         def wrapper(minfo: GqlMethodInfo):
-            return minfo.wrap()
+            return minfo.wrap(miniapp)
         return wrapper
 
     @classmethod

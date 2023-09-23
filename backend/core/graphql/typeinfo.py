@@ -75,16 +75,16 @@ class GqlMethodInfo(MethodInfo):
         super().__init__(method)
         self.builder = builder
 
-    def wrap(self):
+    def wrap(self, *ctor_args):
         method = self.method
         defining_class = self.defining_class
         builder = self.builder
         param_types = self.param_types
         signature = inspect.signature(defining_class)
         params = list(signature.parameters.values())
-        assert len(params) == 2, f"Class {defining_class} must have only 2 parameters: handler, info"
-        assert params[0].name == "handler", f"Clsas {defining_class} has no handler parameter"
-        assert params[1].name == "context", f"Class {defining_class} has no context parameter"
+        assert len(params) == 2 + len(ctor_args), f"Class {defining_class} must have {2 + len(ctor_args)} ctor params: handler, context, {', '.join(type(a).__name__ for a in ctor_args)}"
+        assert params[0].name == "handler", f"Clsas {defining_class} must have `handler` as the first ctor parameter"
+        assert params[1].name == "context", f"Class {defining_class} must have `context` as the second ctor parameter"
         def convert_input(param: str, value: Any):
             expected_type = param_types.get(param)
             return builder.convert_input(value, expected_type)
@@ -95,14 +95,14 @@ class GqlMethodInfo(MethodInfo):
                 def wrapper_sync_ctx(root, info: GraphQLResolveInfo, **kwargs):
                     context = GraphQLContext(info.context, info)
                     kwargs = convert_kwargs(**kwargs)
-                    with defining_class(root, context) as obj:
+                    with defining_class(root, context, *ctor_args) as obj:
                         return method(obj, **kwargs)
                 return wrapper_sync_ctx
             else:
                 def wrapper_sync(root, info: GraphQLResolveInfo, **kwargs):
                     context = GraphQLContext(info.context, info)
                     kwargs = convert_kwargs(**kwargs)
-                    obj = defining_class(root, context)
+                    obj = defining_class(root, context, *ctor_args)
                     return method(obj, **kwargs)
                 return wrapper_sync
         else:
@@ -112,7 +112,7 @@ class GqlMethodInfo(MethodInfo):
                 async def wrapper_async_gen(root, info: GraphQLResolveInfo, **kwargs):
                     context = GraphQLContext(info.context, info)
                     kwargs = convert_kwargs(**kwargs)
-                    obj = defining_class(root, context)
+                    obj = defining_class(root, context, *ctor_args)
                     generator = method(obj, **kwargs)
                     async for value in generator:
                         yield value
@@ -121,7 +121,7 @@ class GqlMethodInfo(MethodInfo):
                 async def wrapper_async(root, info: GraphQLResolveInfo, **kwargs):
                     context = GraphQLContext(info.context, info)
                     kwargs = convert_kwargs(**kwargs)
-                    obj = defining_class(root, context)
+                    obj = defining_class(root, context, *ctor_args)
                     return await method(obj, **kwargs)
                 return wrapper_async
         raise TypeError("This type of resolver is not supported")

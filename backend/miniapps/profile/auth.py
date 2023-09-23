@@ -16,9 +16,6 @@ class LoginResult:
 class AuthModule(GqlMiniappModule):
     _manager: UserManager|None = None
 
-    def __init__(self, handler, context):
-        super().__init__(handler, context)
-
     @property
     def manager(self):
         if self._manager is None:
