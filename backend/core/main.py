@@ -9,6 +9,7 @@ import asyncio
 from enum import Enum
 from datetime import timedelta
 import logging
+import os
 import sys
 import time
 from typing import cast
@@ -31,6 +32,9 @@ env.add_cmdline(100)
 env.add_dotenv(200, ".env", optional=True)
 env.add_json(300, "env.json", optional=True)
 env.add_os_env(400)
+
+os.makedirs(env.appdata_path, exist_ok=True)
+os.makedirs(env.temp_path, exist_ok=True)
 
 clear_old_logs("logs", timedelta(days=1))
 log_level = logging.DEBUG if env.debug else logging.INFO
@@ -84,7 +88,7 @@ class MigrationAction(Enum):
     UPDATE = "update"
     UNINSTALL = "uninstall"
 
-def run_migration(action: MigrationAction):
+def run_migration(action: MigrationAction, title: str|None = None):
     sql_settings = SqlSettings(
         host=cast(str, env.get("DB_HOST", "localhost")),
         port=cast(int, env.get("DB_PORT", 3306)),
@@ -99,7 +103,8 @@ def run_migration(action: MigrationAction):
         case MigrationAction.INIT:
             manager.init()
         case MigrationAction.NEW:
-            manager.new()
+            assert title is not None, "Missing migration title"
+            manager.new(title)
         case MigrationAction.UPDATE:
             manager.update()
         case MigrationAction.UNINSTALL:

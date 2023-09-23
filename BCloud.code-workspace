@@ -35,12 +35,12 @@
 				"console": "integratedTerminal",
 			},
 			{
-				"name": "Migrations: init",
+				"name": "Migrations: update",
 				"type": "python",
 				"request": "launch",
 				"program": "${workspaceFolder}/backend/main.py",
 				"cwd": "${workspaceFolder}/backend/",
-				"args": ["-m", "init"],
+				"args": ["-m", "update"],
 				"justMyCode": false,
 				"pythonArgs": [
 					"-X",

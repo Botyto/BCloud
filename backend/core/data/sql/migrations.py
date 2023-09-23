@@ -76,19 +76,10 @@ class Migrations:
             env_py_code = envf.read()
         env_py_code = env_py_code.replace(
             "target_metadata = None",
-            "import system.application.database\n" +
-            "target_metadata = system.application.database.Model.metadata")
+            "from core.data.sql.database import Model\n" +
+            "target_metadata = Model.metadata")
         with open(env_py_path, "wt") as envf:
             envf.write(env_py_code)
-        # automatically edit ./migrations.ini
-        migrations_init_path = "./migrations.ini"
-        with open(migrations_init_path, "rt") as envf:
-            migrations_ini_code = envf.read()
-        migrations_ini_code = migrations_ini_code.replace(
-            "sqlalchemy.url = driver://user:pass@localhost/dbname",
-            "sqlalchemy.url = " + self.database.connection_string)
-        with open(migrations_init_path, "wt") as envf:
-            envf.write(migrations_ini_code)
         # delete unnecessary README
         readme_path = "./migrations/README"
         if os.path.isfile(readme_path):
