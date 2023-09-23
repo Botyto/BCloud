@@ -34,14 +34,14 @@ class AuthModule(GqlMiniappModule):
     def register(self, username: str, password: str) -> LoginResult:
         user = self.manager.register(username, password, UserRole.USER)
         result = self.login(username, password)
-        self.log_activity("register")
+        self.log_activity("auth.register")
         return result
 
     @mutation()
     def login(self, username: str, password: str) -> LoginResult:
         login, data = self.manager.login(username, password, self.handler.request)
         self.handler.authenticate(data)
-        self.log_activity("login", {"id": str(login.id)})
+        self.log_activity("auth.login", {"id": str(login.id)})
         return LoginResult(jwt=self.handler.encode_jwt(data))
 
     @mutation()
@@ -49,5 +49,5 @@ class AuthModule(GqlMiniappModule):
         if self.login_id is None:
             raise AuthError("Invalid login")
         self.manager.logout(self.login_id)
-        self.log_activity("logout", {"id": str(self.login_id)})
+        self.log_activity("auth.logout", {"id": str(self.login_id)})
         return SuccessResult()
