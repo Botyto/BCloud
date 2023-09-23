@@ -5,7 +5,7 @@ import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { persistCache, LocalStorageWrapper  } from 'apollo3-cache-persist';
 
-const serverUrl = 'localhost';
+const serverUrl = 'localhost:8080';
 
 const cache = new InMemoryCache({
 	typePolicies: {},

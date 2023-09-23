@@ -4,7 +4,7 @@ export const ThemeContext = React.createContext({
 	toggleColorMode: () => {},
 });
 
-function ThemeManagement(props) {
+export default function ThemeManagement(props: any) {
 	const prefersDarkMode = true;
 	const [darkTheme, setDarkTheme] = React.useState<'light' | 'dark'>(prefersDarkMode ? 'dark' : 'light');
 	const colorTheme = React.useMemo(
@@ -22,5 +22,3 @@ function ThemeManagement(props) {
 		</ThemeContext.Provider>
 	);
 }
-
-export { ThemeManagement };
