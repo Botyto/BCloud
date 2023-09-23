@@ -5,6 +5,7 @@ import Loading from '../components/Loading';
 const USER = gql`
 query CurrentUser {
     profileAuthUser {
+        id
         displayName
     }
 }`;
