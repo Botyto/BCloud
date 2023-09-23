@@ -1,5 +1,4 @@
 from sqlalchemy import select
-from typing import List
 
 from core.api.pages import PagesInput, PagesResult
 from core.api.modules.gql import GqlMiniappModule, query
