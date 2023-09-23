@@ -35,12 +35,12 @@
 				"console": "integratedTerminal",
 			},
 			{
-				"name": "Migrations: update",
+				"name": "Migrations: new",
 				"type": "python",
 				"request": "launch",
 				"program": "${workspaceFolder}/backend/main.py",
 				"cwd": "${workspaceFolder}/backend/",
-				"args": ["-m", "update"],
+				"args": ["-m", "new", "-t", "${input:MigrationName}"],
 				"justMyCode": false,
 				"pythonArgs": [
 					"-X",
@@ -48,12 +48,12 @@
 				],
 			},
 			{
-				"name": "Migrations: new",
+				"name": "Migrations: update",
 				"type": "python",
 				"request": "launch",
 				"program": "${workspaceFolder}/backend/main.py",
 				"cwd": "${workspaceFolder}/backend/",
-				"args": ["-m", "new", "${input:MigrationName}"],
+				"args": ["-m", "update"],
 				"justMyCode": false,
 				"pythonArgs": [
 					"-X",
