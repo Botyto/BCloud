@@ -5,7 +5,7 @@ export const ThemeContext = React.createContext({
 });
 
 function ThemeManagement(props) {
-	const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+	const prefersDarkMode = true;
 	const [darkTheme, setDarkTheme] = React.useState<'light' | 'dark'>(prefersDarkMode ? 'dark' : 'light');
 	const colorTheme = React.useMemo(
 		() => ({
@@ -14,13 +14,6 @@ function ThemeManagement(props) {
 			},
 		}),
 		[],
-	);
-
-	const theme = React.useMemo(
-		() => createTheme({
-			darkTheme,
-		}),
-		[darkTheme],
 	);
 
 	return (
