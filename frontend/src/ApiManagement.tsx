@@ -25,6 +25,7 @@ function ApiManagement(props: any) {
 		
 		const offlineLink = new OfflineLink({
 			storage: localStorage,
+			sequential: true,
 		});
 		
 		const authMiddleware = new ApolloLink((operation, forward) => {
