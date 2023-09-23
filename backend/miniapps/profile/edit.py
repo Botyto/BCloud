@@ -18,5 +18,7 @@ class EditModule(GqlMiniappModule):
     def display_name(self, display_name: str) -> SuccessResult:
         if self.user is None:
             return SuccessResult(False)
+        old_name = self.user.display_name
         self.user.display_name = display_name
+        self.log_activity("edit.display_name", {"old": old_name, "new": display_name})
         return SuccessResult(True)
