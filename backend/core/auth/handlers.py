@@ -45,7 +45,7 @@ class AuthHandlerMixin:
     def get_current_user(self):
         if self.user_id is None:
             jwt = self._get_login_jwt()
-            if jwt is None:
+            if not jwt:
                 return None
             data = pyjwt.decode(jwt, self.jwt_secret, algorithms=["HS256"])
             return self.authenticate(data)

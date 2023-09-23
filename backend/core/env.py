@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import json
 import os
 import sys
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 
 ValueType = str|bool|int|List[Any]|Dict[str, Any]
@@ -101,3 +101,11 @@ class Environment(EnvironmentData):
     @property
     def production(self):
         return self.profile == "prod"
+    
+    @property
+    def temp_path(self):
+        return cast(str, self.get("TEMP_PATH", "./temp"))
+    
+    @property
+    def appdata_path(self):
+        return cast(str, self.get("APPDATA_PATH", "./appdata"))

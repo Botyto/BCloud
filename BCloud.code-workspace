@@ -34,6 +34,40 @@
 				"runtimeArgs": ["run", "dev"],
 				"console": "integratedTerminal",
 			},
+			{
+				"name": "Migrations: init",
+				"type": "python",
+				"request": "launch",
+				"program": "${workspaceFolder}/backend/main.py",
+				"cwd": "${workspaceFolder}/backend/",
+				"args": ["-m", "init"],
+				"justMyCode": false,
+				"pythonArgs": [
+					"-X",
+					"pycache_prefix=__pycache__",
+				],
+			},
+			{
+				"name": "Migrations: new",
+				"type": "python",
+				"request": "launch",
+				"program": "${workspaceFolder}/backend/main.py",
+				"cwd": "${workspaceFolder}/backend/",
+				"args": ["-m", "new", "${input:MigrationName}"],
+				"justMyCode": false,
+				"pythonArgs": [
+					"-X",
+					"pycache_prefix=__pycache__",
+				],
+			},
 		],
+		"inputs": [
+			{
+				"id": "MigrationName",
+				"description": "Name your migration",
+				"default": "new-migration",
+				"type": "promptString",
+			},
+		]
 	},
 }

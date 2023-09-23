@@ -5,14 +5,17 @@ import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { persistCache, LocalStorageWrapper  } from 'apollo3-cache-persist';
 
-const serverUrl = 'localhost:8080';
+const SERVER_HOST = 'localhost:8080';
 
 const cache = new InMemoryCache({
 	typePolicies: {},
 });
 
 const httpLink = new HttpLink({
-	uri: `http://${serverUrl}/graphql`,
+	uri: `http://${SERVER_HOST}/graphql`,
+	fetchOptions: {
+		crossOriginIsolated: false,
+	}
 });
 
 const authMiddleware = new ApolloLink((operation, forward) => {
@@ -32,7 +35,7 @@ const authMiddleware = new ApolloLink((operation, forward) => {
 });
 
 const wsLink = new GraphQLWsLink(createClient({
-	url: `ws://localhost/${serverUrl}/subscription`,
+	url: `ws://${SERVER_HOST}/graphql/subscription`,
 	connectionParams: () => {
 		return {
 			authToken: localStorage.getItem('authentication-token'),
