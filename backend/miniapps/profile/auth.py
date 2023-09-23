@@ -36,9 +36,7 @@ class AuthModule(GqlMiniappModule):
     @mutation()
     def register(self, username: str, password: str) -> LoginResult:
         user = self.manager.register(username, password, UserRole.USER)
-        login, data = self.manager.login(username, password, self.handler.request)
-        self.handler.authenticate(data)
-        return LoginResult(jwt=self.handler.encode_jwt(data))
+        return self.login(username, password)
 
     @mutation()
     def login(self, username: str, password: str) -> LoginResult:
