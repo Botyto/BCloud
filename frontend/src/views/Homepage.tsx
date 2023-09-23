@@ -16,7 +16,14 @@ export default function Homepage() {
     } else if (currentUserVars.loading) {
         return <span>Hi <Loading/></span>
     } else if (currentUserVars.data) {
-        return <span>Hi {currentUserVars.data.profileAuthUser?.displayName || "MISSING USER"}</span>;
+        return <>
+            <div>Hi {currentUserVars.data.profileAuthUser?.displayName || "MISSING USER"}</div>
+            <ul>
+                <li>/profile</li>
+                <li><a href="/profile/login">/profile/login</a></li>
+                <li><a href="/profile/activity">/profile/activity</a></li>
+            </ul>
+        </>;
     } else {
         return <span>Hi</span>;
     }

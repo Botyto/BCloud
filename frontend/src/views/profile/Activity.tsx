@@ -1,0 +1,52 @@
+import React from 'react';
+import { gql, useQuery } from '@apollo/client';
+import Loading from '../../components/Loading';
+
+const LOG = gql`
+query ActivityLog($pages: InputPagesInput!) {
+    profileActivityLog(pages: $pages) {
+        total
+        page
+        pageSize
+        items {
+            id
+            createdAtUtc
+            issuer
+            type
+            payload
+        }
+    }
+}`;
+
+export default function Activity() {
+    const logVars = useQuery(LOG, {
+        variables: {
+            pages: {
+                page: 0,
+            },
+        },
+    });
+    if (logVars.error) {
+        return <span>Activity <span style={{color: "red"}}>{logVars.error.message}</span></span>;
+    } else if (logVars.loading) {
+        return <span>Activity <Loading/></span>
+    } else if (logVars.data) {
+        return <>
+            <div>Activity</div>
+            <ol>
+                {
+                    logVars.data.profileActivityLog?.items?.map((item: any) => {
+                        const d = new Date();
+                        d.setTime(Date.parse(item.createdAtUtc));
+                        return <li key={item.id}>
+                            <div>{d.toLocaleString()} {item.issuer} -&gt; {item.type}</div>
+                            <div>{item.payload}</div>
+                        </li>;
+                    })
+                }
+            </ol>
+        </>;
+    } else {
+        return <span>Activity</span>;
+    }
+}
