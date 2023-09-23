@@ -45,7 +45,7 @@ class UserManager(BaseManager):
         user = self.session.execute(statement).one_or_none()
         if user is not None:
             raise ValueError("Username taken")
-        is_first_user = self.session.execute(select(User)).first() is not None
+        is_first_user = self.session.execute(select(User)).first() is None
         if is_first_user:
             logger.warn("Registering first user '%s' as ADMIN", username)
             role = UserRole.ADMIN
