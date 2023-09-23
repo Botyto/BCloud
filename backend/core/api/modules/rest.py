@@ -20,7 +20,7 @@ class RestVerb(Enum):
 
 
 @dataclass
-class RestMethodInfo:
+class RestMethodInternals:
     verb: RestVerb
     partial_urlspec: PartialURLSpec
 
@@ -31,14 +31,14 @@ class RestApiHandler(ApiHandlerMixin, HttpApiHandler):
 
 def get(pattern: str|Pattern, kwargs: Dict[str, Any]|None = None, name: str|None = None):
     def decorator(fn):
-        rest_info = RestMethodInfo(RestVerb.GET, PartialURLSpec(pattern, kwargs, name))
+        rest_info = RestMethodInternals(RestVerb.GET, PartialURLSpec(pattern, kwargs, name))
         setattr(fn, "__rest__", rest_info)
         return fn
     return decorator
 
 def post(pattern: str|Pattern, kwargs: Dict[str, Any]|None = None, name: str|None = None):
     def decorator(fn):
-        rest_info = RestMethodInfo(RestVerb.POST, PartialURLSpec(pattern, kwargs, name))
+        rest_info = RestMethodInternals(RestVerb.POST, PartialURLSpec(pattern, kwargs, name))
         setattr(fn, "__rest__", rest_info)
         return fn
     return decorator
@@ -56,7 +56,7 @@ class RestMiniappModule(MiniappModule, RestApiHandler):
         pattern_to_methods: Dict[str|Pattern, List[MethodType]] = {}
         for method in cls._all_own_methods():
             info = getattr(method, "__rest__", None)
-            if not isinstance(info, RestMethodInfo):
+            if not isinstance(info, RestMethodInternals):
                 continue
             pattern = info.partial_urlspec.pattern
             if pattern not in pattern_to_methods:
@@ -64,7 +64,7 @@ class RestMiniappModule(MiniappModule, RestApiHandler):
             pattern_to_methods[pattern].append(method)
         for pattern, methods in pattern_to_methods.items():
             info = getattr(methods[0], "__rest__", None)
-            assert isinstance(info, RestMethodInfo)
+            assert isinstance(info, RestMethodInternals)
             cls.__register_handler(miniapp, context, methods, info)
 
     @classmethod
@@ -112,7 +112,7 @@ class RestMiniappModule(MiniappModule, RestApiHandler):
             return wrapped_handler
 
     @classmethod
-    def __generate_handler(cls, miniapp: Miniapp, methods: List[MethodType], info: RestMethodInfo):
+    def __generate_handler(cls, miniapp: Miniapp, methods: List[MethodType], info: RestMethodInternals):
         attrs = {}
         for method in methods:
             wrapped_handler = cls.__generate_handler_method(miniapp, method)
@@ -123,7 +123,7 @@ class RestMiniappModule(MiniappModule, RestApiHandler):
         return type(class_name, (RestApiHandler,), attrs)
     
     @classmethod
-    def __register_handler(cls, miniapp: Miniapp, context: MiniappContext, methods: List[MethodType], info: RestMethodInfo):
+    def __register_handler(cls, miniapp: Miniapp, context: MiniappContext, methods: List[MethodType], info: RestMethodInternals):
         handler_class = cls.__generate_handler(miniapp, methods, info)
         context.urlspecs.append(URLSpec(
             pattern=info.partial_urlspec.pattern,

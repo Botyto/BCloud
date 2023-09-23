@@ -2,18 +2,27 @@ from dataclasses import dataclass
 import inspect
 import itertools
 import sys
-from types import MethodType, ModuleType
-from typing import List, Type
+from types import ModuleType
+from typing import Any, Callable, List, Type
 
+from .methods import MethodBuildInfo, WrapMethodType
 from .types import TypesBuilder
 
 from ..typeinfo import GqlMethodInfo
 
 
+class GqlMethodInfoWithWrap(GqlMethodInfo):
+    wrap_method: WrapMethodType
+
+    def __init__(self, wrap_method: WrapMethodType, builder: TypesBuilder, method: Callable):
+        super().__init__(builder, method)
+        self.wrap_method = wrap_method
+
+
 @dataclass
 class ClassNode:
     class_type: Type
-    method_infos: List[GqlMethodInfo]
+    method_infos: List[GqlMethodInfoWithWrap]
 
 
 @dataclass
@@ -24,7 +33,7 @@ class PackageNode:
 
 @dataclass
 class MethodChain:
-    method_info: GqlMethodInfo
+    method_info: GqlMethodInfoWithWrap
     class_type: Type
     package: ModuleType
 
@@ -47,20 +56,23 @@ class MethodChain:
         split_parts = [p.lower() for p in split_parts]
         split_parts = [p.replace("module", "") for p in split_parts]
         return decap("".join(cap(part) for part in split_parts))
+    
+    def wrap(self):
+        return self.method_info.wrap_method(self.method_info)
 
 
 
 class MethodBuilder:
     types: TypesBuilder
-    methods: List[MethodType]
+    methods: List[MethodBuildInfo]
     package_prefix: str
 
-    def __init__(self, types: TypesBuilder, methods: List[MethodType], package_prefix: str):
+    def __init__(self, types: TypesBuilder, methods: List[MethodBuildInfo], package_prefix: str):
         self.types = types
         self.methods = methods
         self.package_prefix = package_prefix
 
-    def register(self, method: MethodType):
+    def register(self, method: MethodBuildInfo):
         self.methods.append(method)
 
     def _find_package(self, class_type: Type) -> ModuleType:
@@ -81,7 +93,7 @@ class MethodBuilder:
         return module
 
     def _structured_methods(self) -> List[PackageNode]:
-        infos = [GqlMethodInfo(self.types, m) for m in self.methods]
+        infos = [GqlMethodInfoWithWrap(m.wrap, self.types, m.method) for m in self.methods]
         by_class = itertools.groupby(infos, lambda i: i.defining_class)
         classes = [ClassNode(class_type, list(methods)) for class_type, methods in by_class]
         by_module = itertools.groupby(classes, lambda c: self._find_package(c.class_type))

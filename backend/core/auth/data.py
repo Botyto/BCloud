@@ -3,7 +3,7 @@ from enum import Enum as PyEnum
 from typing import List
 from uuid import UUID as PyUUID, uuid4
 
-from ..data.sql.columns import Boolean, Bytes, DateTime, String, UUID, ForeignKey, Enum
+from ..data.sql.columns import Boolean, Bytes, DateTime, String, UUID, ForeignKey, Enum, Integer, JSON
 from ..data.sql.columns import Mapped, mapped_column, relationship
 from ..data.sql.database import Model
 
@@ -25,6 +25,7 @@ class User(Model):
     password: Mapped[bytes] = mapped_column(Bytes(2**32 - 1))
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.NEW)
     logins: Mapped[List["Login"]] = relationship(back_populates="user")
+    activities: Mapped[List["Activity"]] = relationship(back_populates="user")
 
     # project-specific fields
     display_name: Mapped[str] = mapped_column(String(256))
@@ -70,3 +71,15 @@ class Login(Model):
         self.created_at_utc = now
         self.expire_at_utc = now + self.VALID_DURATION
         self.last_used_utc = now
+
+
+class Activity(Model):
+    __tablename__ = "Activity"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    created_at_utc: Mapped[datetime] = mapped_column(DateTime)
+    user_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id"), info={"owner": True})
+    user: Mapped[User] = relationship(back_populates="activities", foreign_keys=[user_id])
+    issuer: Mapped[str] = mapped_column(String(64))
+    type: Mapped[str] = mapped_column(String(512))
+    payload: Mapped[dict] = mapped_column(JSON)

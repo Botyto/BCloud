@@ -30,8 +30,7 @@ class QueryBuilder(MethodBuilder):
             return
         query_attrs = {}
         for chain in self._method_chains():
-            minfo = chain.method_info
             name = chain.binding_name
-            query_attrs[name] = self._build_field(minfo)
-            query_attrs[f"resolve_{name}"] = minfo.wrap()
+            query_attrs[name] = self._build_field(chain.method_info)
+            query_attrs[f"resolve_{name}"] = chain.wrap()
         return type("Query", (ObjectType,), query_attrs)

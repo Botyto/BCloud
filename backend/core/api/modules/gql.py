@@ -6,6 +6,7 @@ from typing import cast
 from ..gql import GraphQLModule, GraphQLSubscriptionModule
 
 from ...graphql.context import GraphQLContext
+from ...graphql.typeinfo import GqlMethodInfo
 from ...miniapp.miniapp import MiniappContext, MiniappModule, Miniapp
 
 
@@ -16,24 +17,24 @@ class GqlMethod(Enum):
 
 
 @dataclass
-class GqlMethodInfo:
+class GqlMethodInternals:
     method: GqlMethod
 
 def query():
     def decorator(fn):
-        setattr(fn, "__gql__", GqlMethodInfo(GqlMethod.QUERY))
+        setattr(fn, "__gql__", GqlMethodInternals(GqlMethod.QUERY))
         return fn
     return decorator
 
 def mutation():
     def decorator(fn):
-        setattr(fn, "__gql__", GqlMethodInfo(GqlMethod.MUTATION))
+        setattr(fn, "__gql__", GqlMethodInternals(GqlMethod.MUTATION))
         return fn
     return decorator
 
 def subscription():
     def decorator(fn):
-        setattr(fn, "__gql__", GqlMethodInfo(GqlMethod.SUBSCRIPTION))
+        setattr(fn, "__gql__", GqlMethodInternals(GqlMethod.SUBSCRIPTION))
         return fn
     return decorator
 
@@ -42,9 +43,9 @@ class GqlMiniappModule(MiniappModule):
     handler: GraphQLModule|GraphQLSubscriptionModule
     context: GraphQLContext
 
-    def __init__(self, handler: GraphQLModule|GraphQLSubscriptionModule, context: GraphQLContext):
+    def __init__(self, miniapp: Miniapp, handler: GraphQLModule|GraphQLSubscriptionModule, context: GraphQLContext):
+        super().__init__(miniapp, context)
         self.handler = handler
-        self.context = context
 
     @property
     def session(self):
@@ -69,17 +70,24 @@ class GqlMiniappModule(MiniappModule):
         for method in cls._all_own_methods():
             if not hasattr(method, "__gql__"):
                 continue
-            info = cast(GqlMethodInfo, getattr(method, "__gql__", None))
+            info = cast(GqlMethodInternals, getattr(method, "__gql__", None))
             cls.__register_method(miniapp, context, method, info)
 
     @classmethod
-    def __register_method(cls, miniapp: Miniapp, context: MiniappContext, method: MethodType, info: GqlMethodInfo):
+    def __make_wrapper(cls, miniapp: Miniapp):
+        def wrapper(minfo: GqlMethodInfo):
+            return minfo.wrap()
+        return wrapper
+
+    @classmethod
+    def __register_method(cls, miniapp: Miniapp, context: MiniappContext, method: MethodType, info: GqlMethodInternals):
+        wrapper = cls.__make_wrapper(miniapp)
         match info.method:
             case GqlMethod.QUERY:
-                context.graphql_methods.queries.append(method)
+                context.graphql_methods.register_query(wrapper, method)
             case GqlMethod.MUTATION:
-                context.graphql_methods.mutations.append(method)
+                context.graphql_methods.register_mutation(wrapper, method)
             case GqlMethod.SUBSCRIPTION:
-                context.graphql_methods.subscriptions.append(method)
+                context.graphql_methods.register_subscription(wrapper, method)
             case _:
                 raise ValueError(f"Unknown GraphQL method {info.method}")

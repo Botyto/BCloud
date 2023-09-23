@@ -34,10 +34,9 @@ class SubscriptionBuilder(MethodBuilder):
             return
         attrs = {}
         for chain in self._method_chains():
-            minfo = chain.method_info
             name = chain.binding_name
-            attrs[name] = self._build_field(minfo)
-            attrs[f"subscribe_{name}"] = minfo.wrap()
+            attrs[name] = self._build_field(chain.method_info)
+            attrs[f"subscribe_{name}"] = chain.wrap()
         return type("Subscription", (ObjectType,), attrs)
 
 
