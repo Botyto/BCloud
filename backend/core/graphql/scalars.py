@@ -4,10 +4,10 @@ from graphql import GraphQLError
 from graphql.language import StringValueNode, print_ast
 import json
 import re
-from uuid import UUID
+from uuid import UUID as PyUUID
 
 
-class GrapheneJson(Scalar):
+class Json(Scalar):
     """The `Json` scalar type represents a JSON value"""
 
     @staticmethod
@@ -34,7 +34,7 @@ class GrapheneJson(Scalar):
             raise GraphQLError(f"Json cannot represent value: {repr(value)}")
 
 
-class GrapheneTimedelta(Scalar):
+class Timedelta(Scalar):
     """The `timedelta` scalar type represents a duration value"""
 
     @staticmethod
@@ -56,7 +56,7 @@ class GrapheneTimedelta(Scalar):
             return value
         if not isinstance(value, str):
             raise GraphQLError(f"Timedelta cannot represent non-string value: {repr(value)}")
-        match = GrapheneTimedelta.PATTERN.match(value)
+        match = Timedelta.PATTERN.match(value)
         if match:
             return timedelta(
                 days=int(match.group(1)),
@@ -67,12 +67,12 @@ class GrapheneTimedelta(Scalar):
             raise GraphQLError(f"Timedelta cannot represent value: {repr(value)}")
 
 
-class GrapheneUUID(Scalar):
+class UUID(Scalar):
     """The `UUID` scalar type represents a UUID value"""
 
     @staticmethod
     def serialize(obj):
-        if not isinstance(obj, (UUID)):
+        if not isinstance(obj, (PyUUID)):
             raise GraphQLError(f"UUID cannot represent value: {repr(obj)}")
         return str(obj)
 
@@ -84,11 +84,11 @@ class GrapheneUUID(Scalar):
 
     @staticmethod
     def parse_value(value):
-        if isinstance(value, UUID):
+        if isinstance(value, PyUUID):
             return value
         if not isinstance(value, str):
             raise GraphQLError(f"UUID cannot represent non-string value: {repr(value)}")
         try:
-            return UUID(value)
+            return PyUUID(value)
         except ValueError:
             raise GraphQLError(f"UUID cannot represent value: {repr(value)}")

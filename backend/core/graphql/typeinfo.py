@@ -3,10 +3,10 @@ import graphene
 from graphql import GraphQLResolveInfo
 import inspect
 from typing import Any, Callable, TYPE_CHECKING
-from uuid import UUID
+from uuid import UUID as PyUUID
 
 from .context import GraphQLContext
-from .scalars import GrapheneJson, GrapheneTimedelta, GrapheneUUID
+from .scalars import Json, Timedelta, UUID
 if TYPE_CHECKING:
     from .schema.types import TypesBuilder
 
@@ -21,10 +21,10 @@ SCALAR_TYPES_TO_GQL = {
     datetime: graphene.DateTime,
     date: graphene.Date,
     time: graphene.Time,
-    timedelta: GrapheneTimedelta,
-    UUID: GrapheneUUID,
+    timedelta: Timedelta,
+    PyUUID: UUID,
     bytes: graphene.String,
-    dict: GrapheneJson,
+    dict: Json,
 }
 assert SCALAR_TYPES_SET == set(SCALAR_TYPES_TO_GQL), "Built-in scalars and their GraphQL types must match"
 
