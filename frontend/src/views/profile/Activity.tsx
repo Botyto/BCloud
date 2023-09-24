@@ -1,33 +1,11 @@
 import React from 'react';
-import { gql, useQuery } from '@apollo/client';
 import Loading from '../../components/Loading';
 import Pagination from '../../components/Pagination';
-
-const LOG = gql`
-query ActivityLog($pages: InputPagesInput!) {
-    profileActivityLog(pages: $pages) {
-        total
-        page
-        maxPage
-        items {
-            id
-            createdAtUtc
-            issuer
-            type
-            payload
-        }
-    }
-}`;
+import { useActivityLogQuery } from './api';
 
 export default function Activity() {
     const [page, setPage] = React.useState(0);
-    const logVars = useQuery(LOG, {
-        variables: {
-            pages: {
-                page: page,
-            },
-        },
-    });
+    const logVars = useActivityLogQuery(page);
     if (logVars.error) {
         return <span>Activity <span style={{color: "red"}}>{logVars.error.message}</span></span>;
     } else if (logVars.loading) {

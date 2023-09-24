@@ -1,27 +1,14 @@
 import React, { useState, MouseEvent } from 'react';
-import { gql, useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router';
+import { useLoginMutation, useRegisterMutation } from './api';
 
-const LOGIN = gql`
-mutation Login($username: String!, $password: String!) {
-    profileAuthLogin(username: $username, password: $password) {
-        jwt
-    }
-}`;
-
-const REGISTER = gql`
-mutation Register($username: String!, $password: String!) {
-    profileAuthRegister(username: $username, password: $password) {
-        jwt
-    }
-}`;
 
 export default function Login() {
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [error, setError] = useState<string>('');
-    const [login, loginVars] = useMutation(LOGIN);
-    const [register, registerVars] = useMutation(REGISTER);
+    const [login, loginVars] = useLoginMutation();
+    const [register, registerVars] = useRegisterMutation();
     const navigate = useNavigate();
 
     function onLogin(e: MouseEvent<HTMLButtonElement>) {
