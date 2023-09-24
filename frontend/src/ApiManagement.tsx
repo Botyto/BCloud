@@ -78,6 +78,7 @@ function ApiManagement(props: any) {
 		}).then(() => setClient(client))
 	
 		offlineLink.setup(client);*/
+		setClient(client);
 	
 		return () => {};
 	}, []);
