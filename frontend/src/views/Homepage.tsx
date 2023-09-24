@@ -23,6 +23,7 @@ export default function Homepage() {
                 <li>/profile</li>
                 <li><a href="/profile/login">/profile/login</a></li>
                 <li><a href="/profile/activity">/profile/activity</a></li>
+                <li><a href="/files">/files</a></li>
             </ul>
         </>;
     } else {

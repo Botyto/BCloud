@@ -46,6 +46,16 @@ if cmdline_str:
 logger.info("Startup (profile: %s)", env.profile)
 atexit.register(lambda: logger.info("Shutdown"))
 
+def load_miniapps():
+    from .api.gql import GraphQLMiniapp
+    from miniapps.profile.app import ProfileMiniapp
+    from miniapps.files.app import FilesMiniapp
+    return [
+        GraphQLMiniapp,
+        ProfileMiniapp,
+        FilesMiniapp,
+    ]
+
 def build_app():
     sql_settings = SqlSettings(
         host=cast(str, env.get("DB_HOST", "localhost")),
@@ -67,11 +77,9 @@ def build_app():
     context = MiniappContext(context, files, asyncjobs)
 
     miniapps = MiniappsManager(context)
-
-    from .api.gql import GraphQLMiniapp
-    from miniapps.profile.app import ProfileMiniapp
-    miniapps.apps.add(GraphQLMiniapp())
-    miniapps.apps.add(ProfileMiniapp())
+    miniapp_types = load_miniapps()
+    for miniapp_type in miniapp_types:
+        miniapps.register(miniapp_type())
     logger.info(f"Miniapp load time: %.3fs", time.time() - context.miniapp_init_time)
 
     context = AppContext(context, miniapps)
@@ -98,6 +106,7 @@ def run_migration(action: MigrationAction, title: str|None = None):
     )
     blob_settings = BlobSettings(cast(str, env.get("BLOB_FS_ROOT", ".")))
     context = DataContext(base_context, sql_settings, blob_settings)
+    load_miniapps()
     manager = Migrations(context)
     match action:
         case MigrationAction.INIT:

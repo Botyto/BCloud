@@ -62,7 +62,7 @@ class PagesInput:
 	def offset(self) -> int:
 		return self.real_page * self.real_size
 
-	def of(self, session: Session, statement: Select[Tuple[ItemType]], filter: Callable[[ItemType], ItemType]|None = None) -> PagesResult[ItemType]:
+	def of(self, session: Session, statement: Select[Tuple[ItemType]], filter: Callable[[ItemType], bool]|None = None) -> PagesResult[ItemType]:
 		assert len(statement.column_descriptions) == 1, "Query must return a single column"
 		self.validate()
 		column_type = statement.column_descriptions[0]["type"]
@@ -82,6 +82,6 @@ class PagesInput:
 		statement = statement.offset(self.offset).limit(self.real_size)
 		items = session.scalars(statement).all()
 		if filter is not None:
-			items = [filter(item) for item in items]
+			items = [item for item in items if filter(item)]
 			items = [item for item in items if item is not None]
 		return PagesResult(total, self.real_page, self.real_size, items)

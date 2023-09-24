@@ -56,7 +56,7 @@ class RestMiniappModule(MiniappModule, RestApiHandler):
         self.get_current_user()
         activity = Activity(
             created_at_utc=datetime.now().astimezone(timezone.utc),
-            issuer=self.miniapp.name,
+            issuer=self.miniapp.id,
             user_id=self.user_id,
             type=type,
             payload=payload,
