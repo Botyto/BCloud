@@ -1,13 +1,14 @@
 import React from 'react';
 import { gql, useQuery } from '@apollo/client';
 import Loading from '../../components/Loading';
+import Pagination from '../../components/Pagination';
 
 const LOG = gql`
 query ActivityLog($pages: InputPagesInput!) {
     profileActivityLog(pages: $pages) {
         total
         page
-        pageSize
+        maxPage
         items {
             id
             createdAtUtc
@@ -35,7 +36,7 @@ export default function Activity() {
             <div>Activity</div>
             <ol>
                 {
-                    logVars.data.profileActivityLog?.items?.map((item: any) => {
+                    logVars.data.profileActivityLog.items?.map((item: any) => {
                         const d = new Date();
                         d.setTime(Date.parse(item.createdAtUtc));
                         return <li key={item.id}>
@@ -45,6 +46,7 @@ export default function Activity() {
                     })
                 }
             </ol>
+            <Pagination radius={3} onSetPage={() => {}} {...logVars.data.profileActivityLog}/>
         </>;
     } else {
         return <span>Activity</span>;

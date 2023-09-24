@@ -19,7 +19,7 @@ class PagesResult(Generic[ItemType]):
 
 	@property
 	def max_page(self) -> int:
-		return self.total // self.page_size + (self.total % self.page_size > 0)
+		return self.total // self.page_size
 	
 	@property
 	def has_previous(self) -> bool:
