@@ -20,10 +20,11 @@ query ActivityLog($pages: InputPagesInput!) {
 }`;
 
 export default function Activity() {
+    const [page, setPage] = React.useState(0);
     const logVars = useQuery(LOG, {
         variables: {
             pages: {
-                page: 0,
+                page: page,
             },
         },
     });
@@ -46,7 +47,7 @@ export default function Activity() {
                     })
                 }
             </ol>
-            <Pagination radius={3} onSetPage={() => {}} {...logVars.data.profileActivityLog}/>
+            <Pagination radius={3} onSetPage={setPage} {...logVars.data.profileActivityLog}/>
         </>;
     } else {
         return <span>Activity</span>;
