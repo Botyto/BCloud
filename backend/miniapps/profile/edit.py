@@ -8,7 +8,7 @@ from core.graphql.result import SuccessResult
 class EditModule(GqlMiniappModule):
     @property
     def user(self):
-        user_id = self.handler.current_user
+        user_id = self.user_id
         if user_id is None:
             return None
         statement = select(User).where(User.id == user_id)

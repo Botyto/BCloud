@@ -55,10 +55,12 @@ class GqlMiniappModule(MiniappModule):
     
     @property
     def user_id(self):
+        self.handler.get_current_user()
         return self.handler.user_id
     
     @property
     def login_id(self):
+        self.handler.get_current_user()
         return self.handler.login_id
     
     def log_activity(self, type: str, payload: dict|None = None):

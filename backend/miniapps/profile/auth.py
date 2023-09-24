@@ -24,7 +24,7 @@ class AuthModule(GqlMiniappModule):
 
     @query()
     def user(self) -> User|None:
-        user_id = self.handler.current_user
+        user_id = self.user_id
         if user_id is None:
             return None
         statement = select(User).where(User.id == user_id)
