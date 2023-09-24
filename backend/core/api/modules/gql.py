@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
+import functools
 from types import MethodType
 from typing import cast
 
@@ -92,7 +93,14 @@ class GqlMiniappModule(MiniappModule):
     @classmethod
     def __make_wrapper(cls, miniapp: Miniapp):
         def wrapper(minfo: GqlMethodInfo):
-            return minfo.wrap(miniapp)
+            fn = minfo.wrap(miniapp)
+            @functools.wraps(fn)
+            def commit_wrapper(root, *args, **kwargs):
+                result = fn(root, *args, **kwargs)
+                if root._session is not None:
+                    root._session.commit()
+                return result
+            return commit_wrapper
         return wrapper
 
     @classmethod

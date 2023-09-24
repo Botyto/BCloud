@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from sqlalchemy import ForeignKey
 from typing import Generator, List, Tuple, Optional
-from uuid import UUID as PyUUID
+from uuid import UUID as PyUUID, uuid4
 
 from .tools import fspath
 
@@ -26,11 +26,11 @@ class FileType(Enum):
 
 class FileMetadata(Model):
     __tablename__ = "FileMetadata"
-    id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True)
+    id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True, default=uuid4)
     name: Mapped[str] = mapped_column(String(512))
     mime_type: Mapped[str] = mapped_column(String(MIME_MAX_LENGTH), default=None, nullable=True)
     size: Mapped[int] = mapped_column(Integer, default=None, nullable=True)
-    parent_id: Mapped[PyUUID] = mapped_column(ForeignKey("FileMetadata.id"))
+    parent_id: Mapped[PyUUID] = mapped_column(ForeignKey("FileMetadata.id"), nullable=True, default=None)
     parent: Mapped["FileMetadata"] = relationship("FileMetadata", remote_side=[id])
     children: Mapped[List["FileMetadata"]] = relationship("FileMetadata", uselist=True, back_populates="parent")
     storage_id: Mapped[PyUUID] = mapped_column(ForeignKey("FileStorage.id"))
@@ -116,7 +116,7 @@ class FileMetadata(Model):
 
 class FileStorage(Model):
     __tablename__ = "FileStorage"
-    id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True)
+    id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True, default=uuid4)
     owner_id: Mapped[PyUUID] = mapped_column(ForeignKey(User.id))
     owner: Mapped[User] = relationship(User)
     name: Mapped[str] = mapped_column(String(512))
