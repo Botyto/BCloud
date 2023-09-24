@@ -31,6 +31,7 @@ export default function Pagination(props: PaginationProps) {
                 return <button
                     disabled={page == currentPage}
                     onClick={e => changePage(e, page)}
+                    key={page}
                 >
                     {page}
                 </button>;
