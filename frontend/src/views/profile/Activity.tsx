@@ -47,7 +47,7 @@ export default function Activity() {
                     })
                 }
             </ol>
-            <Pagination radius={3} onSetPage={setPage} {...logVars.data.profileActivityLog}/>
+            <Pagination onSetPage={setPage} {...logVars.data.profileActivityLog}/>
         </>;
     } else {
         return <span>Activity</span>;
