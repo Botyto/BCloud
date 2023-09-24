@@ -62,7 +62,8 @@ function ApiManagement(props: any) {
 				);
 			},
 			wsLink,
-			concat(authMiddleware, ApolloLink.from([offlineLink, httpLink])),
+			concat(authMiddleware, httpLink),
+			//concat(authMiddleware, ApolloLink.from([offlineLink, httpLink])),
 		);
 
 		const client = new ApolloClient({
@@ -70,13 +71,13 @@ function ApiManagement(props: any) {
 			link: link,
 		});
 	
-		persistCache({
+		/*persistCache({
 			cache,
 			storage: new LocalStorageWrapper(localStorage),
 			trigger: 'background',
 		}).then(() => setClient(client))
 	
-		offlineLink.setup(client);
+		offlineLink.setup(client);*/
 	
 		return () => {};
 	}, []);
