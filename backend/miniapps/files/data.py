@@ -114,6 +114,7 @@ class FileMetadata(Model):
         self.atime = now
         self.mtime = now
 
+
 class FileStorage(Model):
     __tablename__ = "FileStorage"
     id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True, default=uuid4)
