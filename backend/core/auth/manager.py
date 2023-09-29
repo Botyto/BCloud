@@ -88,15 +88,15 @@ class UserManager(BaseManager):
         assert self.session is not None, "Session not initialized"
         statement = select(Login, User) \
             .where(Login.id == login_id) \
-            .join(Login.user).add_columns(User)
+            .join(Login.owner).add_columns(User)
         login: Login|None = self.session.scalars(statement).one_or_none()
         if login is None:
             if self.sensitive_authentication_errors:
                 raise AuthError("Invalid login")
             raise AuthError()
-        login.user.change_password(old_password, new_password)
+        login.owner.change_password(old_password, new_password)
         if logout_all:
-            statement = delete(Login).where(Login.user_id == login.user_id)
+            statement = delete(Login).where(Login.owner_id == login.owner_id)
             self.session.execute(statement)
 
     def set_role(self, user_id: UUID, role: UserRole):
