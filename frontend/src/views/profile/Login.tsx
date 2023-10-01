@@ -1,5 +1,5 @@
 import React, { useState, MouseEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 import { useLoginMutation, useRegisterMutation } from './api';
 
 
@@ -61,7 +61,7 @@ export default function Login() {
 
     return <>
         <form>
-            Login<br/>
+            Login (<Link to="/">homepage</Link>)<br/>
             Username: <input type="text" value={username} onChange={(v) => setUsername(v.target.value)}/><br/>
             Password: <input type="password" value={password} onChange={(v) => setPassword(v.target.value)}/><br/>
             <button onClick={onLogin}>Login</button>

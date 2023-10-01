@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Loading from '../../components/Loading';
 import { useStorageCreateMutation, useStorageListQuery } from './api';
 import Pagination from '../../components/Pagination';
@@ -29,12 +30,20 @@ export default function Storages() {
     }
 
     if (storageListVars.loading) {
-        return <span>Storages <Loading/></span>
+        return <span>
+            Storages (<Link to="/">homepage</Link>)<br/>
+            <Loading/>
+        </span>;
     } else if (storageListVars.error) {
-        return <span>Storages <span style={{color: "red"}}>{storageListVars.error.message}</span></span>;
+        return <span>
+            Storages (<Link to="/">homepage</Link>)
+            <span style={{color: "red"}}>{storageListVars.error.message}</span>
+        </span>;
     } else {
         return <>
-            <div>Storages</div>
+            <div>
+                Storages (<Link to="/">homepage</Link>)
+            </div>
             <ul>
                 {storageListVars.data?.filesStorageList.items.map((storage: any) => {
                     return <li key={storage.id}>{storage.name}</li>;

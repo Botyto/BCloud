@@ -1,5 +1,6 @@
 import React from 'react';
 import { gql, useQuery } from '@apollo/client';
+import { Link } from 'react-router-dom';
 import Loading from '../components/Loading';
 
 const USER = gql`
@@ -21,9 +22,9 @@ export default function Homepage() {
             <div>Hi {currentUserVars.data.profileAuthUser?.displayName || "MISSING USER"}</div>
             <ul>
                 <li>/profile</li>
-                <li><a href="/profile/login">/profile/login</a></li>
-                <li><a href="/profile/activity">/profile/activity</a></li>
-                <li><a href="/files">/files</a></li>
+                <li><Link to="/profile/login">/profile/login</Link></li>
+                <li><Link to="/profile/activity">/profile/activity</Link></li>
+                <li><Link to="/files">/files</Link></li>
             </ul>
         </>;
     } else {
