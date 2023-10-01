@@ -3,6 +3,13 @@ import { Link } from 'react-router-dom';
 import Loading from '../../components/Loading';
 import Pagination from '../../components/Pagination';
 import { useActivityLogQuery } from './api';
+import { GetRenderer, ParseRawActivity } from '../../components/Activity';
+
+import ProfileRenderers from './activities';
+
+const AllRenderers = {
+    ...ProfileRenderers,
+};
 
 export default function Activity() {
     const [page, setPage] = React.useState(0);
@@ -25,12 +32,8 @@ export default function Activity() {
             <ol>
                 {
                     logVars.data.profileActivityLog.items?.map((item: any) => {
-                        const d = new Date();
-                        d.setTime(Date.parse(item.createdAtUtc));
-                        return <li key={item.id}>
-                            <div>{d.toLocaleString()} {item.issuer} -&gt; {item.type}</div>
-                            <div>{item.payload}</div>
-                        </li>;
+                        const Renderer = GetRenderer(item, AllRenderers);
+                        return Renderer(ParseRawActivity(item));
                     })
                 }
             </ol>
