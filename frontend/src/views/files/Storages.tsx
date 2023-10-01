@@ -1,16 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Loading from '../../components/Loading';
-import { useStorageCreateMutation, useStorageListQuery } from './api';
+import { useStorageCreateMutation, useStorageDeleteMutation, useStorageListQuery, useStorageRenameMutation } from './api';
 import Pagination from '../../components/Pagination';
 
 export default function Storages() {
     const [page, setPage] = React.useState(0);
     const storageListVars = useStorageListQuery(page);
+    const [storageErrors, setStorageErrors] = React.useState<any>({});
 
     const [newStorageName, setNewStorageName] = React.useState('');
     const [newStorageError, setNewStorageError] = React.useState('');
     const [storageCreate, storageCreateVars] = useStorageCreateMutation();
+    const [storageRename, storageRenameVars] = useStorageRenameMutation();
+    const [storageDelete, storageDeleteVars] = useStorageDeleteMutation();
 
     function onCreateStorage(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -27,6 +30,43 @@ export default function Storages() {
         });
         setNewStorageError('');
         setNewStorageName('');
+    }
+
+    function onRename(e: React.MouseEvent<HTMLButtonElement>, storage: any) {
+        e.preventDefault();
+        const name = prompt('New name', storage.name);
+        if (!name) { return; }
+        storageRename({
+            variables: {
+                id: storage.id,
+                name: name,
+            },
+            onCompleted: () => {
+                storageListVars.refetch();
+            },
+            onError: (e) => {
+                const newErrors: any = {...storageErrors};
+                newErrors[storage.id] = e.message
+                setStorageErrors(newErrors);
+            },
+        });
+    }
+
+    function onDelete(e: React.MouseEvent<HTMLButtonElement>, storage: any) {
+        e.preventDefault();
+        storageDelete({
+            variables: {
+                id: storage.id,
+            },
+            onCompleted: () => {
+                storageListVars.refetch();
+            },
+            onError: (e) => {
+                const newErrors: any = {...storageErrors};
+                newErrors[storage.id] = e.message
+                setStorageErrors(newErrors);
+            },
+        });
     }
 
     if (storageListVars.loading) {
@@ -47,9 +87,14 @@ export default function Storages() {
             <ul>
                 {storageListVars.data?.filesStorageList.items.map((storage: any) => {
                     return <li key={storage.id}>
-                        <Link to={`/files/${storage.id}/`}>
-                            {storage.name}
-                        </Link>
+                        {storage.name}
+                        - <Link to={`/files/${storage.id}/`}>browse</Link>
+                        - <button onClick={e => onRename(e, storage)}>rename</button>
+                        - <button onClick={e => onDelete(e, storage)}>delete</button>
+                        {
+                            storageErrors[storage.id] &&
+                            <span style={{color: "red"}}>{storageErrors[storage.id]}</span>
+                        }
                     </li>;
                 })}
             </ul>

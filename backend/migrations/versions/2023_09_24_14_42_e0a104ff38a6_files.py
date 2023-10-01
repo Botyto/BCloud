@@ -22,7 +22,7 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('user_id', sa.UUID(), nullable=False),
     sa.Column('name', sa.String(length=512), nullable=False),
-    sa.ForeignKeyConstraint(['user_id'], ['User.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['User.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('FileMetadata',
@@ -36,9 +36,9 @@ def upgrade() -> None:
     sa.Column('atime_utc', sa.DateTime(), nullable=False),
     sa.Column('mtime_utc', sa.DateTime(), nullable=False),
     sa.Column('ctime_utc', sa.DateTime(), nullable=False),
-    sa.ForeignKeyConstraint(['parent_id'], ['FileMetadata.id'], ),
-    sa.ForeignKeyConstraint(['root_storage_id'], ['FileStorage.id'], ),
-    sa.ForeignKeyConstraint(['storage_id'], ['FileStorage.id'], ),
+    sa.ForeignKeyConstraint(['parent_id'], ['FileMetadata.id'], onupdate='CASCADE', ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['root_storage_id'], ['FileStorage.id'], onupdate='CASCADE', ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['storage_id'], ['FileStorage.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

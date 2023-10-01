@@ -1,6 +1,6 @@
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from ..data import FileMetadata, FileStorage, DIRECTORY_MIME
 
@@ -38,8 +38,8 @@ class StorageManager:
         if not service and name.startswith(self.SERVICE_PREFIX):
             raise ValueError(f"Storage name cannot start with {self.SERVICE_PREFIX}")
         ensure_str_fit("name", name, FileStorage.name)
-        root = FileMetadata(name="root", mime_type=DIRECTORY_MIME, size=0)
-        storage = FileStorage(name=name, user_id=self.user_id)
+        root = FileMetadata(id=uuid4(), name="root", mime_type=DIRECTORY_MIME)
+        storage = FileStorage(id=uuid4(), name=name, user_id=self.user_id)
         storage.root_dir = root
         root.storage = storage
         self.session.add(storage)
@@ -48,15 +48,19 @@ class StorageManager:
     def delete(self, id: UUID):
         statement = delete(FileStorage) \
             .where(FileStorage.user_id == self.user_id) \
-            .where(FileStorage.id == id)
+            .where(FileStorage.id == id) \
+            .returning(FileStorage.name)
         result = self.session.execute(statement)
-        return result.rowcount != 0
+        name = result.scalar_one()
+        return True, name
     
     def rename(self, id: UUID, name: str):
         ensure_str_fit("name", name, FileStorage.name)
-        statement = update(FileStorage) \
+        # OPTIMIZE: make both the old-value-getter and the update in one statement
+        get_statement = select(FileStorage) \
             .where(FileStorage.user_id == self.user_id) \
-            .where(FileStorage.id == id) \
-            .values(name=name)
-        result = self.session.scalars(statement).one()
-        return result
+            .where(FileStorage.id == id)
+        storage = self.session.scalars(get_statement).one()
+        old_name = storage.name
+        storage.name = name
+        return storage, old_name

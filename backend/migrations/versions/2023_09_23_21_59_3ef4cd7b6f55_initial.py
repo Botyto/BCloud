@@ -57,7 +57,7 @@ def upgrade() -> None:
     sa.Column('issuer', sa.String(length=64), nullable=False),
     sa.Column('type', sa.String(length=512), nullable=False),
     sa.Column('payload', sa.JSON(), nullable=True),
-    sa.ForeignKeyConstraint(['user_id'], ['User.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['User.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('Login',
@@ -67,7 +67,7 @@ def upgrade() -> None:
     sa.Column('last_used_utc', sa.DateTime(), nullable=False),
     sa.Column('enabled', sa.Boolean(), nullable=False),
     sa.Column('user_id', sa.UUID(), nullable=False),
-    sa.ForeignKeyConstraint(['user_id'], ['User.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['User.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

@@ -58,7 +58,7 @@ class Login(Model):
     expire_at_utc: Mapped[datetime] = mapped_column(DateTime)
     last_used_utc: Mapped[datetime] = mapped_column(DateTime)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
-    user_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id"), info={"owner": True})
+    user_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id", onupdate="CASCADE", ondelete="CASCADE"), info={"owner": True})
     user: Mapped[User] = relationship(back_populates="logins", foreign_keys=[user_id])
 
     def __init__(self, user: User):
@@ -78,7 +78,7 @@ class Activity(Model):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     created_at_utc: Mapped[datetime] = mapped_column(DateTime)
-    user_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id"), info={"owner": True})
+    user_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id", onupdate="CASCADE", ondelete="CASCADE"), info={"owner": True})
     user: Mapped[User] = relationship(back_populates="activities", foreign_keys=[user_id])
     issuer: Mapped[str] = mapped_column(String(64))
     type: Mapped[str] = mapped_column(String(512))

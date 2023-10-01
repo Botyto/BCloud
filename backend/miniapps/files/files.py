@@ -33,25 +33,35 @@ class FilesModule(GqlMiniappModule):
     
     @mutation()
     def makefile(self, path: str, mime_type: str|None = None) -> FileMetadata:
-        return self.manager.makefile(path, mime_type=mime_type)
+        file = self.manager.makefile(path, mime_type=mime_type)
+        self.log_activity("files.new", {"path": path, "type": "file"})
+        return file
     
     @mutation()
     def copyfile(self, src: str, dst: str) -> FileMetadata:
-        return self.manager.copyfile(src, dst)
+        file = self.manager.copyfile(src, dst)
+        self.log_activity("files.copy", {"src": src, "dst": dst, "type": file.isfile and "file" or "dir"})
+        return file
     
     @mutation()
     def makedirs(self, path: str) -> FileMetadata:
-        return self.manager.makedirs(path)
+        dir = self.manager.makedirs(path)
+        self.log_activity("files.new", {"path": path, "type": "dir"})
+        return dir
     
     @mutation()
     def makelink(self, path: str, target: str) -> FileMetadata:
-        return self.manager.makelink(path, target)
+        link = self.manager.makelink(path, target)
+        self.log_activity("files.new", {"path": path, "target": target, "type": "link"})
+        return link
     
     @mutation()
     def delete(self, path: str) -> SuccessResult:
         self.manager.delete(path)
+        self.log_activity("files.delete", {"path": path})
         return SuccessResult()
 
     @mutation()
     def rename(self, src: str, dst: str) -> FileMetadata:
+        self.log_activity("files.rename", {"src": src, "dst": dst})
         return self.manager.rename(src, dst)

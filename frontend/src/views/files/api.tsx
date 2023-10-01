@@ -50,3 +50,26 @@ mutation StorageCreate($name: String!) {
 export function useStorageCreateMutation() {
     return useMutation(STORAGE_CREATE);
 }
+
+const STORAGE_RENAME = gql`
+mutation StorageRename($id: UUID, $name: String!) {
+    filesStorageRename(id: $id, name: $name) {
+        id
+        name
+    }
+}`
+
+export function useStorageRenameMutation() {
+    return useMutation(STORAGE_RENAME);
+}
+
+const STORAGE_DELETE = gql`
+mutation StorageDelete($id: UUID) {
+    filesStorageDelete(id: $id) {
+        success
+    }
+}`
+
+export function useStorageDeleteMutation() {
+    return useMutation(STORAGE_DELETE);
+}

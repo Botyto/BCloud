@@ -34,12 +34,21 @@ class StorageModule(GqlMiniappModule):
     
     @mutation()
     def create(self, name: str) -> FileStorage:
-        return self.manager.create(name, service=False)
+        storage = self.manager.create(name, service=False)
+        self.log_activity("storage.create", {"id": str(storage.id), "name": name})
+        return storage
 
     @mutation()
     def delete(self, id: UUID) -> SuccessResult:
-        return SuccessResult(self.manager.delete(id))
+        success, name = self.manager.delete(id)
+        if success:
+            self.log_activity("storage.delete", {"id": str(id), "name": name})
+            return SuccessResult()
+        else:
+            return SuccessResult(False)
     
     @mutation()
     def rename(self, id: UUID, name: str) -> FileStorage:
-        return self.manager.rename(id, name)
+        storage, previous = self.manager.rename(id, name)
+        self.log_activity("storage.rename", {"id": str(id), "new": name, "old": previous})
+        return storage

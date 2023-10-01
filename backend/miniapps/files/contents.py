@@ -51,6 +51,10 @@ class ContentsModule(RestMiniappModule):
         if content is None:
             raise ValueError("No content provided")
         file = self.manager.by_id(UUID(file_id))
+        mime_type = self.request.headers.get("Content-Type")
+        if mime_type is not None:
+            file.mime_type = mime_type
+        self.log_activity("files.write", {"path": file.abspath, "mime": file.mime_type})
         self.contents.write(file, content)
 
     @post("api/files/(.*)/download", name="files.contents.download")
