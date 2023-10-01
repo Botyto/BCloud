@@ -55,7 +55,7 @@ class FileManager:
             return None
         statement = select(FileStorage) \
             .where(FileStorage.id == storage_id) \
-            .where(FileStorage.owner_id == self.user_id)
+            .where(FileStorage.user_id == self.user_id)
         storage = self.session.scalars(statement).one()
         dir = storage.root_dir
         for step in parts:
@@ -73,7 +73,7 @@ class FileManager:
         statement = select(FileMetadata) \
             .where(FileMetadata.id == id)
         file = self.session.scalars(statement).one()
-        if file.owner_id != self.user_id:
+        if file.user_id != self.user_id:
             raise AuthError()
         return file
     

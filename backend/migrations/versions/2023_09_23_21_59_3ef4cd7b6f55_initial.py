@@ -53,11 +53,11 @@ def upgrade() -> None:
     op.create_table('Activity',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at_utc', sa.DateTime(), nullable=False),
-    sa.Column('owner_id', sa.UUID(), nullable=False),
+    sa.Column('user_id', sa.UUID(), nullable=False),
     sa.Column('issuer', sa.String(length=64), nullable=False),
     sa.Column('type', sa.String(length=512), nullable=False),
     sa.Column('payload', sa.JSON(), nullable=True),
-    sa.ForeignKeyConstraint(['owner_id'], ['User.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['User.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('Login',
@@ -66,8 +66,8 @@ def upgrade() -> None:
     sa.Column('expire_at_utc', sa.DateTime(), nullable=False),
     sa.Column('last_used_utc', sa.DateTime(), nullable=False),
     sa.Column('enabled', sa.Boolean(), nullable=False),
-    sa.Column('owner_id', sa.UUID(), nullable=False),
-    sa.ForeignKeyConstraint(['owner_id'], ['User.id'], ),
+    sa.Column('user_id', sa.UUID(), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['User.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

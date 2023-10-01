@@ -10,5 +10,5 @@ class ActivityModule(GqlMiniappModule):
     def log(self, pages: PagesInput) -> PagesResult[Activity]:
         if self.handler.current_user is None:
             return PagesResult.empty()
-        statement = select(Activity).where(Activity.owner_id == self.handler.current_user)
+        statement = select(Activity).where(Activity.user_id == self.handler.current_user)
         return pages.of(self.session, statement)

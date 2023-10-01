@@ -20,14 +20,14 @@ class StorageManager:
 
     def list(self, pages: PagesInput):
         statement = select(FileStorage) \
-            .where(FileStorage.owner_id == self.user_id)
+            .where(FileStorage.user_id == self.user_id)
         def discard_service(storage: FileStorage):
             return not storage.name.startswith(self.SERVICE_PREFIX)
         return pages.of(self.session, statement, discard_service)
     
     def get(self, id: UUID):
         statement = select(FileStorage) \
-            .where(FileStorage.owner_id == self.user_id) \
+            .where(FileStorage.user_id == self.user_id) \
             .where(FileStorage.id == id)
         return self.session.scalars(statement).one()
     
@@ -39,7 +39,7 @@ class StorageManager:
             raise ValueError(f"Storage name cannot start with {self.SERVICE_PREFIX}")
         ensure_str_fit("name", name, FileStorage.name)
         root = FileMetadata(name="root", mime_type=DIRECTORY_MIME, size=0)
-        storage = FileStorage(name=name, owner_id=self.user_id)
+        storage = FileStorage(name=name, user_id=self.user_id)
         storage.root_dir = root
         root.storage = storage
         self.session.add(storage)
@@ -47,7 +47,7 @@ class StorageManager:
     
     def delete(self, id: UUID):
         statement = delete(FileStorage) \
-            .where(FileStorage.owner_id == self.user_id) \
+            .where(FileStorage.user_id == self.user_id) \
             .where(FileStorage.id == id)
         result = self.session.execute(statement)
         return result.rowcount != 0
@@ -55,7 +55,7 @@ class StorageManager:
     def rename(self, id: UUID, name: str):
         ensure_str_fit("name", name, FileStorage.name)
         statement = update(FileStorage) \
-            .where(FileStorage.owner_id == self.user_id) \
+            .where(FileStorage.user_id == self.user_id) \
             .where(FileStorage.id == id) \
             .values(name=name)
         result = self.session.scalars(statement).one()

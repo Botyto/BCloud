@@ -77,7 +77,7 @@ class AuthHandlerMixin:
             raise AuthError()
         # TODO ensure login is trustworthy
         self.login_id = login_id
-        self.user_id = login.owner_id
+        self.user_id = login.user_id
         login.last_used_utc = now
         login.expire_at_utc = now + self.login_validity
         return self.user_id

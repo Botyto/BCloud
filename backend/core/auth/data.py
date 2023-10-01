@@ -58,15 +58,15 @@ class Login(Model):
     expire_at_utc: Mapped[datetime] = mapped_column(DateTime)
     last_used_utc: Mapped[datetime] = mapped_column(DateTime)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
-    owner_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id"), info={"owner": True})
-    owner: Mapped[User] = relationship(back_populates="logins", foreign_keys=[owner_id])
+    user_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id"), info={"owner": True})
+    user: Mapped[User] = relationship(back_populates="logins", foreign_keys=[user_id])
 
     def __init__(self, user: User):
         if user.role == UserRole.NEW:
             raise ValueError("Cannot login with NEW user")
         self.id = uuid4()
-        self.owner_id = user.id
-        self.owner = user
+        self.user_id = user.id
+        self.user = user
         now = datetime.utcnow().replace(tzinfo=timezone.utc)
         self.created_at_utc = now
         self.expire_at_utc = now + self.VALID_DURATION
@@ -78,8 +78,8 @@ class Activity(Model):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     created_at_utc: Mapped[datetime] = mapped_column(DateTime)
-    owner_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id"), info={"owner": True})
-    owner: Mapped[User] = relationship(back_populates="activities", foreign_keys=[owner_id])
+    user_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id"), info={"owner": True})
+    user: Mapped[User] = relationship(back_populates="activities", foreign_keys=[user_id])
     issuer: Mapped[str] = mapped_column(String(64))
     type: Mapped[str] = mapped_column(String(512))
     payload: Mapped[dict] = mapped_column(JSON, nullable=True, default=None)

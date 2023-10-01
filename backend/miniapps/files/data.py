@@ -42,12 +42,12 @@ class FileMetadata(Model):
     ctime_utc: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
     @property
-    def owner_id(self) -> PyUUID:
-        return self.storage.owner_id
+    def user_id(self) -> PyUUID:
+        return self.storage.user_id
 
     @property
-    def owner(self) -> User:
-        return self.storage.owner
+    def user(self) -> User:
+        return self.storage.user
 
     @property
     def total_size(self) -> int:
@@ -118,8 +118,8 @@ class FileMetadata(Model):
 class FileStorage(Model):
     __tablename__ = "FileStorage"
     id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True, default=uuid4)
-    owner_id: Mapped[PyUUID] = mapped_column(ForeignKey(User.id))
-    owner: Mapped[User] = relationship(User)
+    user_id: Mapped[PyUUID] = mapped_column(ForeignKey(User.id))
+    user: Mapped[User] = relationship(User)
     name: Mapped[str] = mapped_column(String(512))
     all_files: Mapped[List[FileMetadata]] = relationship(FileMetadata, uselist=True, back_populates="storage", foreign_keys=[FileMetadata.storage_id])
     root_dir: Mapped[FileMetadata] = relationship(FileMetadata, uselist=False, back_populates="root_storage", foreign_keys=[FileMetadata.root_storage_id])

@@ -34,10 +34,14 @@ function ApiManagement(props: any) {
 				if ('authorization' in headers) {
 					return { headers };
 				}
+				const token = localStorage.getItem("authentication-token");
+				if (!token || token === "") {
+					return { headers };
+				}
 				return {
 					headers: {
 						...headers,
-						authorization: 'Bearer ' + localStorage.getItem('authentication-token') || null,
+						authorization: "Bearer " + token,
 					}
 				};
 			});
