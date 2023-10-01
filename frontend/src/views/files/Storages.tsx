@@ -46,7 +46,11 @@ export default function Storages() {
             </div>
             <ul>
                 {storageListVars.data?.filesStorageList.items.map((storage: any) => {
-                    return <li key={storage.id}>{storage.name}</li>;
+                    return <li key={storage.id}>
+                        <Link to={`/files/${storage.id}/`}>
+                            {storage.name}
+                        </Link>
+                    </li>;
                 })}
             </ul>
             <Pagination {...storageListVars.data.filesStorageList} setPage={setPage} />
