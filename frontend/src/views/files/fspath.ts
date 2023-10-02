@@ -42,7 +42,7 @@ function join(storageid: string|null, parts: string[]) {
     }
     if (storageid !== null) {
         if (!parts[0].startsWith(sep)) {
-            parts = [sep, ...parts];
+            parts = [sep + parts[0], ...parts.slice(1)];
         }
         return `${storageid}${storageSep}${parts.join(sep)}`;
     }
@@ -70,7 +70,7 @@ function normPath(path: string) {
 
 function getParts(path: string): [string|null, string[]] {
     const [storageId, filePath] = stripStorage(path);
-    const parts = path.split(sep).filter((part) => part !== "");;
+    const parts = filePath.split(sep).filter((part) => part !== "");;
     return [storageId, parts];
 }
 

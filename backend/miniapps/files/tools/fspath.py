@@ -52,7 +52,7 @@ def join(storage_id: UUID|str|None, *parts: str):
         return SEP
     if storage_id is not None:
         if not parts[0].startswith(SEP):
-            parts = (SEP,) + parts
+            parts = (SEP + parts[0], *parts[1:])
         return f"{storage_id}{STORAGE_SEP}{SEP.join(parts)}"
     return SEP.join(parts)
 
@@ -79,9 +79,9 @@ def get_parts(path: str):
 
 def dirname(path: str):
     sep_idx = path.rfind(SEP)
-    if sep_idx == -1:
+    if sep_idx == -1 or sep_idx == len(path) - 1:
         return path
-    return path[:sep_idx]
+    return path[:sep_idx + 1]
 
 def basename(path: str):
     sep_idx = path.rfind(SEP)

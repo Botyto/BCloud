@@ -46,6 +46,7 @@ class FileManager:
             linked_id = self.contents.read(metadata).decode("utf-8")
             linked_file = self.by_id(UUID(linked_id))
             return linked_file
+        return metadata
 
     def by_path(self, path: str, *, follow_last_link: bool = True):
         storage_id, parts = fspath.get_parts(path)
@@ -93,9 +94,9 @@ class FileManager:
             size=0,
             parent=dir,
             storage=dir.storage,
-            atime=now,
-            mtime=now,
-            ctime=now)
+            atime_utc=now,
+            mtime_utc=now,
+            ctime_utc=now)
         self.session.add(file)
         return file
     
@@ -134,9 +135,9 @@ class FileManager:
                         size=0,
                         parent=dir,
                         storage=dir.storage,
-                        atime=now,
-                        mtime=now,
-                        ctime=now)
+                        atime_utc=now,
+                        mtime_utc=now,
+                        ctime_utc=now)
                     self.session.add(newdir)
                     dir = newdir
                 break

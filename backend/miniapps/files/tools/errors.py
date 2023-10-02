@@ -1,14 +1,18 @@
 class FileError(Exception):
-    pass
+    def __init__(self, msg: str, path: str):
+        super().__init__(f"{msg}: {path}")
 
 
 class DirectoryNotFound(FileError):
-    pass
+    def __init__(self, path: str):
+        super().__init__("Directory not found", path)
 
 
 class FileAlreadyExists(FileError):
-    pass
+    def __init__(self, path: str):
+        super().__init__("File already exists", path)
 
 
 class StorageNotSpecified(FileError):
-    pass
+    def __init__(self, path: str):
+        super().__init__("Storage not specified", path)
