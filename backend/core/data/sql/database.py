@@ -5,6 +5,7 @@ from sqlalchemy.orm import DeclarativeBase, MappedColumn, sessionmaker, Session
 from typing import List
 
 from .settings import SqlSettings
+from .slugs import ensure_slug_setup
 
 from ..context import DataContext
 
@@ -67,10 +68,14 @@ class Database:
                     continue
                 assert column.name.endswith("_utc"), f"DateTime column {cls_name}.{column.name} must end with _utc"
 
+        def slug_asserts(cls):
+            ensure_slug_setup(cls)
+
         for cls in Model.__subclasses__():
             table_name = getattr(cls, "__tablename__", getattr(cls, "__table__"))
             assert table_name == cls.__name__, "Table name must be the same as the model class name"
             datetime_asserts(cls)
+            slug_asserts(cls)
 
 def apply_timezone_guard(mapper, cls):
     cls_name = cls.__name__
