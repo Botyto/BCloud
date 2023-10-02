@@ -9,6 +9,7 @@ query StorageList($pages: InputPagesInput!) {
         items {
             id
             name
+            slug
         }
     }
 }`;
@@ -28,6 +29,7 @@ query StorageMeta($id: ID!) {
     filesStorageMetadata(id: $id) {
         id
         name
+        slug
     }
 }`;
 
@@ -44,6 +46,7 @@ mutation StorageCreate($name: String!) {
     filesStorageCreate(name: $name) {
         id
         name
+        slug
     }
 }`
 
@@ -56,6 +59,7 @@ mutation StorageRename($id: UUID, $name: String!) {
     filesStorageRename(id: $id, name: $name) {
         id
         name
+        slug
     }
 }`
 

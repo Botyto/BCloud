@@ -88,7 +88,7 @@ export default function Storages() {
                 {storageListVars.data?.filesStorageList.items.map((storage: any) => {
                     return <li key={storage.id}>
                         {storage.name}
-                        - <Link to={`/files/${storage.id}/`}>browse</Link>
+                        - <Link to={`/files/${storage.slug}/`}>browse</Link>
                         - <button onClick={e => onRename(e, storage)}>rename</button>
                         - <button onClick={e => onDelete(e, storage)}>delete</button>
                         {

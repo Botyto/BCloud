@@ -2,8 +2,9 @@ const sep = "/";
 const storageSep = ":";
 const currentDir = ".";
 const parentDir = "..";
+const slugLength = 41;
 const uuidLength = 36;
-const uuidRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+//const uuidRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
 
 function isValid(path: string) {
     if (path === "") {
@@ -18,26 +19,26 @@ function isValid(path: string) {
 
 function hasStorage(path: string) {
     const colonidx = path.indexOf(":");
-    if (colonidx !== uuidLength) {
-        return false;
-    }
-    return uuidRegex.exec(path.slice(0, colonidx)) !== null;
+    return colonidx !== -1 && colonidx < Math.max(uuidLength, slugLength);
+    // if (colonidx !== uuidLength) {
+    //     return false;
+    // }
+    //return uuidRegex.exec(path.slice(0, colonidx)) !== null;
 }
 
 function stripStorage(path: string): [string|null, string] {
     if (hasStorage(path)) {
-        const storageId = path.slice(0, uuidLength);
-        const filePath = path.slice(uuidLength + 1);
+        const colonidx = path.indexOf(":");
+        const storageId = path.slice(0, colonidx);
+        const filePath = path.slice(colonidx + 1);
         return [storageId, filePath];
     }
     return [null, path];
 }
 
 function isAbs(path: string) {
-    if (hasStorage(path)) {
-        return path[uuidLength] == storageSep;
-    }
-    return path.startsWith(sep);
+    const colonidx = path.indexOf(":");
+    return colonidx !== -1 || path.startsWith(sep);
 }
 
 function join(storageid: string|null, parts: string[]) {
