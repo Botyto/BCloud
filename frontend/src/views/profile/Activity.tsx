@@ -33,7 +33,7 @@ export default function Activity() {
                 {
                     logVars.data.profileActivityLog.items?.map((item: any) => {
                         const Renderer = GetRenderer(item, AllRenderers);
-                        return Renderer(ParseRawActivity(item));
+                        return <Renderer key={item.id} {...ParseRawActivity(item)} />;
                     })
                 }
             </ol>

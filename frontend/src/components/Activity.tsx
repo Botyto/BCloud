@@ -21,10 +21,10 @@ export function ParseRawActivity(raw: any): ActivityProps {
 }
 
 export function FallbackActivity(props: ActivityProps) {
-    return <li key={props.id}>
+    return <li>
         <div>{props.createdAt.toLocaleString()} {props.issuer} -&gt; {props.type}</div>
-        <div>{props.payload}</div>
-    </li>
+        <div>{JSON.stringify(props.payload)}</div>
+    </li>;
 }
 
 export function GetRenderer(raw: any, renderers: any): React.FC<ActivityProps> {
