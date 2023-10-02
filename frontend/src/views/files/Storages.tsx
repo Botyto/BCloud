@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Loading from '../../components/Loading';
-import { useStorageCreateMutation, useStorageDeleteMutation, useStorageListQuery, useStorageRenameMutation } from './api';
+import { useStorageCreateMutation, useStorageDeleteMutation, useStorageListQuery, useStorageRenameMutation } from './storageApi';
 import Pagination from '../../components/Pagination';
 
 export default function Storages() {
