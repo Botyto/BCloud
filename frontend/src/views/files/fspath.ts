@@ -6,29 +6,29 @@ const uuidLength = 36;
 const uuidRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
 
 function isValid(path: string) {
-    if (!path || path === "") {
+    if (path === "") {
         return false;
     }
-    const [storage_id, file_path] = stripStorage(path);
-    if (storage_id !== null) {
-        return file_path.startsWith(sep);
+    const [storageId, filePath] = stripStorage(path);
+    if (storageId !== null) {
+        return filePath.startsWith(sep);
     }
     return true;
 }
 
 function hasStorage(path: string) {
-    const colon_idx = path.indexOf(":");
-    if (colon_idx !== uuidLength) {
+    const colonidx = path.indexOf(":");
+    if (colonidx !== uuidLength) {
         return false;
     }
-    return uuidRegex.exec(path.slice(0, colon_idx)) !== null;
+    return uuidRegex.exec(path.slice(0, colonidx)) !== null;
 }
 
 function stripStorage(path: string): [string|null, string] {
     if (hasStorage(path)) {
-        const storage_id = path.slice(0, uuidLength);
-        const file_path = path.slice(uuidLength + 1);
-        return [storage_id, file_path];
+        const storageId = path.slice(0, uuidLength);
+        const filePath = path.slice(uuidLength + 1);
+        return [storageId, filePath];
     }
     return [null, path];
 }
@@ -40,24 +40,24 @@ function isAbs(path: string) {
     return path.startsWith(sep);
 }
 
-function join(storage_id: string|null, parts: string[]) {
-    if (!parts || parts.length === 0) {
-        if (storage_id !== null) {
-            return `${storage_id}${storageSep}${sep}`;
+function join(storageid: string|null, parts: string[]) {
+    if (parts.length === 0) {
+        if (storageid !== null) {
+            return `${storageid}${storageSep}${sep}`;
         }
         return sep;
     }
-    if (storage_id !== null) {
+    if (storageid !== null) {
         if (!parts[0].startsWith(sep)) {
             parts = [sep, ...parts];
         }
-        return `${storage_id}${storageSep}${parts.join(sep)}`;
+        return `${storageid}${storageSep}${parts.join(sep)}`;
     }
     return parts.join(sep);
 }
 
 function normPath(path: string) {
-    var [storage_id, parts] = getParts(path);
+    var [storageId, parts] = getParts(path);
     var i = 0;
     while (i < parts.length) {
         if (parts[i] == currentDir) {
@@ -72,36 +72,51 @@ function normPath(path: string) {
             i += 1;
         }
     }
-    return join(storage_id, parts)
+    return join(storageId, parts)
 }
 
 function getParts(path: string): [string|null, string[]] {
-    const [storage_id, file_path] = stripStorage(path);
+    const [storageId, filePath] = stripStorage(path);
     const parts = path.split(sep).filter((part) => part !== "");;
-    return [storage_id, parts];
+    return [storageId, parts];
 }
 
 function dirName(path: string) {
-    const sep_idx = path.lastIndexOf(sep);
-    if (sep_idx === -1) {
+    const sepIdx = path.lastIndexOf(sep);
+    if (sepIdx === -1) {
         return path;
     }
-    return path.slice(0, sep_idx);
+    return path.slice(0, sepIdx);
 }
 
 function baseName(path: string) {
-    const sep_idx = path.lastIndexOf(sep);
-    if (sep_idx === -1) {
-        const [_, file_path] = stripStorage(path);
-        return file_path;
+    const sepIdx = path.lastIndexOf(sep);
+    if (sepIdx === -1) {
+        const [_, filePath] = stripStorage(path);
+        return filePath;
     }
-    return path.slice(sep_idx + 1);
+    return path.slice(sepIdx + 1);
 }
 
 function ext(path: string) {
-    const period_idx = path.lastIndexOf(".");
-    if (period_idx === -1) {
+    const periodIdx = path.lastIndexOf(".");
+    if (periodIdx === -1) {
         return "";
     }
-    return path.slice(period_idx);
+    return path.slice(periodIdx);
 }
+
+export default {
+    sep,
+    storageSep,
+    isValid,
+    hasStorage,
+    stripStorage,
+    isAbs,
+    join,
+    normPath,
+    getParts,
+    dirName,
+    baseName,
+    ext,
+};

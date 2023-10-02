@@ -1,6 +1,15 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import fspath from './fspath';
 
 export default function Browser() {
-    return <div>Browser (<Link to="/files">storages</Link>)</div>;
+    const params = useParams();
+    const storageId = params.storageId || "";
+    const filePath = params["*"] || "";
+    const [_, parts] = fspath.getParts(filePath);
+    parts[0] = fspath.sep + parts[0];
+    return <>
+        <div>Browser (<Link to="/files">storages</Link>)</div>
+        <div>Path: {fspath.join(storageId, parts)}</div>
+    </>;
 }
