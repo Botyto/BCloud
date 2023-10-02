@@ -25,14 +25,23 @@ class StorageManager:
             return not storage.name.startswith(self.SERVICE_PREFIX)
         return pages.of(self.session, statement, discard_service)
     
-    def get(self, id: UUID):
+    def _get_statement(self, id_or_slug: UUID|str):
         statement = select(FileStorage) \
-            .where(FileStorage.user_id == self.user_id) \
-            .where(FileStorage.id == id)
+            .where(FileStorage.user_id == self.user_id)
+        if isinstance(id_or_slug, UUID):
+            statement = statement.where(FileStorage.id == id_or_slug)
+        else:
+            statement = statement.where(FileStorage.slug == id_or_slug)
+        return statement
+    
+    def get(self, id_or_slug: UUID|str):
+        statement = self._get_statement(id_or_slug)
         return self.session.scalars(statement).one()
     
-    def root(self, id: UUID):
-        return self.get(id).root_dir
+    def root(self, id_or_slug: UUID|str):
+        statement = self._get_statement(id_or_slug).join(FileStorage.root_dir)
+        storage = self.session.scalars(statement).one()
+        return storage.root_dir
     
     def create(self, name: str, *, service: bool = False):
         if not service and name.startswith(self.SERVICE_PREFIX):
@@ -45,22 +54,28 @@ class StorageManager:
         self.session.add(storage)
         return storage
     
-    def delete(self, id: UUID):
+    def delete(self, id_or_slug: UUID|str):
         statement = delete(FileStorage) \
             .where(FileStorage.user_id == self.user_id) \
-            .where(FileStorage.id == id) \
             .returning(FileStorage.name)
+        if isinstance(id_or_slug, UUID):
+            statement = statement.where(FileStorage.id == id_or_slug)
+        else:
+            statement = statement.where(FileStorage.slug == id_or_slug)
         result = self.session.execute(statement)
         name = result.scalar_one()
         return True, name
     
-    def rename(self, id: UUID, name: str):
+    def rename(self, id_or_slug: UUID|str, name: str):
         ensure_str_fit("name", name, FileStorage.name)
         # OPTIMIZE: make both the old-value-getter and the update in one statement
-        get_statement = select(FileStorage) \
-            .where(FileStorage.user_id == self.user_id) \
-            .where(FileStorage.id == id)
-        storage = self.session.scalars(get_statement).one()
+        statement = select(FileStorage) \
+            .where(FileStorage.user_id == self.user_id)
+        if isinstance(id_or_slug, UUID):
+            statement = statement.where(FileStorage.id == id_or_slug)
+        else:
+            statement = statement.where(FileStorage.slug == id_or_slug)
+        storage = self.session.scalars(statement).one()
         old_name = storage.name
         storage.name = name
         return storage, old_name

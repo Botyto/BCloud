@@ -1,3 +1,4 @@
+from typing import Tuple
 from uuid import UUID
 
 # Valid formats:
@@ -26,12 +27,15 @@ def isvalid(path: str):
 def hasstorage(path: str):
     return path.find(":") != -1
 
-def strip_storage(path: str):
+def strip_storage(path: str) -> Tuple[UUID|str|None, str]:
     if hasstorage(path):
         colon_idx = path.find(":")
         storage_id = path[:colon_idx]
         path = path[colon_idx + 1:]
-        return UUID(storage_id), path
+        try:
+            return UUID(storage_id), path
+        except ValueError:
+            return storage_id, path
     return None, path
 
 def isabs(path: str):
@@ -41,7 +45,7 @@ def expect_abs(path: str):
     if not isabs(path):
         raise AbsolutePathExpected(path)
 
-def join(storage_id: UUID|None, *parts: str):
+def join(storage_id: UUID|str|None, *parts: str):
     if not parts:
         if storage_id is not None:
             return f"{storage_id}{STORAGE_SEP}{SEP}"

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from uuid import UUID
 
 from . import fspath
 from ..data import FileMetadata
@@ -27,6 +28,8 @@ class FileContents:
         if isinstance(file, FileMetadata):
             file = file.abspath
         storage_id, path = fspath.strip_storage(file)
+        if not isinstance(storage_id, UUID):
+            raise ValueError("File path must be absolute and have UUID as storage ID")
         key = Address.join_keys(str(storage_id), self.namespace.name, path)
         return Address("files", key, temporary)
     

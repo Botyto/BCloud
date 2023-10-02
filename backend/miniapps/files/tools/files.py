@@ -7,14 +7,12 @@ from . import fspath
 from .contents import FileContents, NAMESPACE_CONTENT
 from .errors import *
 from .storage import StorageManager
-from ..data import FileMetadata, FileStorage, FileType
+from ..data import FileMetadata, FileType
 from ..data import DIRECTORY_MIME, LINK_MIME
 
-from core.api.pages import PagesInput
 from core.auth.handlers import AuthError
 from core.data.blobs.base import Blobs
 from core.data.sql.columns import ensure_str_fit
-
 
 
 class FileManager:
@@ -53,11 +51,7 @@ class FileManager:
         storage_id, parts = fspath.get_parts(path)
         if storage_id is None:
             return None
-        statement = select(FileStorage) \
-            .where(FileStorage.id == storage_id) \
-            .where(FileStorage.user_id == self.user_id)
-        storage = self.session.scalars(statement).one()
-        dir = storage.root_dir
+        dir = self.storage.root(storage_id)
         for step in parts:
             dir = self._follow_link(dir)
             if dir is None:
@@ -124,8 +118,7 @@ class FileManager:
         storage_id, parts = fspath.get_parts(path)
         if storage_id is None:
             raise StorageNotSpecified(path)
-        storage = self.storage.get(storage_id)
-        dir = storage.root_dir
+        dir = self.storage.root(storage_id)
         for i, parti in enumerate(parts):
             nextdir = dir.get_child(parti)
             nextdir = self._follow_link(nextdir)
