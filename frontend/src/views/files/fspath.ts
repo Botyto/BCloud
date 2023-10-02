@@ -2,9 +2,6 @@ const sep = "/";
 const storageSep = ":";
 const currentDir = ".";
 const parentDir = "..";
-const slugLength = 41;
-const uuidLength = 36;
-//const uuidRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
 
 function isValid(path: string) {
     if (path === "") {
@@ -18,12 +15,7 @@ function isValid(path: string) {
 }
 
 function hasStorage(path: string) {
-    const colonidx = path.indexOf(":");
-    return colonidx !== -1 && colonidx < Math.max(uuidLength, slugLength);
-    // if (colonidx !== uuidLength) {
-    //     return false;
-    // }
-    //return uuidRegex.exec(path.slice(0, colonidx)) !== null;
+    return path.indexOf(":") !== -1;
 }
 
 function stripStorage(path: string): [string|null, string] {

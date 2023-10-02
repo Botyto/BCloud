@@ -9,7 +9,6 @@ SEP = "/"
 STORAGE_SEP = ":"
 CURRENT_DIR = "."
 PARENT_DIR = ".."
-UUID_LENGTH = 36
 
 
 class AbsolutePathExpected(Exception):
@@ -25,26 +24,18 @@ def isvalid(path: str):
     return True
 
 def hasstorage(path: str):
-    colon_idx = path.find(":")
-    if colon_idx != UUID_LENGTH:
-        return False
-    try:
-        UUID(path[:colon_idx])
-    except ValueError:
-        return False
-    return True
+    return path.find(":") != -1
 
 def strip_storage(path: str):
     if hasstorage(path):
-        storage_id = path[:UUID_LENGTH]
-        path = path[UUID_LENGTH + 1:]
+        colon_idx = path.find(":")
+        storage_id = path[:colon_idx]
+        path = path[colon_idx + 1:]
         return UUID(storage_id), path
     return None, path
 
 def isabs(path: str):
-    if hasstorage(path):
-        return path[UUID_LENGTH] == STORAGE_SEP
-    return path.startswith(SEP)
+    return hasstorage(path) or path.startswith(SEP)
 
 def expect_abs(path: str):
     if not isabs(path):
