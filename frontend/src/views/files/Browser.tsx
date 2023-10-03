@@ -5,15 +5,27 @@ import fspath from './fspath';
 import { useFilesListQuery, useFilesMakedirsMutation, useFilesMakefileMutation } from './filesApi';
 import MimeTypeIcon from './MimeTypeIcon';
 
-function generateChildPath(storageId: string, parts: string[], file: any|null) {
-    var filePath = file ? fspath.join(null, [...parts, file.name]) : fspath.join(null, parts);
+function pathToUrl(route: string, path: string) {
+    var [storageId, filePath] = fspath.stripStorage(path);
     if (filePath.startsWith(fspath.sep)) {
         filePath = filePath.slice(1);
     }
-    return generatePath("/files/:storageId/*", {
+    return generatePath(route, {
         storageId: storageId,
         "*": filePath,
     });
+}
+
+function urlToPath(route: string, url: string) {
+    const routeStorageIdx = route.indexOf(":storageId");
+    if (route.slice(routeStorageIdx) !== ":storageId/*") {
+        throw `File route '${route}' doesn't end in ':storageId/*'`;
+    }
+    const pathInUrl = url.slice(routeStorageIdx + ":storageId".length + 1);
+    const slashIdx = pathInUrl.indexOf("/");
+    const storageId = pathInUrl.slice(0, slashIdx);
+    const filePath = pathInUrl.slice(slashIdx);
+    return fspath.join(storageId, [filePath]);
 }
 
 interface BreadcrumbsPiece {
@@ -22,24 +34,19 @@ interface BreadcrumbsPiece {
     current: boolean;
 }
 
+const BROWSER_ROUTE = "/files/:storageId/*";
 function makeBreadcrumbs(storageName: string, storageId: string, parts: string[]) {
-    if (parts.length > 0 && parts[0].startsWith(fspath.sep)) {
-        parts = [parts[0].slice(1), ...parts.slice(1)];
-    }
     const result: BreadcrumbsPiece[] = [];
-    result.push({
-        name: storageName,
-        url: generateChildPath(storageId, [], null),
-        current: parts.length === 0,
-    });
-    let path = "";
-    for (const part of parts) {
-        const subpath = fspath.join(null, [path, part]);
-        path = subpath;
+    for (var i = 0; i < parts.length + 1; i++) {
+        const subparts = parts.slice(0, i);
+        var part = (i === 0) ? storageName : parts[i - 1];
+        if (part.startsWith(fspath.sep)) {
+            part = part.slice(1);
+        }
         result.push({
             name: part,
-            url: generateChildPath(storageId, [subpath], null),
-            current: part === parts[parts.length - 1],
+            url: pathToUrl(BROWSER_ROUTE, fspath.join(storageId, subparts)),
+            current: (i === parts.length),
         });
     }
     return result;
@@ -70,9 +77,8 @@ function Breadcrumbs(props: BreacumbsProps) {
 }
 
 interface ContentsProps {
+    path: string;
     file: any;
-    storageId: string;
-    parts: string[];
 }
 
 function DirectoryContents(props: ContentsProps) {
@@ -81,7 +87,7 @@ function DirectoryContents(props: ContentsProps) {
     ) : (props.file.children.map((file: any) => {
             return <li key={file.id}>
                 <MimeTypeIcon type={file.type} mimeType={file.mimeType}/>
-                <Link to={generateChildPath(props.storageId, props.parts, file)}>
+                <Link to={pathToUrl(BROWSER_ROUTE, fspath.join(null, [props.path, file.name]))}>
                     {file.name}
                 </Link>
             </li>;
@@ -90,7 +96,11 @@ function DirectoryContents(props: ContentsProps) {
 }
 
 function FileContents(props: ContentsProps) {
-    return <span>File content...</span>;
+    const downloadUrl = pathToUrl("/api/files/download/:storageId/*", props.path)
+    return <>
+        <a href={downloadUrl} target='_blank'>Download</a>
+        <span>File content...</span>
+    </>;
 }
 
 function LinkContents(props: ContentsProps) {
@@ -151,11 +161,11 @@ export default function Browser() {
                     ) : (filesListVars.error) ? (
                             <span style={{ color: "red" }}>Error: {filesListVars.error.message}</span>
                     ) : (filesListVars.data.filesFilesByPath.type === "DIRECTORY") ? (
-                        <DirectoryContents file={filesListVars.data.filesFilesByPath} storageId={storageId} parts={parts}/>
+                        <DirectoryContents file={filesListVars.data.filesFilesByPath} path={fullPath}/>
                     ) : (filesListVars.data.filesFilesByPath.type === "FILE") ? (
-                        <FileContents file={filesListVars.data.filesFilesByPath} storageId={storageId} parts={parts}/>
+                        <FileContents file={filesListVars.data.filesFilesByPath} path={fullPath}/>
                     ) : (filesListVars.data.filesFilesByPath.type === "LINK") ? (
-                        <LinkContents file={filesListVars.data.filesFilesByPath} storageId={storageId} parts={parts}/>
+                        <LinkContents file={filesListVars.data.filesFilesByPath} path={fullPath}/>
                     ) : (
                         <span>Unknown file type {filesListVars.data.filesFilesByPath.type}</span>
                     )

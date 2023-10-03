@@ -50,6 +50,7 @@ def join(storage_id: UUID|str|None, *parts: str):
         if storage_id is not None:
             return f"{storage_id}{STORAGE_SEP}{SEP}"
         return SEP
+    parts = tuple(part.removesuffix(SEP) for part in parts)
     if storage_id is not None:
         if not parts[0].startswith(SEP):
             parts = (SEP + parts[0], *parts[1:])

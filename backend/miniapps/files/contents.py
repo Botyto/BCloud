@@ -38,11 +38,11 @@ class ContentsModule(RestMiniappModule):
             response.write(content)
         return response
 
-    @get("api/files/(.*)/contents", name="files.contents.read")
+    @get("api/files/contents/(.*)", name="files.contents.read")
     def read(self, file_id: str) -> ApiResponse:
         return self._read(file_id, "inline")
 
-    @post("api/files/(.*)/contents", name="files.contents.write")
+    @post("api/files/contents/(.*)", name="files.contents.write")
     def write(self, file_id: str) -> None:
         if self.request.files:
             content = self.request.files["file"][0]["body"]
@@ -57,6 +57,6 @@ class ContentsModule(RestMiniappModule):
         self.log_activity("files.write", {"path": file.abspath, "mime": file.mime_type})
         self.contents.write(file, content)
 
-    @post("api/files/(.*)/download", name="files.contents.download")
+    @post("api/files/download/(.*)", name="files.contents.download")
     def download(self, file_id: str) -> ApiResponse:
         return self._read(file_id, "attachment; filename=\"{}\"")

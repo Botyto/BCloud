@@ -33,18 +33,19 @@ function isAbs(path: string) {
     return colonidx !== -1 || path.startsWith(sep);
 }
 
-function join(storageid: string|null, parts: string[]) {
+function join(storageId: string|null, parts: string[]) {
     if (parts.length === 0) {
-        if (storageid !== null) {
-            return `${storageid}${storageSep}${sep}`;
+        if (storageId !== null) {
+            return `${storageId}${storageSep}${sep}`;
         }
         return sep;
     }
-    if (storageid !== null) {
+    parts = parts.map((p) => p.endsWith(sep) ? p.slice(0, p.length - 1) : p);
+    if (storageId !== null) {
         if (!parts[0].startsWith(sep)) {
             parts = [sep + parts[0], ...parts.slice(1)];
         }
-        return `${storageid}${storageSep}${parts.join(sep)}`;
+        return `${storageId}${storageSep}${parts.join(sep)}`;
     }
     return parts.join(sep);
 }
