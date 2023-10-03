@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useParams, generatePath } from 'react-router-dom';
+import axios from 'axios';
 import Loading from '../../components/Loading';
 import fspath from './fspath';
 import { useFilesListQuery, useFilesMakedirsMutation, useFilesMakefileMutation } from './filesApi';
@@ -146,8 +147,12 @@ function DirectoryContents(props: ContentsProps) {
 function FileContents(props: ContentsProps) {
     function download(e: React.MouseEvent, url: string, name: string) {
         e.preventDefault();
-        fetch(url)
-        .then((r) => r.blob())
+        axios.get(url, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authentication-token')}`
+            },
+        })
+        .then((r) => r.data())
         .then((blob) => {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -158,11 +163,15 @@ function FileContents(props: ContentsProps) {
             a.click();
             window.URL.revokeObjectURL(url);
             a.remove();
+        })
+        .catch((e) => {
+            alert(e.message);
         });
     }
     
-    const downloadUrl = pathToUrl("/api/files/download/:storageId/*", props.path)
-    const contentUrl = pathToUrl("/api/files/content/:storageId/*", props.path)
+    const SERVER_HOST = 'localhost:8080';
+    const downloadUrl = "http://" + pathToUrl(`${SERVER_HOST}/api/files/download/:storageId/*`, props.path)
+    const contentUrl = "http://" + pathToUrl(`${SERVER_HOST}/api/files/content/:storageId/*`, props.path)
     const name = fspath.baseName(props.path);
     const Preview = GetPreview(props.file, [
         TxtPreview,

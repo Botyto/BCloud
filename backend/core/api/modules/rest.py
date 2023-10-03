@@ -12,6 +12,7 @@ from ..context import ApiContext
 from ..handlers import HttpApiHandler, ApiHandlerMixin, ApiResponse
 
 from ...auth.data import Activity
+from ...http.handlers import SessionHandlerMixin
 from ...miniapp.miniapp import MiniappContext, MiniappModule, Miniapp
 from ...typeinfo import MethodInfo, TypeInfo
 
@@ -47,10 +48,13 @@ def post(pattern: str|Pattern, kwargs: Dict[str, Any]|None = None, name: str|Non
 
 
 class RestMiniappModule(MiniappModule, RestApiHandler):
-    context: ApiContext
+    def __init__(self, miniapp: Miniapp, application, request, **kwargs):
+        super(MiniappModule, self).__init__(application, request, **kwargs)
+        super().__init__(miniapp, self.api_context)
 
-    def __init__(self, miniapp: Miniapp, context: ApiContext):
-        super().__init__(miniapp, context)
+    @SessionHandlerMixin.context.setter
+    def context(self, _):
+        pass
 
     def log_activity(self, type: str, payload: dict|None = None):
         self.get_current_user()
@@ -79,7 +83,7 @@ class RestMiniappModule(MiniappModule, RestApiHandler):
         for pattern, methods in pattern_to_methods.items():
             info = getattr(methods[0], "__rest__", None)
             assert isinstance(info, RestMethodInternals)
-            cls.__register_handler(miniapp, context, methods, info)
+            cls.__register_handler(miniapp, context, methods)
 
     @classmethod
     def _all_own_methods(cls):
@@ -109,39 +113,45 @@ class RestMiniappModule(MiniappModule, RestApiHandler):
         if method_info.is_async:
             pass
         if method_info.is_context_manager:
-            def wrapped_handler(self: RestApiHandler):
-                args = get_query_args(self)
-                with cls(miniapp, self.api_context) as obj:  # type: ignore
-                    result = method(obj, *args)
+            def wrapped_handler(self: RestApiHandler, *args):
+                if not args:
+                    args = get_query_args(self)
+                with self:  # type: ignore
+                    result = method(self, *args)
                     if isinstance(result, ApiResponse):
                         result.assign(self)
             return wrapped_handler
         else:
-            def wrapped_handler(self: RestApiHandler):
-                args = get_query_args(self)
-                obj = cls(miniapp, self.api_context)
-                result = method(obj, *args)
+            def wrapped_handler(self: RestApiHandler, *args):
+                if not args:
+                    args = get_query_args(self)
+                result = method(self, *args)
                 if isinstance(result, ApiResponse):
                     result.assign(self)
             return wrapped_handler
 
     @classmethod
-    def __generate_handler(cls, miniapp: Miniapp, methods: List[MethodType], info: RestMethodInternals):
+    def __generate_handler(cls, miniapp: Miniapp, methods: List[MethodType]):
         attrs = {}
         for method in methods:
             wrapped_handler = cls.__generate_handler_method(miniapp, method)
-            wrapped_handler.__name__ = info.verb.value.lower()
-            assert method.__name__ not in attrs, "Duplicate verbs for the same URL"
-            attrs[method.__name__] = wrapped_handler
+            info: RestMethodInternals = getattr(method, "__rest__")
+            verb = info.verb.value.lower()
+            assert verb not in attrs, "Duplicate verbs for the same URL"
+            attrs[verb] = wrapped_handler
         class_name = methods[0].__name__.capitalize() + "Handler"
-        return type(class_name, (RestApiHandler,), attrs)
+        def ctor(self, application, request):
+            super(cls, self).__init__(miniapp, application, request)  # type: ignore
+        attrs["__init__"] = ctor
+        return type(class_name, (cls,), attrs)
     
     @classmethod
-    def __register_handler(cls, miniapp: Miniapp, context: MiniappContext, methods: List[MethodType], info: RestMethodInternals):
-        handler_class = cls.__generate_handler(miniapp, methods, info)
+    def __register_handler(cls, miniapp: Miniapp, context: MiniappContext, methods: List[MethodType]):
+        first_info: RestMethodInternals = getattr(methods[0], "__rest__")
+        handler_class = cls.__generate_handler(miniapp, methods)
         context.urlspecs.append(URLSpec(
-            pattern=info.partial_urlspec.pattern,
+            pattern=first_info.partial_urlspec.pattern,
             handler=handler_class,
-            kwargs=info.partial_urlspec.kwargs,
-            name=info.partial_urlspec.name,
+            kwargs=first_info.partial_urlspec.kwargs,
+            name=first_info.partial_urlspec.name,
         ))
