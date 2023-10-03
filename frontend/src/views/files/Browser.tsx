@@ -4,6 +4,9 @@ import Loading from '../../components/Loading';
 import fspath from './fspath';
 import { useFilesListQuery, useFilesMakedirsMutation, useFilesMakefileMutation } from './filesApi';
 import MimeTypeIcon from './MimeTypeIcon';
+import { GetPreview } from './previews/preview';
+
+import TxtPreview from './previews/TxtPreview';
 
 function pathToUrl(route: string, path: string) {
     var [storageId, filePath] = fspath.stripStorage(path);
@@ -82,40 +85,7 @@ interface ContentsProps {
 }
 
 function DirectoryContents(props: ContentsProps) {
-    return (props.file.children.length === 0) ? (
-        <span>Empty...</span>
-    ) : (props.file.children.map((file: any) => {
-            return <li key={file.id}>
-                <MimeTypeIcon type={file.type} mimeType={file.mimeType}/>
-                <Link to={pathToUrl(BROWSER_ROUTE, fspath.join(null, [props.path, file.name]))}>
-                    {file.name}
-                </Link>
-            </li>;
-        })
-    )
-}
-
-function FileContents(props: ContentsProps) {
-    const downloadUrl = pathToUrl("/api/files/download/:storageId/*", props.path)
-    return <>
-        <a href={downloadUrl} target='_blank'>Download</a>
-        <span>File content...</span>
-    </>;
-}
-
-function LinkContents(props: ContentsProps) {
-    return <span>Follow link...</span>
-}
-
-export default function Browser() {
-    const params = useParams();
-    const storageId = params.storageId || "";
-    const filePath = params["*"] || "";
-    const [_, parts] = fspath.getParts(filePath);
-    const fullPath = fspath.join(storageId, parts);
-    const filesListVars = useFilesListQuery(fullPath);
-    const breadcrumbs = makeBreadcrumbs(storageId, storageId, parts);
-
+    const [storageId, parts] = fspath.getParts(props.path);
     const [makefile, makefileVars] = useFilesMakefileMutation();
     const [makedirs, makedirsVars] = useFilesMakedirsMutation();
 
@@ -151,30 +121,90 @@ export default function Browser() {
     }
 
     return <>
-        <div>Browser (<Link to="/files">storages</Link>)</div>
-        <div>Path: <Breadcrumbs pieces={breadcrumbs}/></div>
         <div>
-            <ol>
-                {
-                    (filesListVars.loading) ? (
-                        <Loading/>
-                    ) : (filesListVars.error) ? (
-                            <span style={{ color: "red" }}>Error: {filesListVars.error.message}</span>
-                    ) : (filesListVars.data.filesFilesByPath.type === "DIRECTORY") ? (
-                        <DirectoryContents file={filesListVars.data.filesFilesByPath} path={fullPath}/>
-                    ) : (filesListVars.data.filesFilesByPath.type === "FILE") ? (
-                        <FileContents file={filesListVars.data.filesFilesByPath} path={fullPath}/>
-                    ) : (filesListVars.data.filesFilesByPath.type === "LINK") ? (
-                        <LinkContents file={filesListVars.data.filesFilesByPath} path={fullPath}/>
-                    ) : (
-                        <span>Unknown file type {filesListVars.data.filesFilesByPath.type}</span>
-                    )
-                }
-            </ol>
+            {
+                (props.file.children.length === 0) ? (
+                    <span>Empty...</span>
+                ) : (props.file.children.map((file: any) => {
+                        return <li key={file.id}>
+                            <MimeTypeIcon type={file.type} mimeType={file.mimeType}/>
+                            <Link to={pathToUrl(BROWSER_ROUTE, fspath.join(null, [props.path, file.name]))}>
+                                {file.name}
+                            </Link>
+                        </li>;
+                    })
+                )
+            }
         </div>
         <div>
             <button onClick={onNewFile}>New file</button>
             <button onClick={onNewDir}>New directory</button>
+        </div>
+    </>;
+}
+
+function FileContents(props: ContentsProps) {
+    function download(e: React.MouseEvent, url: string, name: string) {
+        e.preventDefault();
+        fetch(url)
+        .then((r) => r.blob())
+        .then((blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = name;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+        });
+    }
+    
+    const downloadUrl = pathToUrl("/api/files/download/:storageId/*", props.path)
+    const contentUrl = pathToUrl("/api/files/content/:storageId/*", props.path)
+    const name = fspath.baseName(props.path);
+    const Preview = GetPreview(props.file, [
+        TxtPreview,
+    ]);
+    return <>
+        <button onClick={e => download(e, downloadUrl, name)}>Download</button>
+        <Preview file={props.file} path={props.path} contentUrl={contentUrl}/>
+    </>;
+}
+
+function LinkContents(props: ContentsProps) {
+    return <span>Follow link...</span>
+}
+
+export default function Browser() {
+    const params = useParams();
+    const storageId = params.storageId || "";
+    const filePath = params["*"] || "";
+    const [_, parts] = fspath.getParts(filePath);
+    const fullPath = fspath.join(storageId, parts);
+    const filesListVars = useFilesListQuery(fullPath);
+    const breadcrumbs = makeBreadcrumbs(storageId, storageId, parts);
+
+    return <>
+        <div>Browser (<Link to="/files">storages</Link>)</div>
+        <div>Path: <Breadcrumbs pieces={breadcrumbs}/></div>
+        <div>
+            {
+                (filesListVars.loading) ? (
+                    <Loading/>
+                ) : (filesListVars.error) ? (
+                    <span style={{ color: "red" }}>Error: {filesListVars.error.message}</span>
+                ) : (filesListVars.data.filesFilesByPath.type === "DIRECTORY") ? (
+                    <DirectoryContents file={filesListVars.data.filesFilesByPath} path={fullPath}/>
+                ) : (filesListVars.data.filesFilesByPath.type === "FILE") ? (
+                    <FileContents file={filesListVars.data.filesFilesByPath} path={fullPath}/>
+                ) : (filesListVars.data.filesFilesByPath.type === "LINK") ? (
+                    <LinkContents file={filesListVars.data.filesFilesByPath} path={fullPath}/>
+                ) : (
+                    <span>Unknown file type {filesListVars.data.filesFilesByPath.type}</span>
+                )
+            }
         </div>
     </>;
 }
