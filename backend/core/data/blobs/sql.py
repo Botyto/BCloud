@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, Engine, String, BLOB
 from sqlalchemy import select, delete
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker, Session, object_session
 
-from ..sql.columns import STRING_MAX
+from ..sql.columns import ensure_str_fit
 
 from .base import Address, BlobIO, OpenMode, Blobs
 
@@ -19,7 +19,9 @@ class Blob(BlobModel):
 
 
 def addr_to_id(address: Address) -> str:
-    return str(address)
+    id = str(address)
+    ensure_str_fit("address", id, Blob.address)
+    return id
 
 
 class SqlBlobIO(BlobIO):
