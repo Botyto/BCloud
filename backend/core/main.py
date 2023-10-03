@@ -64,7 +64,10 @@ def build_app():
         password=cast(str, env.get("DB_PASSWORD", "bcloud")),
         database=cast(str, env.get("DB_DATABASE", "bcloud")),
     )
-    blob_settings = BlobSettings(cast(str, env.get("BLOB_FS_ROOT", ".")))
+    blob_settings = BlobSettings(
+        fs_root=cast(str, env.get("BLOB_FS_ROOT")),
+        sql_conn_str=cast(str, env.get("BLOB_SQL"))
+    )
     context = DataContext(base_context, sql_settings, blob_settings)
 
     database = Database(context)
@@ -104,7 +107,10 @@ def run_migration(action: MigrationAction, title: str|None = None):
         password=cast(str, env.get("DB_ADMIN_PASSWORD", env.get("DB_PASSWORD", "bcloud"))),
         database=cast(str, env.get("DB_DATABASE", "bcloud")),
     )
-    blob_settings = BlobSettings(cast(str, env.get("BLOB_FS_ROOT", ".")))
+    blob_settings = BlobSettings(
+        fs_root=cast(str, env.get("BLOB_FS_ROOT", ".")),
+        sql_conn_str=cast(str, env.get("BLOB_SQL")),
+    )
     context = DataContext(base_context, sql_settings, blob_settings)
     load_miniapps()
     manager = Migrations(context)
