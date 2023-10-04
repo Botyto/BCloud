@@ -37,6 +37,11 @@ export default function FileBrowser(props: ContentsProps) {
     const Preview = GetPreview(props.file, [
         TxtPreview,
     ]);
+
+    if (props.file.size === null) {
+        return <div>No file contents</div>;
+    }
+
     return <>
         <button onClick={e => download(e, downloadUrl, name)}>Download</button>
         <Preview file={props.file} path={props.path} contentUrl={contentUrl}/>
