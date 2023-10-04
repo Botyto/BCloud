@@ -1,3 +1,5 @@
+import { generatePath } from 'react-router-dom';
+
 const sep = "/";
 const storageSep = ":";
 const currentDir = ".";
@@ -100,6 +102,31 @@ function ext(path: string) {
     return path.slice(periodIdx);
 }
 
+// Path <-> URL
+
+function pathToUrl(route: string, path: string) {
+    var [storageId, filePath] = stripStorage(path);
+    if (filePath.startsWith(sep)) {
+        filePath = filePath.slice(1);
+    }
+    return generatePath(route, {
+        storageId: storageId,
+        "*": filePath,
+    });
+}
+
+function urlToPath(route: string, url: string) {
+    const routeStorageIdx = route.indexOf(":storageId");
+    if (route.slice(routeStorageIdx) !== ":storageId/*") {
+        throw `File route '${route}' doesn't end in ':storageId/*'`;
+    }
+    const pathInUrl = url.slice(routeStorageIdx + ":storageId".length + 1);
+    const slashIdx = pathInUrl.indexOf("/");
+    const storageId = pathInUrl.slice(0, slashIdx);
+    const filePath = pathInUrl.slice(slashIdx);
+    return join(storageId, [filePath]);
+}
+
 export default {
     sep,
     storageSep,
@@ -113,4 +140,6 @@ export default {
     dirName,
     baseName,
     ext,
+    pathToUrl,
+    urlToPath,
 };
