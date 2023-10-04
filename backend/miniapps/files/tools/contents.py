@@ -45,7 +45,7 @@ class FileContents:
     def write(self, file: FileMetadata, content: bytes|None):
         if content is None:
             self.blobs.delete(self.address(file))
-            file.size = 0
+            file.size = None
         else:
             self.blobs.write(self.address(file), content)
             file.size = len(content)

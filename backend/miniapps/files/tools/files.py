@@ -91,7 +91,6 @@ class FileManager:
         file = FileMetadata(
             name=basename,
             mime_type=mime_type,
-            size=0,
             parent=dir,
             storage=dir.storage,
             atime_utc=now,
@@ -132,7 +131,6 @@ class FileManager:
                     newdir = FileMetadata(
                         name=partj,
                         mime_type=DIRECTORY_MIME,
-                        size=0,
                         parent=dir,
                         storage=dir.storage,
                         atime_utc=now,

@@ -34,7 +34,11 @@ class ContentsModule(RestMiniappModule):
         if file is None:
             response.set_status(404)
             return response
-        content = self.contents.read(file)
+        try:
+            content = self.contents.read(file)
+        except FileNotFoundError:
+            response.set_status(404)
+            return response
         disposition = disposition_fmt.format(file.name)
         response.set_header("Content-Disposition", disposition)
         if file.mime_type:
