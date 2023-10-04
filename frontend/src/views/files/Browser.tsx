@@ -4,7 +4,7 @@ import Loading from '../../components/Loading';
 import fspath from './fspath';
 import { useFilesListQuery } from './filesApi';
 import { Breadcrumbs, makeBreadcrumbs } from './Breadcrumbs';
-import DirectoryBrowser from './browser/DirectoryBrowser';
+import DirectoryBrowser from './browser/directory/DirectoryBrowser';
 import FileBrowser from './browser/FileBrowser';
 import LinkBrowser from './browser/LinkBrowser';
 
