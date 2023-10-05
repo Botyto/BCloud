@@ -29,6 +29,15 @@ export default function DirectoryContents(props: ContentsProps) {
         }
     }
 
+    function onMoveSelected() { }
+
+    function onCopySelected() { }
+
+    function onDeleteSelected() {
+        const count = selectedPaths.length;
+        const ok = window.confirm(t("files.browser.dir.all.delete.prompt", {count}));
+    }
+
     return <>
         <div>
             <div>
@@ -36,6 +45,9 @@ export default function DirectoryContents(props: ContentsProps) {
                     allSelected={allSelected}
                     partlySelected={partlySelected}
                     toggleSelectAllPaths={toggleSelectAllPaths}
+                    onMove={onMoveSelected}
+                    onCopy={onCopySelected}
+                    onDelete={onDeleteSelected}
                 />
             </div>
             {

@@ -9,10 +9,30 @@ interface FileEntryHeaderProps {
     allSelected: boolean;
     partlySelected: boolean;
     toggleSelectAllPaths: () => void;
+    onMove: () => void;
+    onCopy: () => void;
+    onDelete: () => void;
 }
 
 export function FileEntryHeader(props: FileEntryHeaderProps) {
     const { t } = useTranslation("common");
+    const anySelected = props.allSelected || props.partlySelected;
+
+    function onMove(e: React.MouseEvent) {
+        e.preventDefault();
+        props.onMove();
+    }
+
+    function onCopy(e: React.MouseEvent) {
+        e.preventDefault();
+        props.onCopy();
+    }
+
+    function onDelete(e: React.MouseEvent) {
+        e.preventDefault();
+        props.onDelete();
+    }
+
     return <>
         <input
             type="checkbox"
@@ -27,9 +47,9 @@ export function FileEntryHeader(props: FileEntryHeaderProps) {
             <span style={{ display: "inline-block", minWidth: "2rem" }}></span>
             <span style={{ display: "inline-block", minWidth: "15rem" }}></span>
             <span style={{ display: "inline-block", minWidth: "5rem" }}></span>
-            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.all.move")}</button>
-            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.all.copy")}</button>
-            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.all.delete")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onMove} disabled={!anySelected}>{t("files.browser.dir.all.move")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onCopy} disabled={!anySelected}>{t("files.browser.dir.all.copy")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onDelete} disabled={!anySelected}>{t("files.browser.dir.all.delete.button")}</button>
         </span>
     </>
 }
@@ -43,6 +63,35 @@ interface FileEntryProps {
 
 export function FileEntry(props: FileEntryProps) {
     const { t } = useTranslation("common");
+
+    function onRename(e: React.MouseEvent) {
+        e.preventDefault();
+        const name = prompt(t("files.browser.dir.file.rename.prompt", { file: props.file }), props.file.name);
+        if (!name || name == props.file.name) { return; }
+    }
+
+    function onMove(e: React.MouseEvent) {
+        e.preventDefault();
+    }
+
+    function onCopy(e: React.MouseEvent) {
+        e.preventDefault();
+    }
+
+    function onDelete(e: React.MouseEvent) {
+        e.preventDefault();
+        const ok = confirm(t("files.browser.dir.file.delete.prompt", { file: props.file }));
+        if (!ok) { return; }
+    }
+
+    function onShare(e: React.MouseEvent) {
+        e.preventDefault();
+    }
+
+    function onAddLink(e: React.MouseEvent) {
+        e.preventDefault();
+    }
+
     return <li style={{ border: "solid 1px black" }}>
         <input
             type="checkbox"
@@ -58,14 +107,12 @@ export function FileEntry(props: FileEntryProps) {
             </Link>
         </span>
         <span>
-            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.rename")}</button>
-            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.move")}</button>
-            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.copy")}</button>
-            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.delete")}</button>
-            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.share")}</button>
-            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.follow")}</button>
-            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.link")}</button>
-            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.transcode")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onRename}>{t("files.browser.dir.file.rename.button")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onMove} disabled>{t("files.browser.dir.file.move")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onCopy} disabled>{t("files.browser.dir.file.copy")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onDelete}>{t("files.browser.dir.file.delete.button")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onShare} disabled>{t("files.browser.dir.file.share")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onAddLink} disabled>{t("files.browser.dir.file.link")}</button>
         </span>
     </li>;
 }

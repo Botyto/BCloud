@@ -31,17 +31,25 @@ export default {
             all: {
                 move: "Move",
                 copy: "Copy",
-                delete: "Delete",
+                delete: {
+                    prompt_one: "Confirm deletion of {{count}} file",
+                    prompt_other: "Confirm deletion of {{count}} files",
+                    button: "Delete"
+                },
             },
             file: {
-                rename: "Rename",
+                rename: {
+                    prompt: "New name for {{file.name}}",
+                    button: "Rename",
+                },
                 move: "Move",
                 copy: "Copy",
-                delete: "Delete",
+                delete: {
+                    prompt: "Confirm deletion of {{file.name}}",
+                    button: "Delete",
+                },
                 share: "Share",
-                follow: "Follow link",
                 link: "Add link",
-                transcode: "Transcode",
             },
         },
         file: {
