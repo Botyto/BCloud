@@ -36,7 +36,7 @@ export default function Storages() {
 
     function onRename(e: React.MouseEvent<HTMLButtonElement>, storage: any) {
         e.preventDefault();
-        const name = prompt(t("files.storages.rename.prompt", {storage}), storage.name);
+        const name = prompt(t("files.storages.rename.prompt", {name: storage.name}), storage.name);
         if (!name) { return; }
         storageRename({
             variables: {
@@ -56,7 +56,7 @@ export default function Storages() {
 
     function onDelete(e: React.MouseEvent<HTMLButtonElement>, storage: any) {
         e.preventDefault();
-        const ok = confirm(t("files.storages.delete.prompt", {storage}));
+        const ok = confirm(t("files.storages.delete.prompt", {name: storage.name}));
         if (!ok) { return; }
         storageDelete({
             variables: {

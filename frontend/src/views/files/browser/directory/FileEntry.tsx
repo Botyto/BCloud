@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { createRef, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import fspath from '../../fspath';
 import { BROWSER_ROUTE } from '../common';
 import MimeTypeIcon from '../MimeTypeIcon';
+import Picker from '../../picker/Picker';
 
 interface FileEntryHeaderProps {
     allSelected: boolean;
@@ -59,38 +60,47 @@ interface FileEntryProps {
     file: any;
     selected: boolean;
     onSelect: (selected: boolean) => void;
+    onRename: () => void;
+    onMove: () => void;
+    onCopy: () => void;
+    onDelete: () => void;
+    onShare: () => void;
+    onAddLink: () => void;
 }
 
 export function FileEntry(props: FileEntryProps) {
     const { t } = useTranslation("common");
-
+    
     function onRename(e: React.MouseEvent) {
         e.preventDefault();
-        const name = prompt(t("files.browser.dir.file.rename.prompt", { file: props.file }), props.file.name);
-        if (!name || name == props.file.name) { return; }
+        props.onRename();
     }
-
+    
     function onMove(e: React.MouseEvent) {
         e.preventDefault();
+        props.onMove();
     }
 
     function onCopy(e: React.MouseEvent) {
         e.preventDefault();
+        props.onCopy();
     }
 
     function onDelete(e: React.MouseEvent) {
         e.preventDefault();
-        const ok = confirm(t("files.browser.dir.file.delete.prompt", { file: props.file }));
-        if (!ok) { return; }
+        props.onDelete();
     }
 
     function onShare(e: React.MouseEvent) {
         e.preventDefault();
+        props.onShare();
     }
 
     function onAddLink(e: React.MouseEvent) {
         e.preventDefault();
+        props.onAddLink();
     }
+
 
     return <li style={{ border: "solid 1px black" }}>
         <input
@@ -108,11 +118,11 @@ export function FileEntry(props: FileEntryProps) {
         </span>
         <span>
             <button style={{ minWidth: "5rem" }} onClick={onRename}>{t("files.browser.dir.file.rename.button")}</button>
-            <button style={{ minWidth: "5rem" }} onClick={onMove} disabled>{t("files.browser.dir.file.move")}</button>
-            <button style={{ minWidth: "5rem" }} onClick={onCopy} disabled>{t("files.browser.dir.file.copy")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onMove}>{t("files.browser.dir.file.move")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onCopy}>{t("files.browser.dir.file.copy")}</button>
             <button style={{ minWidth: "5rem" }} onClick={onDelete}>{t("files.browser.dir.file.delete.button")}</button>
-            <button style={{ minWidth: "5rem" }} onClick={onShare} disabled>{t("files.browser.dir.file.share")}</button>
-            <button style={{ minWidth: "5rem" }} onClick={onAddLink} disabled>{t("files.browser.dir.file.link")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onShare}>{t("files.browser.dir.file.share")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onAddLink}>{t("files.browser.dir.file.link")}</button>
         </span>
     </li>;
 }

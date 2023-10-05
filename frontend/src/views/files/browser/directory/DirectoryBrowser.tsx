@@ -29,14 +29,33 @@ export default function DirectoryContents(props: ContentsProps) {
         }
     }
 
-    function onMoveSelected() { }
-
-    function onCopySelected() { }
-
-    function onDeleteSelected() {
-        const count = selectedPaths.length;
-        const ok = window.confirm(t("files.browser.dir.all.delete.prompt", {count}));
+    function onRename(path: string) {
+        const originalName = fspath.baseName(path);
+        const name = prompt(t("files.browser.dir.file.rename.prompt", {name: originalName}), originalName);
+        if (!name || name === originalName) { return; }
+        //...
     }
+
+    function onMove(paths: string[], single: boolean) { }
+
+    function onCopy(paths: string[], single: boolean) { }
+
+    function onDelete(paths: string[], single: boolean) {
+        var title = "";
+        if (single) {
+            const name = fspath.baseName(paths[0]);
+            title = t("files.browser.dir.file.delete.prompt", { name });
+        } else {
+            const count = paths.length;
+            title = t("files.browser.dir.all.delete.prompt", { count });
+        }
+        const ok = window.confirm(title);
+        if (!ok) { return; }
+    }
+
+    function onShare(path: string) { }
+
+    function onAddLink(path: string) { }
 
     return <>
         <div>
@@ -45,9 +64,9 @@ export default function DirectoryContents(props: ContentsProps) {
                     allSelected={allSelected}
                     partlySelected={partlySelected}
                     toggleSelectAllPaths={toggleSelectAllPaths}
-                    onMove={onMoveSelected}
-                    onCopy={onCopySelected}
-                    onDelete={onDeleteSelected}
+                    onMove={() => onMove(selectedPaths, false)}
+                    onCopy={() => onCopy(selectedPaths, false)}
+                    onDelete={() => onDelete(selectedPaths, false)}
                 />
             </div>
             {
@@ -60,6 +79,12 @@ export default function DirectoryContents(props: ContentsProps) {
                             path={path}
                             selected={selectedPaths.includes(path)}
                             onSelect={(s) => setPathSelected(path, s)}
+                            onRename={() => onRename(path)}
+                            onMove={() => onMove([path], true)}
+                            onCopy={() => onCopy([path], true)}
+                            onDelete={() => onDelete([path], true)}
+                            onShare={() => onShare(path)}
+                            onAddLink={() => onAddLink(path)}
                             key={file.id}
                         />;
                     })

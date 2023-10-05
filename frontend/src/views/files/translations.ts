@@ -4,11 +4,11 @@ export default {
         title: "Storages",
         browse: "Browse",
         rename: {
-            prompt: "New name for {{storage.name}}",
+            prompt: "New name for `{{name}}`",
             button: "Rename",
         },
         delete: {
-            prompt: "Confirm deletion of {{storage.name}}",
+            prompt: "Confirm deletion of `{{name}}`",
             button: "Delete",
         },
         create: "Create",
@@ -29,27 +29,27 @@ export default {
                 button: "New directory",
             },
             all: {
-                move: "Move",
-                copy: "Copy",
+                move: "➡️ Move",
+                copy: "📋 Copy",
                 delete: {
                     prompt_one: "Confirm deletion of {{count}} file",
                     prompt_other: "Confirm deletion of {{count}} files",
-                    button: "Delete"
+                    button: "❌ Delete"
                 },
             },
             file: {
                 rename: {
-                    prompt: "New name for {{file.name}}",
-                    button: "Rename",
+                    prompt: "New name for `{{name}}`",
+                    button: "📝 Rename",
                 },
-                move: "Move",
-                copy: "Copy",
+                move: "➡️ Move",
+                copy: "📋 Copy",
                 delete: {
-                    prompt: "Confirm deletion of {{file.name}}",
-                    button: "Delete",
+                    prompt: "Confirm deletion of `{{name}}`",
+                    button: "❌ Delete",
                 },
-                share: "Share",
-                link: "Add link",
+                share: "📢 Share",
+                link: "🔗 Add link",
             },
         },
         file: {
