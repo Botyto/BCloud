@@ -88,9 +88,10 @@ export default function Storages() {
             <div>
                 {t("files.storages.title")} (<Link to="/">{t("files.storages.back_to_homepage")}</Link>)
             </div>
-            <ul>
+            <div>
                 {storageListVars.data?.filesStorageList.items.map((storage: any) => {
-                    return <li key={storage.id}>
+                    return <div key={storage.id}>
+                        💽
                         <span style={{display: "inline-block", minWidth: "5rem"}}>{storage.name}</span>
                         <Link to={`/files/${storage.slug}/`}>{t("files.storages.browse")}</Link>
                         <button onClick={e => onRename(e, storage)}>{t("files.storages.rename.button")}</button>
@@ -99,9 +100,9 @@ export default function Storages() {
                             storageErrors[storage.id] &&
                             <span style={{color: "red"}}>{storageErrors[storage.id]}</span>
                         }
-                    </li>;
+                    </div>;
                 })}
-            </ul>
+            </div>
             <Pagination {...storageListVars.data.filesStorageList} setPage={setPage} />
             <form onSubmit={onCreateStorage}>
                 <input type="text" name="name" value={newStorageName} onChange={n => setNewStorageName(n.target.value)} />
