@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 export interface PreviewProps {
     file: any;
@@ -19,7 +20,8 @@ export class Preview {
 }
 
 function FallbackPreview(props: PreviewProps) {
-    return <div>Unknown file type</div>;
+    const { t } = useTranslation("common");
+    return <div>{t("files.browser.file.preview.unknown_file_type")}</div>;
 }
 
 export function GetPreview(file: any, previews: Preview[]) {

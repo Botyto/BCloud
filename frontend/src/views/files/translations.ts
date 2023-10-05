@@ -41,6 +41,9 @@ export default {
         file: {
             no_content: "No file contents...",
             download: "Download",
+            preview: {
+                unknown_file_type: "Unknown file type",
+            },
         },
         link: {
             follow: "Follow link...",

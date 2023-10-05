@@ -1,5 +1,7 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function Loading() {
-    return <span>Loading...</span>;
+    const { t } = useTranslation("common");
+    return <span>{t("loading")}</span>;
 }

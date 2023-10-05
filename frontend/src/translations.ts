@@ -10,5 +10,6 @@ export const en = {
         "404_not_found": "404 Not Found",
         profile: profileTranslations,
         files: filesTransations,
+        loading: "Loading...",
     },
 };
