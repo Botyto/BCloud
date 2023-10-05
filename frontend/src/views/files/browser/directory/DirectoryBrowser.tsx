@@ -16,6 +16,7 @@ export default function DirectoryContents(props: ContentsProps) {
     }
 
     const allSelected = selectedPaths.length === props.file.children.length;
+    const partlySelected = selectedPaths.length > 0 && !allSelected;
     function toggleSelectAllPaths() {
         if (allSelected) {
             setSelectedPaths([]);
@@ -33,6 +34,11 @@ export default function DirectoryContents(props: ContentsProps) {
                     type="checkbox"
                     checked={allSelected}
                     onChange={toggleSelectAllPaths}
+                    ref={input => {
+                        if (input) {
+                            input.indeterminate = partlySelected;
+                        }
+                    }}
                 />
             </div>
             {
