@@ -36,7 +36,7 @@ export default function Storages() {
 
     function onRename(e: React.MouseEvent<HTMLButtonElement>, storage: any) {
         e.preventDefault();
-        const name = prompt('New name', storage.name);
+        const name = prompt(t("files.storages.rename.prompt", {storage}), storage.name);
         if (!name) { return; }
         storageRename({
             variables: {
@@ -56,6 +56,8 @@ export default function Storages() {
 
     function onDelete(e: React.MouseEvent<HTMLButtonElement>, storage: any) {
         e.preventDefault();
+        const ok = confirm(t("files.storages.delete.prompt", {storage}));
+        if (!ok) { return; }
         storageDelete({
             variables: {
                 id: storage.id,
@@ -89,10 +91,10 @@ export default function Storages() {
             <ul>
                 {storageListVars.data?.filesStorageList.items.map((storage: any) => {
                     return <li key={storage.id}>
-                        {storage.name}
-                        - <Link to={`/files/${storage.slug}/`}>{t("files.storages.browse")}</Link>
-                        - <button onClick={e => onRename(e, storage)}>{t("files.storages.rename")}</button>
-                        - <button onClick={e => onDelete(e, storage)}>{t("files.storages.delete")}</button>
+                        <span style={{display: "inline-block", minWidth: "5rem"}}>{storage.name}</span>
+                        <Link to={`/files/${storage.slug}/`}>{t("files.storages.browse")}</Link>
+                        <button onClick={e => onRename(e, storage)}>{t("files.storages.rename.button")}</button>
+                        <button onClick={e => onDelete(e, storage)}>{t("files.storages.delete.button")}</button>
                         {
                             storageErrors[storage.id] &&
                             <span style={{color: "red"}}>{storageErrors[storage.id]}</span>

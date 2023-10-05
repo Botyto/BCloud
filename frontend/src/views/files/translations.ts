@@ -3,8 +3,14 @@ export default {
         back_to_homepage: "homepage",
         title: "Storages",
         browse: "Browse",
-        rename: "Rename",
-        delete: "Delete",
+        rename: {
+            prompt: "New name for {{storage.name}}",
+            button: "Rename",
+        },
+        delete: {
+            prompt: "Confirm deletion of {{storage.name}}",
+            button: "Delete",
+        },
         create: "Create",
     },
     browser: {
