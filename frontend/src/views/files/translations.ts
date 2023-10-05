@@ -29,8 +29,16 @@ export default {
                 button: "New directory",
             },
             all: {
-                move: "➡️ Move",
-                copy: "📋 Copy",
+                move: {
+                    prompt_one: "Move {{count}} file",
+                    prompt_other: "Move {{count}} files",
+                    button: "➡️ Move",
+                },
+                copy: {
+                    prompt_one: "Copy {{count}} file",
+                    prompt_other: "Copy {{count}} files",
+                    button: "📋 Copy",
+                },
                 delete: {
                     prompt_one: "Confirm deletion of {{count}} file",
                     prompt_other: "Confirm deletion of {{count}} files",
@@ -42,14 +50,24 @@ export default {
                     prompt: "New name for `{{name}}`",
                     button: "📝 Rename",
                 },
-                move: "➡️ Move",
-                copy: "📋 Copy",
+                move: {
+                    prompt: "Move `{{name}}`",
+                    button: "➡️ Move",
+                },
+                copy: {
+                    prompt: "Copy `{{name}}`",
+                    button: "📋 Copy",
+                },
                 delete: {
                     prompt: "Confirm deletion of `{{name}}`",
                     button: "❌ Delete",
                 },
-                share: "📢 Share",
-                link: "🔗 Add link",
+                share: {
+                    button: "📢 Share",
+                },
+                link: {
+                    button: "🔗 Add link",
+                },
             },
         },
         file: {

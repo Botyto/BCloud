@@ -48,8 +48,8 @@ export function FileEntryHeader(props: FileEntryHeaderProps) {
             <span style={{ display: "inline-block", minWidth: "2rem" }}></span>
             <span style={{ display: "inline-block", minWidth: "15rem" }}></span>
             <span style={{ display: "inline-block", minWidth: "5rem" }}></span>
-            <button style={{ minWidth: "5rem" }} onClick={onMove} disabled={!anySelected}>{t("files.browser.dir.all.move")}</button>
-            <button style={{ minWidth: "5rem" }} onClick={onCopy} disabled={!anySelected}>{t("files.browser.dir.all.copy")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onMove} disabled={!anySelected}>{t("files.browser.dir.all.move.button")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onCopy} disabled={!anySelected}>{t("files.browser.dir.all.copy.button")}</button>
             <button style={{ minWidth: "5rem" }} onClick={onDelete} disabled={!anySelected}>{t("files.browser.dir.all.delete.button")}</button>
         </span>
     </>
@@ -118,11 +118,11 @@ export function FileEntry(props: FileEntryProps) {
         </span>
         <span>
             <button style={{ minWidth: "5rem" }} onClick={onRename}>{t("files.browser.dir.file.rename.button")}</button>
-            <button style={{ minWidth: "5rem" }} onClick={onMove}>{t("files.browser.dir.file.move")}</button>
-            <button style={{ minWidth: "5rem" }} onClick={onCopy}>{t("files.browser.dir.file.copy")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onMove}>{t("files.browser.dir.file.move.button")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onCopy}>{t("files.browser.dir.file.copy.button")}</button>
             <button style={{ minWidth: "5rem" }} onClick={onDelete}>{t("files.browser.dir.file.delete.button")}</button>
-            <button style={{ minWidth: "5rem" }} onClick={onShare}>{t("files.browser.dir.file.share")}</button>
-            <button style={{ minWidth: "5rem" }} onClick={onAddLink}>{t("files.browser.dir.file.link")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onShare}>{t("files.browser.dir.file.share.button")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onAddLink}>{t("files.browser.dir.file.link.button")}</button>
         </span>
     </li>;
 }

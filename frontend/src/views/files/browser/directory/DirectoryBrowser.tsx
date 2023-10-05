@@ -36,9 +36,29 @@ export default function DirectoryContents(props: ContentsProps) {
         //...
     }
 
-    function onMove(paths: string[], single: boolean) { }
+    function onMove(paths: string[], single: boolean) {
+        var title = "";
+        if (single) {
+            const name = fspath.baseName(paths[0]);
+            title = t("files.browser.dir.file.move.prompt", { name });
+        } else {
+            const count = paths.length;
+            title = t("files.browser.dir.all.move.prompt", { count });
+        }
+        //...
+    }
 
-    function onCopy(paths: string[], single: boolean) { }
+    function onCopy(paths: string[], single: boolean) {
+        var title = "";
+        if (single) {
+            const name = fspath.baseName(paths[0]);
+            title = t("files.browser.dir.file.copy.prompt", { name });
+        } else {
+            const count = paths.length;
+            title = t("files.browser.dir.all.copy.prompt", { count });
+        }
+        //...
+    }
 
     function onDelete(paths: string[], single: boolean) {
         var title = "";
