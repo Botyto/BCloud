@@ -6,12 +6,12 @@ interface MimeTypeIconProps {
 export default function MimeTypeIcon(props: MimeTypeIconProps) {
     switch (props.type) {
         case "FILE":
-            return "[F]";
+            return "📄";
         case "DIRECTORY":
-            return "[D]";
+            return "📁";
         case "LINK":
-            return "[L]";
+            return "🔗";
         default:
-            return "[?]";
+            return "❓";
     }
 }
