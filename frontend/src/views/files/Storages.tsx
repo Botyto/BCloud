@@ -1,10 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import Loading from '../../components/Loading';
 import { useStorageCreateMutation, useStorageDeleteMutation, useStorageListQuery, useStorageRenameMutation } from './storageApi';
 import Pagination from '../../components/Pagination';
 
 export default function Storages() {
+    const { t } = useTranslation("common");
     const [page, setPage] = React.useState(0);
     const storageListVars = useStorageListQuery(page);
     const [storageErrors, setStorageErrors] = React.useState<any>({});
@@ -71,26 +73,26 @@ export default function Storages() {
 
     if (storageListVars.loading) {
         return <span>
-            Storages (<Link to="/">homepage</Link>)<br/>
+            {t("files.storages.title")} (<Link to="/">{t("files.storages.back_to_homepage")}</Link>)<br/>
             <Loading/>
         </span>;
     } else if (storageListVars.error) {
         return <span>
-            Storages (<Link to="/">homepage</Link>)
+            {t("files.storages.title")} (<Link to="/">{t("files.storages.back_to_homepage")}</Link>)
             <span style={{color: "red"}}>{storageListVars.error.message}</span>
         </span>;
     } else {
         return <>
             <div>
-                Storages (<Link to="/">homepage</Link>)
+                {t("files.storages.title")} (<Link to="/">{t("files.storages.back_to_homepage")}</Link>)
             </div>
             <ul>
                 {storageListVars.data?.filesStorageList.items.map((storage: any) => {
                     return <li key={storage.id}>
                         {storage.name}
-                        - <Link to={`/files/${storage.slug}/`}>browse</Link>
-                        - <button onClick={e => onRename(e, storage)}>rename</button>
-                        - <button onClick={e => onDelete(e, storage)}>delete</button>
+                        - <Link to={`/files/${storage.slug}/`}>{t("files.storages.browse")}</Link>
+                        - <button onClick={e => onRename(e, storage)}>{t("files.storages.rename")}</button>
+                        - <button onClick={e => onDelete(e, storage)}>{t("files.storages.delete")}</button>
                         {
                             storageErrors[storage.id] &&
                             <span style={{color: "red"}}>{storageErrors[storage.id]}</span>
@@ -101,7 +103,7 @@ export default function Storages() {
             <Pagination {...storageListVars.data.filesStorageList} setPage={setPage} />
             <form onSubmit={onCreateStorage}>
                 <input type="text" name="name" value={newStorageName} onChange={n => setNewStorageName(n.target.value)} />
-                <button type="submit">Create</button>
+                <button type="submit">{t("files.storages.create")}</button>
                 <div style={{color: "red"}}>{newStorageError}</div>
             </form>
         </>;

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import fspath from '../../fspath';
 import { useFilesMakedirsMutation, useFilesMakefileMutation } from '../../filesApi';
 
@@ -7,13 +8,14 @@ interface DirControlsProps {
 }
 
 export default function DirControls(props: DirControlsProps) {
+    const { t } = useTranslation("common");
     const [storageId, parts] = fspath.getParts(props.path);
     const [makefile, makefileVars] = useFilesMakefileMutation();
     const [makedirs, makedirsVars] = useFilesMakedirsMutation();
 
     function onNewFile(e: React.MouseEvent) {
         e.preventDefault();
-        const name = prompt("File name", "newfile.txt");
+        const name = prompt(t("files.browser.dir.new_file.prompt"), "newfile.txt");
         if (!name) { return; }
         const newPath = fspath.join(storageId, [...parts, name])
         makefile({
@@ -29,7 +31,7 @@ export default function DirControls(props: DirControlsProps) {
 
     function onNewDir(e: React.MouseEvent) {
         e.preventDefault();
-        const name = prompt("Directory name", "newdir");
+        const name = prompt(t("files.browser.dir.new_dir.prompt"), "newdir");
         if (!name) { return; }
         const newPath = fspath.join(storageId, [...parts, name])
         makedirs({
@@ -43,7 +45,7 @@ export default function DirControls(props: DirControlsProps) {
     }
 
     return <div>
-        <button onClick={onNewFile}>New file</button>
-        <button onClick={onNewDir}>New directory</button>
+        <button onClick={onNewFile}>{t("files.browser.dir.new_file.button")}</button>
+        <button onClick={onNewDir}>{t("files.browser.dir.new_dir.button")}</button>
     </div>;
 }

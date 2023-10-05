@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import fspath from '../../fspath';
 import { BROWSER_ROUTE } from '../common';
@@ -11,6 +12,7 @@ interface FileEntryHeaderProps {
 }
 
 export function FileEntryHeader(props: FileEntryHeaderProps) {
+    const { t } = useTranslation("common");
     return <>
         <input
             type="checkbox"
@@ -25,9 +27,9 @@ export function FileEntryHeader(props: FileEntryHeaderProps) {
             <span style={{ display: "inline-block", minWidth: "2rem" }}></span>
             <span style={{ display: "inline-block", minWidth: "15rem" }}></span>
             <span style={{ display: "inline-block", minWidth: "5rem" }}></span>
-            <button style={{minWidth: "5rem"}} disabled>Move</button>
-            <button style={{minWidth: "5rem"}} disabled>Copy</button>
-            <button style={{minWidth: "5rem"}} disabled>Delete</button>
+            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.all.move")}</button>
+            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.all.copy")}</button>
+            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.all.delete")}</button>
         </span>
     </>
 }
@@ -40,6 +42,7 @@ interface FileEntryProps {
 }
 
 export function FileEntry(props: FileEntryProps) {
+    const { t } = useTranslation("common");
     return <li style={{ border: "solid 1px black" }}>
         <input
             type="checkbox"
@@ -55,14 +58,14 @@ export function FileEntry(props: FileEntryProps) {
             </Link>
         </span>
         <span>
-            <button style={{minWidth: "5rem"}} disabled>Rename</button>
-            <button style={{minWidth: "5rem"}} disabled>Move</button>
-            <button style={{minWidth: "5rem"}} disabled>Copy</button>
-            <button style={{minWidth: "5rem"}} disabled>Delete</button>
-            <button style={{minWidth: "5rem"}} disabled>Share</button>
-            <button style={{minWidth: "5rem"}} disabled>Follow link</button>
-            <button style={{minWidth: "5rem"}} disabled>Add link</button>
-            <button style={{minWidth: "5rem"}} disabled>Transcode</button>
+            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.rename")}</button>
+            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.move")}</button>
+            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.copy")}</button>
+            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.delete")}</button>
+            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.share")}</button>
+            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.follow")}</button>
+            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.link")}</button>
+            <button style={{ minWidth: "5rem" }} disabled>{t("files.browser.dir.file.transcode")}</button>
         </span>
     </li>;
 }

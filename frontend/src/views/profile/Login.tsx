@@ -1,9 +1,11 @@
 import React, { useState, MouseEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLoginMutation, useRegisterMutation } from './api';
 
 
 export default function Login() {
+    const { t } = useTranslation("common");
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [error, setError] = useState<string>('');
@@ -61,11 +63,13 @@ export default function Login() {
 
     return <>
         <form>
-            Login (<Link to="/">homepage</Link>)<br/>
-            Username: <input type="text" value={username} onChange={(v) => setUsername(v.target.value)}/><br/>
-            Password: <input type="password" value={password} onChange={(v) => setPassword(v.target.value)}/><br/>
-            <button onClick={onLogin}>Login</button>
-            <button onClick={onRegister}>Register</button>
+            {t("profile.login.title")} (<Link to="/">{t("profile.back_to_homepage")}</Link>)<br/>
+            {t("profile.login.username_label")}:
+            <input type="text" value={username} onChange={(v) => setUsername(v.target.value)} /><br />
+            {t("profile.login.password_label")}:
+            <input type="password" value={password} onChange={(v) => setPassword(v.target.value)} /><br />
+            <button onClick={onLogin}>{t("profile.login.login_button")}</button>
+            <button onClick={onRegister}>{t("profile.login.register_button")}</button>
         </form>
         <span style={{color: "red"}}>{error}</span>
     </>;

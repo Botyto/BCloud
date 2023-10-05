@@ -1,11 +1,13 @@
 import React from 'react';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import fspath from '../fspath';
 import { ContentsProps } from './common';
 import { GetPreview } from '../previews/preview';
 import TxtPreview from '../previews/TxtPreview';
 
 export default function FileBrowser(props: ContentsProps) {
+    const { t } = useTranslation("common");
     function download(e: React.MouseEvent, url: string, name: string) {
         e.preventDefault();
         axios.get(url, {
@@ -39,11 +41,11 @@ export default function FileBrowser(props: ContentsProps) {
     ]);
 
     if (props.file.size === null) {
-        return <div>No file contents</div>;
+        return <div>{t("files.browser.file.no_content")}</div>;
     }
 
     return <>
-        <button onClick={e => download(e, downloadUrl, name)}>Download</button>
+        <button onClick={e => download(e, downloadUrl, name)}>{t("files.browser.file.download")}</button>
         <Preview file={props.file} path={props.path} contentUrl={contentUrl}/>
     </>;
 }

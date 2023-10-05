@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { gql, useQuery } from '@apollo/client';
 import { Link } from 'react-router-dom';
 import Loading from '../components/Loading';
@@ -12,14 +13,16 @@ query CurrentUser {
 }`;
 
 export default function Homepage() {
+    const { t } = useTranslation('common')
     const currentUserVars = useQuery(USER);
     if (currentUserVars.error) {
-        return <span>Hi <span style={{color: "red"}}>{currentUserVars.error.message}</span></span>;
+        return <span>{t('homepage.hi')} <span style={{color: "red"}}>{currentUserVars.error.message}</span></span>;
     } else if (currentUserVars.loading) {
-        return <span>Hi <Loading/></span>
+        return <span>{t('homepage.hi')} <Loading/></span>
     } else if (currentUserVars.data) {
+        const user = currentUserVars.data.profileAuthUser?.displayName || "MISSING USER";
         return <>
-            <div>Hi {currentUserVars.data.profileAuthUser?.displayName || "MISSING USER"}</div>
+            <div>{t('homepage.hi_user', { user })}</div>
             <ul>
                 <li>/profile</li>
                 <li><Link to="/profile/login">/profile/login</Link></li>
@@ -28,6 +31,6 @@ export default function Homepage() {
             </ul>
         </>;
     } else {
-        return <span>Hi</span>;
+        return <span>{t('homepage.hi')}</span>;
     }
 }

@@ -1,10 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import fspath from '../../fspath';
 import { ContentsProps } from '../common';
 import { FileEntryHeader, FileEntry } from './FileEntry';
 import DirControls from './DirControls';
 
 export default function DirectoryContents(props: ContentsProps) {
+    const { t } = useTranslation("common");
     const [selectedPaths, setSelectedPaths] = React.useState<string[]>([]);
 
     function setSelectedSinglePath(path: string, selected: boolean) {
@@ -38,7 +40,7 @@ export default function DirectoryContents(props: ContentsProps) {
             </div>
             {
                 (props.file.children.length === 0) ? (
-                    <span>Empty...</span>
+                    <span>{t("files.browser.dir.empty")}</span>
                 ) : (props.file.children.map((file: any) => {
                         const path = fspath.join(null, [props.path, file.name]);
                         return <FileEntry
