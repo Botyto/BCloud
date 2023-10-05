@@ -9,7 +9,7 @@ export default function DirectoryContents(props: ContentsProps) {
     const { t } = useTranslation("common");
     const [selectedPaths, setSelectedPaths] = React.useState<string[]>([]);
 
-    function setSelectedSinglePath(path: string, selected: boolean) {
+    function setPathSelected(path: string, selected: boolean) {
         if (selected && !selectedPaths.includes(path)) {
             setSelectedPaths([...selectedPaths, path]);
         } else if (!selected && selectedPaths.includes(path)) {
@@ -59,7 +59,7 @@ export default function DirectoryContents(props: ContentsProps) {
                             file={file}
                             path={path}
                             selected={selectedPaths.includes(path)}
-                            onSelect={(s) => setSelectedSinglePath(path, s)}
+                            onSelect={(s) => setPathSelected(path, s)}
                             key={file.id}
                         />;
                     })
