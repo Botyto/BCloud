@@ -1,7 +1,7 @@
 import React from 'react';
 import fspath from '../../fspath';
 import { ContentsProps } from '../common';
-import FileEntry from './FileEntry';
+import { FileEntryHeader, FileEntry } from './FileEntry';
 import DirControls from './DirControls';
 
 export default function DirectoryContents(props: ContentsProps) {
@@ -30,14 +30,10 @@ export default function DirectoryContents(props: ContentsProps) {
     return <>
         <div>
             <div>
-                <input
-                    type="checkbox"
-                    checked={allSelected}
-                    onChange={toggleSelectAllPaths}
-                    ref={input => {
-                        if (!input) { return; }
-                        input.indeterminate = partlySelected;
-                    }}
+                <FileEntryHeader
+                    allSelected={allSelected}
+                    partlySelected={partlySelected}
+                    toggleSelectAllPaths={toggleSelectAllPaths}
                 />
             </div>
             {

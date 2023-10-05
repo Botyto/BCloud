@@ -4,6 +4,34 @@ import fspath from '../../fspath';
 import { BROWSER_ROUTE } from '../common';
 import MimeTypeIcon from '../MimeTypeIcon';
 
+interface FileEntryHeaderProps {
+    allSelected: boolean;
+    partlySelected: boolean;
+    toggleSelectAllPaths: () => void;
+}
+
+export function FileEntryHeader(props: FileEntryHeaderProps) {
+    return <>
+        <input
+            type="checkbox"
+            checked={props.allSelected}
+            onChange={props.toggleSelectAllPaths}
+            ref={input => {
+                if (!input) { return; }
+                input.indeterminate = props.partlySelected;
+            }}
+        />
+        <span>
+            <span style={{ display: "inline-block", minWidth: "2rem" }}></span>
+            <span style={{ display: "inline-block", minWidth: "15rem" }}></span>
+            <span style={{ display: "inline-block", minWidth: "5rem" }}></span>
+            <button style={{minWidth: "5rem"}} disabled>Move</button>
+            <button style={{minWidth: "5rem"}} disabled>Copy</button>
+            <button style={{minWidth: "5rem"}} disabled>Delete</button>
+        </span>
+    </>
+}
+
 interface FileEntryProps {
     path: string;
     file: any;
@@ -11,7 +39,7 @@ interface FileEntryProps {
     onSelect: (selected: boolean) => void;
 }
 
-export default function FileEntry(props: FileEntryProps) {
+export function FileEntry(props: FileEntryProps) {
     return <li style={{ border: "solid 1px black" }}>
         <input
             type="checkbox"
@@ -27,14 +55,14 @@ export default function FileEntry(props: FileEntryProps) {
             </Link>
         </span>
         <span>
-            <button disabled>Rename</button>
-            <button disabled>Move</button>
-            <button disabled>Copy</button>
-            <button disabled>Delete</button>
-            <button disabled>Share</button>
-            <button disabled>Follow link</button>
-            <button disabled>Add link</button>
-            <button disabled>Transcode</button>
+            <button style={{minWidth: "5rem"}} disabled>Rename</button>
+            <button style={{minWidth: "5rem"}} disabled>Move</button>
+            <button style={{minWidth: "5rem"}} disabled>Copy</button>
+            <button style={{minWidth: "5rem"}} disabled>Delete</button>
+            <button style={{minWidth: "5rem"}} disabled>Share</button>
+            <button style={{minWidth: "5rem"}} disabled>Follow link</button>
+            <button style={{minWidth: "5rem"}} disabled>Add link</button>
+            <button style={{minWidth: "5rem"}} disabled>Transcode</button>
         </span>
     </li>;
 }
