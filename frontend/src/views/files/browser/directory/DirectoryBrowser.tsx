@@ -35,9 +35,8 @@ export default function DirectoryContents(props: ContentsProps) {
                     checked={allSelected}
                     onChange={toggleSelectAllPaths}
                     ref={input => {
-                        if (input) {
-                            input.indeterminate = partlySelected;
-                        }
+                        if (!input) { return; }
+                        input.indeterminate = partlySelected;
                     }}
                 />
             </div>
