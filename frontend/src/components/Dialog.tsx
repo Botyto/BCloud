@@ -104,6 +104,7 @@ export function Dialog(props: DialogProps|any) {
     return <dialog
         ref={ref}
         onClick={handleClick}
+        onCancel={() => {props.onClose?.(); props.close();}}
         style={style}
         {...otherProps}
     >

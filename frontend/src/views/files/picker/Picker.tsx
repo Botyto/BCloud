@@ -1,6 +1,22 @@
 import React from 'react';
 import { useFilesListQuery } from '../filesApi';
+import fspath from '../fspath';
 import Loading from '../../../components/Loading';
+
+interface PickerEntryProps {
+    file: any;
+    path: string;
+    onClick: () => void;
+}
+
+function PickerEntry(props: PickerEntryProps) {
+    return <div
+        style={{textDecoration: "underline", cursor: "pointer", color: "blue"}}
+        onClick={() => props.onClick()}
+    >
+        {props.file.name}
+    </div>;
+}
 
 interface PickerAction {
     name: string;
@@ -24,12 +40,27 @@ export default function Picker(props: PickerProps) {
         <div>{props.title}</div>
         <div>
             {
+                (fspath.stripStorage(path)[1] !== "/") ? (
+                    <PickerEntry
+                        file={{name: ".."}}
+                        path={fspath.dirName(path)}
+                        onClick={() => {setPath(fspath.dirName(path))}}
+                    />
+                ) : null
+            }
+            {
                 (filesListVars.loading) ? (
                     <Loading/>
                 ) : (filesListVars.error) ? (
                     <div style={{color: "red"}}>Error: {filesListVars.error.message}</div>
                 ): (filesListVars.data.filesFilesByPath.children.map((file: any) => {
-                    {JSON.stringify(file)}
+                    const filePath = fspath.join(null, [path, file.name]);
+                    return <PickerEntry
+                        key={file.id}
+                        file={file}
+                        path={filePath}
+                        onClick={() => {setPath(filePath)}}
+                    />
                 }))
             }
         </div>
