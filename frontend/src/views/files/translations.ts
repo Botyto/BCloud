@@ -52,10 +52,12 @@ export default {
                 },
                 move: {
                     prompt: "Move `{{name}}`",
+                    action: "Move here",
                     button: "➡️ Move",
                 },
                 copy: {
                     prompt: "Copy `{{name}}`",
+                    action: "Copy here",
                     button: "📋 Copy",
                 },
                 delete: {
@@ -66,6 +68,9 @@ export default {
                     button: "📢 Share",
                 },
                 link: {
+                    prompt: "Link `{{name}}`",
+                    action: "Save link",
+                    input_label: "Link name",
                     button: "🔗 Add link",
                 },
             },

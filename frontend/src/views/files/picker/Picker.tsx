@@ -30,14 +30,19 @@ interface PickerProps {
     cancelAfterAction?: boolean;
     onCancel: () => void;
     showTypes?: string[];
+    input?: boolean;
+    inputLabel?: string;
+    inputDefault?: string;
 }
 
 export default function Picker(props: PickerProps) {
     const [path, setPath] = React.useState<string>(props.defaultPath);
+    const [input, setInput] = React.useState<string>(props.inputDefault || "");
     const filesListVars = useFilesListQuery(path);
 
     return <div style={{background: "white", border: "1px solid black", padding: "0.3rem"}}>
         <div>{props.title}</div>
+        <div>{path}</div>
         <div>
             {
                 (fspath.stripStorage(path)[1] !== "/") ? (
@@ -69,6 +74,14 @@ export default function Picker(props: PickerProps) {
                 }))
             }
         </div>
+        {
+            props.input && <div>
+                {
+                    props.inputLabel && <span>{props.inputLabel}: </span>
+                }
+                <input type="text" value={input} onChange={(e) => setInput(e.target.value)} />
+            </div>
+        }
         <div>
             {
                 props.actions.map((action) => {

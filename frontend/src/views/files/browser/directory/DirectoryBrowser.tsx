@@ -9,6 +9,9 @@ import Picker from '../../picker/Picker';
 
 export default function DirectoryContents(props: ContentsProps) {
     const { t } = useTranslation("common");
+
+    // Selection
+
     const [selectedPaths, setSelectedPaths] = React.useState<string[]>([]);
 
     function setPathSelected(path: string, selected: boolean) {
@@ -31,6 +34,48 @@ export default function DirectoryContents(props: ContentsProps) {
         }
     }
 
+    // Picker
+
+    const [pickerFiles, setPickerFiles] = useState<string[]>([]);
+    const [pickerTitle, setPickerTitle] = useState<string>("");
+    const [pickerActionName, setPickerActionName] = useState<string>("");
+    const [pickerAction, setPickerAction] = useState<((src: string[], dst: string)=>void)>(()=>{});
+    const [pickerInputLabel, setPickerInputLabel] = useState<string>("");
+    const [pickerInputDefault, setPickerInputDefault] = useState<string>("");
+    const [pickerShowTypes, setPickerShowTypes] = useState<string[]|undefined>(undefined);
+    const picker = useDialogState();
+
+    function openPicker(
+        paths: string[],
+        title: string,
+        actionName: string,
+        action: (src: string[], dst: string)=>void,
+        inputLabel: string = "",
+        inputDefault: string = "",
+        showTypes: string[]|undefined = undefined,
+    ) {
+        setPickerFiles(paths);
+        setPickerTitle(title);
+        setPickerActionName(actionName);
+        setPickerAction(() => action);
+        setPickerInputLabel(inputLabel);
+        setPickerInputDefault(inputDefault);
+        setPickerShowTypes(showTypes);
+        picker.open();
+    }
+
+    function resetPicker() {
+        setPickerFiles([]);
+        setPickerTitle("");
+        setPickerActionName("");
+        setPickerAction(()=>{});
+        setPickerInputLabel("");
+        setPickerInputDefault("");
+        setPickerShowTypes(undefined);
+    }
+    
+    // Actions
+
     function onRename(path: string) {
         const originalName = fspath.baseName(path);
         const name = prompt(t("files.browser.dir.file.rename.prompt", {name: originalName}), originalName);
@@ -38,8 +83,6 @@ export default function DirectoryContents(props: ContentsProps) {
         console.log("Will rename", path, "to", name);
     }
 
-    const [movedFiles, setMovedFiles] = useState<string[]>([]);
-    const moveDialog = useDialogState();
     function onMove(paths: string[], single: boolean) {
         var title = "";
         if (single) {
@@ -49,20 +92,17 @@ export default function DirectoryContents(props: ContentsProps) {
             const count = paths.length;
             title = t("files.browser.dir.all.move.prompt", { count });
         }
-        moveDialog.open();
-        setMovedFiles(paths);
+        openPicker(paths, title, t("files.browser.dir.file.move.action"), doMove, undefined, undefined, ["DIRECTORY"]);
     }
 
-    function doMove(path: string) {
-        if (path === props.path) { return; }
+    function doMove(src: string[], dst: string) {
+        if (dst === props.path) { return; }
         console.log("Will move");
-        console.log(movedFiles);
-        console.log("To", path);
-        setMovedFiles([]);
+        console.log(src);
+        console.log("To", dst);
+        setPickerFiles([]);
     }
 
-    const [copiedFiles, setCopiedFiles] = useState<string[]>([]);
-    const copyDialog = useDialogState();
     function onCopy(paths: string[], single: boolean) {
         var title = "";
         if (single) {
@@ -72,16 +112,14 @@ export default function DirectoryContents(props: ContentsProps) {
             const count = paths.length;
             title = t("files.browser.dir.all.copy.prompt", { count });
         }
-        copyDialog.open();
-        setCopiedFiles(paths);
+        openPicker(paths, title, t("files.browser.dir.file.copy.action"), doCopy, undefined, undefined, ["DIRECTORY"]);
     }
 
-    function doCopy(path: string) {
-        if (path === props.path) { return; }
+    function doCopy(src: string[], dst: string) {
+        if (dst === props.path) { return; }
         console.log("Will copy");
-        console.log(copiedFiles);
-        console.log("To", path);
-        setCopiedFiles([]);
+        console.log(src);
+        console.log("To", dst);
     }
 
     function onDelete(paths: string[], single: boolean) {
@@ -103,17 +141,24 @@ export default function DirectoryContents(props: ContentsProps) {
         alert("Not implemented!");
     }
 
-    const [linkedFile, setLinkedFile] = useState<string>("");
-    const linkDialog = useDialogState();
     function onAddLink(path: string) {
-        linkDialog.open();
-        setLinkedFile(path);
+        openPicker(
+            [path],
+            t("files.browser.dir.file.link.prompt"),
+            t("files.browser.dir.file.link.action"),
+            doLink,
+            t("files.browser.dir.file.link.input_label"),
+            "Link to " + fspath.baseName(path),
+            ["DIRECTORY"],
+        );
     }
 
-    function doLink(path: string) {
+    function doLink(src: string[], path: string) {
+        const linkedFile = src[0];
         console.log("Will link", linkedFile, "to", path);
-        setLinkedFile("");
     }
+
+    // Render
 
     return <>
         <div>
@@ -149,16 +194,19 @@ export default function DirectoryContents(props: ContentsProps) {
                 )
             }
         </div>
-        <Dialog {...bindState(moveDialog)}>
+        <Dialog {...bindState(picker)}>
             <Picker
-                title="Move"
+                title={pickerTitle}
                 defaultPath={props.path}
                 actions={[{
-                    name: "Move",
-                    onClick: (path: string) => {doMove(path)},
+                    name: pickerActionName,
+                    onClick: (dst: string) => pickerAction(pickerFiles, dst),
                 }]}
-                onCancel={() => moveDialog.close()}
-                showTypes={["DIRECTORY"]}
+                onCancel={() => picker.close()}
+                showTypes={pickerShowTypes}
+                input={!!pickerInputLabel}
+                inputLabel={pickerInputLabel}
+                inputDefault={pickerInputDefault}
             />
         </Dialog>
         <DirControls path={props.path} />

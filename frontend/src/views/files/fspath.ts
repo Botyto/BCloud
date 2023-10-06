@@ -78,11 +78,11 @@ function getParts(path: string): [string|null, string[]] {
 }
 
 function dirName(path: string) {
-    const sepIdx = path.lastIndexOf(sep);
+    const sepIdx = path.lastIndexOf(sep, path.length - 2);
     if (sepIdx === -1) {
         return path;
     }
-    return path.slice(0, sepIdx);
+    return path.slice(0, sepIdx + 1);
 }
 
 function baseName(path: string) {
