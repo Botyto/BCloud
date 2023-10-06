@@ -202,7 +202,7 @@ export default function DirectoryContents(props: ContentsProps) {
                     name: pickerActionName,
                     onClick: (dst: string) => pickerAction(pickerFiles, dst),
                 }]}
-                onCancel={() => picker.close()}
+                onCancel={() => { picker.close(); resetPicker(); }}
                 showTypes={pickerShowTypes}
                 input={!!pickerInputLabel}
                 inputLabel={pickerInputLabel}
