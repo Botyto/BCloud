@@ -118,7 +118,7 @@ export default function DirectoryContents(props: ContentsProps) {
         <Dialog {...bindState(moveDialog)}>
             <Picker
                 title="Move"
-                defaultPath="/"
+                defaultPath={props.path}
                 actions={[{
                     name: "Move",
                     onClick: (path: string) => {},

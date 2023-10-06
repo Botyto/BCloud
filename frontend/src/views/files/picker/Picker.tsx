@@ -1,4 +1,6 @@
 import React from 'react';
+import { useFilesListQuery } from '../filesApi';
+import Loading from '../../../components/Loading';
 
 interface PickerAction {
     name: string;
@@ -16,11 +18,20 @@ interface PickerProps {
 
 export default function Picker(props: PickerProps) {
     const [path, setPath] = React.useState<string>(props.defaultPath);
+    const filesListVars = useFilesListQuery(path);
 
     return <div style={{background: "white", border: "1px solid black", padding: "0.3rem"}}>
         <div>{props.title}</div>
         <div>
-            ...
+            {
+                (filesListVars.loading) ? (
+                    <Loading/>
+                ) : (filesListVars.error) ? (
+                    <div style={{color: "red"}}>Error: {filesListVars.error.message}</div>
+                ): (filesListVars.data.filesFilesByPath.children.map((file: any) => {
+                    {JSON.stringify(file)}
+                }))
+            }
         </div>
         <div>
             {

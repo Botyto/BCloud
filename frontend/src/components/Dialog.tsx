@@ -4,21 +4,15 @@ class DialogState {
     opened: boolean;
     setOpened: (opened: boolean) => void;
     closeOnOutside: boolean;
-    onClose?: () => void;
-    onOpen?: () => void;
 
     constructor(
         opened: boolean,
         setOpened: (opened: boolean) => void,
         closeOnOutside: boolean = true,
-        onClose?: () => void,
-        onOpen?: () => void,
     ) {
         this.opened = opened;
         this.setOpened = setOpened;
         this.closeOnOutside = closeOnOutside;
-        this.onClose = onClose;
-        this.onOpen = onOpen;
     }
 
     open() {
@@ -38,20 +32,22 @@ class DialogState {
 
 export function useDialogState(
     closeOnOutside: boolean = true,
-    onClose?: () => void,
-    onOpen?: () => void,
 ) {
     const [opened, setOpened] = React.useState(false);
-    return new DialogState(opened, setOpened, closeOnOutside, onClose, onOpen);
+    return new DialogState(opened, setOpened, closeOnOutside);
 }
 
-interface DialogProps {
+interface PublicDialogProps {
     opened: boolean;
     closeOnOutside: boolean;
-    close: () => void;
+    alwaysRenderChildren?: boolean;
     onOpen?: () => void;
     onClose?: () => void;
     children: React.ReactNode;
+}
+
+interface DialogProps extends PublicDialogProps {
+    close: () => void;
 }
 
 export function bindState(state: DialogState) {
@@ -59,8 +55,6 @@ export function bindState(state: DialogState) {
         opened: state.opened,
         closeOnOutside: state.closeOnOutside,
         close: state.close.bind(state),
-        onOpen: state.onOpen?.bind(state),
-        onClose: state.onClose?.bind(state),
     }
 }
 
@@ -113,6 +107,6 @@ export function Dialog(props: DialogProps|any) {
         style={style}
         {...otherProps}
     >
-        {props.children}
+        {props.opened && props.children}
     </dialog>
 }

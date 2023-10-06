@@ -15,7 +15,7 @@ fragment FileDetails on FileMetadata {
 
 const FILES_LIST = gql`
 ${FILE_DETAILS}
-query StorageList($path: String!) {
+query FilesList($path: String!) {
     filesFilesByPath(path: $path, followLastLink: false) {
         ...FileDetails
         children { 
