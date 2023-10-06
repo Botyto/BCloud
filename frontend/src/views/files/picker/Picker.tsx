@@ -53,7 +53,12 @@ export default function Picker(props: PickerProps) {
                     <Loading/>
                 ) : (filesListVars.error) ? (
                     <div style={{color: "red"}}>Error: {filesListVars.error.message}</div>
-                ): (filesListVars.data.filesFilesByPath.children.map((file: any) => {
+                ): (filesListVars.data.filesFilesByPath.children
+                    .filter((file: any) => {
+                        if (!props.showTypes) { return true; }
+                        return props.showTypes.includes(file.type);
+                    })
+                    .map((file: any) => {
                     const filePath = fspath.join(null, [path, file.name]);
                     return <PickerEntry
                         key={file.id}

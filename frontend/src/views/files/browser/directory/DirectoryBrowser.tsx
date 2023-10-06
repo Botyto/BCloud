@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import fspath from '../../fspath';
 import { ContentsProps } from '../common';
@@ -35,9 +35,10 @@ export default function DirectoryContents(props: ContentsProps) {
         const originalName = fspath.baseName(path);
         const name = prompt(t("files.browser.dir.file.rename.prompt", {name: originalName}), originalName);
         if (!name || name === originalName) { return; }
-        //...
+        console.log("Will rename", path, "to", name);
     }
 
+    const [movedFiles, setMovedFiles] = useState<string[]>([]);
     const moveDialog = useDialogState();
     function onMove(paths: string[], single: boolean) {
         var title = "";
@@ -49,9 +50,19 @@ export default function DirectoryContents(props: ContentsProps) {
             title = t("files.browser.dir.all.move.prompt", { count });
         }
         moveDialog.open();
-        //...
+        setMovedFiles(paths);
     }
 
+    function doMove(path: string) {
+        if (path === props.path) { return; }
+        console.log("Will move");
+        console.log(movedFiles);
+        console.log("To", path);
+        setMovedFiles([]);
+    }
+
+    const [copiedFiles, setCopiedFiles] = useState<string[]>([]);
+    const copyDialog = useDialogState();
     function onCopy(paths: string[], single: boolean) {
         var title = "";
         if (single) {
@@ -61,7 +72,16 @@ export default function DirectoryContents(props: ContentsProps) {
             const count = paths.length;
             title = t("files.browser.dir.all.copy.prompt", { count });
         }
-        //...
+        copyDialog.open();
+        setCopiedFiles(paths);
+    }
+
+    function doCopy(path: string) {
+        if (path === props.path) { return; }
+        console.log("Will copy");
+        console.log(copiedFiles);
+        console.log("To", path);
+        setCopiedFiles([]);
     }
 
     function onDelete(paths: string[], single: boolean) {
@@ -75,11 +95,25 @@ export default function DirectoryContents(props: ContentsProps) {
         }
         const ok = window.confirm(title);
         if (!ok) { return; }
+        console.log("Will delete");
+        console.log(paths);
     }
 
-    function onShare(path: string) { }
+    function onShare(path: string) {
+        alert("Not implemented!");
+    }
 
-    function onAddLink(path: string) { }
+    const [linkedFile, setLinkedFile] = useState<string>("");
+    const linkDialog = useDialogState();
+    function onAddLink(path: string) {
+        linkDialog.open();
+        setLinkedFile(path);
+    }
+
+    function doLink(path: string) {
+        console.log("Will link", linkedFile, "to", path);
+        setLinkedFile("");
+    }
 
     return <>
         <div>
@@ -121,9 +155,10 @@ export default function DirectoryContents(props: ContentsProps) {
                 defaultPath={props.path}
                 actions={[{
                     name: "Move",
-                    onClick: (path: string) => {},
+                    onClick: (path: string) => {doMove(path)},
                 }]}
                 onCancel={() => moveDialog.close()}
+                showTypes={["DIRECTORY"]}
             />
         </Dialog>
         <DirControls path={props.path} />
