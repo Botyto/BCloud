@@ -4,6 +4,8 @@ import fspath from '../../fspath';
 import { ContentsProps } from '../common';
 import { FileEntryHeader, FileEntry } from './FileEntry';
 import DirControls from './DirControls';
+import { Dialog, bindState, useDialogState } from '../../../../components/Dialog';
+import Picker from '../../picker/Picker';
 
 export default function DirectoryContents(props: ContentsProps) {
     const { t } = useTranslation("common");
@@ -36,6 +38,7 @@ export default function DirectoryContents(props: ContentsProps) {
         //...
     }
 
+    const moveDialog = useDialogState();
     function onMove(paths: string[], single: boolean) {
         var title = "";
         if (single) {
@@ -45,6 +48,7 @@ export default function DirectoryContents(props: ContentsProps) {
             const count = paths.length;
             title = t("files.browser.dir.all.move.prompt", { count });
         }
+        moveDialog.open();
         //...
     }
 
@@ -111,6 +115,17 @@ export default function DirectoryContents(props: ContentsProps) {
                 )
             }
         </div>
+        <Dialog {...bindState(moveDialog)}>
+            <Picker
+                title="Move"
+                defaultPath="/"
+                actions={[{
+                    name: "Move",
+                    onClick: (path: string) => {},
+                }]}
+                onCancel={() => moveDialog.close()}
+            />
+        </Dialog>
         <DirControls path={props.path} />
     </>;
 }

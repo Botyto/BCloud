@@ -9,6 +9,7 @@ interface PickerProps {
     title: string;
     defaultPath: string;
     actions: PickerAction[];
+    cancelAfterAction?: boolean;
     onCancel: () => void;
     showTypes?: string[];
 }
@@ -24,7 +25,10 @@ export default function Picker(props: PickerProps) {
         <div>
             {
                 props.actions.map((action) => {
-                    return <button key={action.name} onClick={() => action.onClick(path)} >
+                    return <button key={action.name} onClick={() => {
+                        action.onClick(path);
+                        if (props.cancelAfterAction !== false) { props.onCancel(); }
+                    }} >
                         {action.name}
                     </button>;
                 })
