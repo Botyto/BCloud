@@ -25,7 +25,7 @@ export default function Pagination(props: PaginationProps) {
     }
 
     return <span>
-        <button disabled={!hasPrevious}>&lt;</button>
+        <button disabled={!hasPrevious} onClick={e => changePage(e, currentPage - 1)}>&lt;</button>
         {
             shownPages.map((page) => {
                 return <button
@@ -37,6 +37,6 @@ export default function Pagination(props: PaginationProps) {
                 </button>;
             })
         }
-        <button disabled={!hasNext}>&gt;</button>
+        <button disabled={!hasNext} onClick={e => changePage(e, currentPage + 1)}>&gt;</button>
     </span>;
 }
