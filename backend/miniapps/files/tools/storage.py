@@ -46,6 +46,8 @@ class StorageManager:
     def create(self, name: str, *, service: bool = False):
         if not service and name.startswith(self.SERVICE_PREFIX):
             raise ValueError(f"Storage name cannot start with {self.SERVICE_PREFIX}")
+        if not name:
+            raise ValueError("Storage name cannot be empty")
         ensure_str_fit("name", name, FileStorage.name)
         root = FileMetadata(id=uuid4(), name="root", mime_type=DIRECTORY_MIME)
         storage = FileStorage(id=uuid4(), name=name, user_id=self.user_id)
@@ -67,6 +69,8 @@ class StorageManager:
         return True, name
     
     def rename(self, id_or_slug: UUID|str, name: str):
+        if not name:
+            raise ValueError("Storage name cannot be empty")
         ensure_str_fit("name", name, FileStorage.name)
         # OPTIMIZE: make both the old-value-getter and the update in one statement
         statement = select(FileStorage) \

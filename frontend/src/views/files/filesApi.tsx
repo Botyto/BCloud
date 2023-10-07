@@ -63,7 +63,7 @@ export function useFilesMakedirsMutation() {
 const FILES_COPY = gql`
 ${FILE_DETAILS}
 mutation filesCopy($src: String!, $dst: String!) {
-    filesFilesCopy(src: $src, dst: $dst) {
+    filesFilesCopyfile(src: $src, dst: $dst) {
         ...FileDetails
     }
 }`;
@@ -97,6 +97,20 @@ mutation filesDelete($path: String!) {
 
 export function useFileDeleteMutation() {
     return useMutation(FILES_DELETE, {
+        refetchQueries: [FILES_LIST],
+    });
+}
+
+const FILES_LINK = gql`
+${FILE_DETAILS}
+mutation filesLink($path: String!, $target: String!) {
+    filesFilesMakelink(path: $path, target: $target) {
+        ...FileDetails
+    }
+}`;
+
+export function useFileLinkMutation() {
+    return useMutation(FILES_LINK, {
         refetchQueries: [FILES_LIST],
     });
 }

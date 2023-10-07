@@ -118,7 +118,11 @@ export default function Picker(props: PickerProps) {
             {
                 props.actions.map((action) => {
                     return <button key={action.name} onClick={() => {
-                        action.onClick(path);
+                        if (props.input) {
+                            action.onClick(fspath.join(null, [path, input]));
+                        } else {
+                            action.onClick(path);
+                        }
                         if (props.cancelAfterAction !== false) { props.onCancel(); }
                     }} >
                         {action.name}

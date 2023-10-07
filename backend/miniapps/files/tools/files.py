@@ -79,6 +79,8 @@ class FileManager:
         if mime_type is not None:
             ensure_str_fit("MIME-Type", mime_type, FileMetadata.mime_type)
         basename = fspath.basename(path)
+        if not basename:
+            raise ValueError("File name cannot be empty")
         ensure_str_fit("File name", basename, FileMetadata.name)
         dir_path = fspath.dirname(path)
         dir = self.by_path(dir_path)
@@ -107,6 +109,8 @@ class FileManager:
         src_file = self.by_path(src)
         if src_file is None:
             raise FileNotFoundError(src)
+        if src_file.isroot:
+            raise ValueError("Cannot copy root directory")
         dst_file = self.makefile(dst, src_file.mime_type)
         self.contents.copy(src_file, dst_file)
         dst_file.ctime_utc = src_file.ctime_utc
@@ -156,6 +160,8 @@ class FileManager:
         metadata = self.by_path(path)
         if metadata is None:
             raise FileNotFoundError(path)
+        if metadata.isroot:
+            raise ValueError("Cannot delete root directory")
         if metadata.isfile:
             self.contents.delete(metadata)
         elif metadata.isdir:
@@ -171,11 +177,16 @@ class FileManager:
         src_meta = self.by_path(src)
         if src_meta is None:
             raise FileNotFoundError(src)
+        if src_meta.isroot:
+            raise ValueError("Cannot rename root directory")
         dst_dir = fspath.dirname(dst)
         dst_dir_meta = self.by_path(dst_dir)
         if dst_dir_meta is None or not dst_dir_meta.isdir:
             raise DirectoryNotFound(dst)
         dst_basename = fspath.basename(dst)
+        if not dst_basename:
+            raise ValueError("File name cannot be empty")
+        ensure_str_fit("File name", dst_basename, FileMetadata.name)
         dst_meta = dst_dir_meta.get_child(dst_basename)
         if dst_meta is not None:
             raise FileAlreadyExists(dst)

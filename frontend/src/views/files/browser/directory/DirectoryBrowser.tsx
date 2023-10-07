@@ -6,7 +6,7 @@ import { FileEntryHeader, FileEntry } from './FileEntry';
 import DirControls from './DirControls';
 import { Dialog, bindState, useDialogState } from '../../../../components/Dialog';
 import Picker from '../../picker/Picker';
-import { useFilesCopyMutation, useFilesRenameMutation, useFileDeleteMutation } from '../../filesApi';
+import { useFilesCopyMutation, useFilesRenameMutation, useFileDeleteMutation, useFileLinkMutation } from '../../filesApi';
 
 export default function DirectoryContents(props: ContentsProps) {
     const { t } = useTranslation("common");
@@ -23,7 +23,12 @@ export default function DirectoryContents(props: ContentsProps) {
         }
     }
 
-    const allSelected = selectedPaths.length === props.file.children.length;
+    function isSelected(path: string) {
+        return selectedPaths.includes(path);
+    }
+
+    const numFiles = props.file.children.length;
+    const allSelected = numFiles > 0 && selectedPaths.length === numFiles;
     const partlySelected = selectedPaths.length > 0 && !allSelected;
     function toggleSelectAllPaths() {
         if (allSelected) {
@@ -77,11 +82,17 @@ export default function DirectoryContents(props: ContentsProps) {
     
     // Actions
 
+    const [renameFile, renameFileVars] = useFilesRenameMutation();
     function onRename(path: string) {
         const originalName = fspath.baseName(path);
         const name = prompt(t("files.browser.dir.file.rename.prompt", {name: originalName}), originalName);
         if (!name || name === originalName) { return; }
-        console.log("Will rename", path, "to", name);
+        const dst = fspath.join(null, [props.path, name]);
+        renameFile({
+            variables: { src: path, dst },
+            onCompleted: () => { setPathSelected(dst, isSelected(path)); setPathSelected(path, false); },
+            onError: (err) => { alert("Error:\n" + err); },
+        });
     }
 
     function onMove(paths: string[], single: boolean) {
@@ -96,14 +107,14 @@ export default function DirectoryContents(props: ContentsProps) {
         openPicker(paths, title, t("files.browser.dir.file.move.action"), doMove, undefined, undefined, ["DIRECTORY"]);
     }
 
-    const [moveFile, moveFileVars] = useFilesRenameMutation();
     function doMove(src: string[], dst: string) {
         if (dst === props.path) { return; }
         for (const fileSrc of src) {
             const fileDst = fspath.join(null, [dst, fspath.baseName(fileSrc)]);
-            moveFile({
+            renameFile({
                 variables: { src: fileSrc, dst: fileDst },
                 onCompleted: () => { setPathSelected(fileSrc, false) },
+                onError: (err) => { alert(fileSrc + " error:\n" + err); },
             });
         }
     }
@@ -127,6 +138,7 @@ export default function DirectoryContents(props: ContentsProps) {
             const fileDst = fspath.join(null, [dst, fspath.baseName(fileSrc)]);
             copyFile({
                 variables: { src: fileSrc, dst: fileDst },
+                onError: (err) => { alert(fileSrc + " error:\n" + err); },
             });
         }
     }
@@ -147,6 +159,7 @@ export default function DirectoryContents(props: ContentsProps) {
             deleteFile({
                 variables: { path },
                 onCompleted: () => { setPathSelected(path, false); },
+                onError: (err) => { alert("Error:\n" + err); },
             });
         }
     }
@@ -155,6 +168,7 @@ export default function DirectoryContents(props: ContentsProps) {
         alert("Not implemented!");
     }
 
+    const [makeLink, makeLinkVars] = useFileLinkMutation();
     function onAddLink(path: string) {
         openPicker(
             [path],
@@ -169,7 +183,13 @@ export default function DirectoryContents(props: ContentsProps) {
 
     function doLink(src: string[], path: string) {
         const linkedFile = src[0];
-        alert("Not implemented!")
+        makeLink({
+            variables: {
+                path: path,
+                target: linkedFile,
+            },
+            onError: (e) => { alert("Error:\n" + e.message); },
+        });
     }
 
     // Render
