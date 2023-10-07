@@ -28,6 +28,9 @@ export default {
                 prompt: "Directory name",
                 button: "New directory",
             },
+            upload: {
+                button: "Upload",
+            },
             all: {
                 move: {
                     prompt_one: "Move {{count}} file",
