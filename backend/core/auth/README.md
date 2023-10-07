@@ -13,3 +13,5 @@ Owner foreign keys must be marked explicitly by adding an info={"owner": True} t
 
 At this point sessions aren't very secure - only the session ID is sent to the user and used for authentication.
 Encryption is not implemented at this point, but should be done using the DEK/KEK scheme.
+
+Frontend/API authentication can be done through either an Authorization cookkie or header using the Bearer scheme.
