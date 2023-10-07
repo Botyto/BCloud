@@ -80,6 +80,8 @@ export default {
             download: "Download",
             preview: {
                 unknown_file_type: "Unknown file type",
+                video_not_supported: "Your browser doesn't support the video playback!",
+                audio_not_supported: "Your browser doesn't support the audio playback!",
             },
         },
         link: {

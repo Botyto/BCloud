@@ -38,3 +38,9 @@ export function exactMimeType(mimeType: string) {
         return inputMimeType == mimeType;
     };
 }
+
+export function primaryMimeType(mimeType: string) {
+    return function(inputMimeType: string) {
+        return inputMimeType.startsWith(mimeType);
+    };
+}

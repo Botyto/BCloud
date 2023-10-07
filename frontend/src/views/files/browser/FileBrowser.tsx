@@ -5,6 +5,10 @@ import fspath from '../fspath';
 import { ContentsProps } from './common';
 import { GetPreview } from '../previews/preview';
 import TxtPreview from '../previews/TxtPreview';
+import AudioPreview from '../previews/AudioPreview';
+import VideoPreview from '../previews/VideoPreview';
+import ImagePreview from '../previews/ImagePreview';
+import PdfPreview from '../previews/PdfPreview';
 
 export default function FileBrowser(props: ContentsProps) {
     const { t } = useTranslation("common");
@@ -38,6 +42,10 @@ export default function FileBrowser(props: ContentsProps) {
     const name = fspath.baseName(props.path);
     const Preview = GetPreview(props.file, [
         TxtPreview,
+        AudioPreview,
+        VideoPreview,
+        ImagePreview,
+        PdfPreview,
     ]);
 
     if (props.file.size === null) {
