@@ -107,14 +107,17 @@ export default function DirControls(props: DirControlsProps) {
             const file = uploadRef.current.files[i];
             const path = fspath.join(storageId, [...parts, file.name]);
             const SERVER_HOST = 'localhost:8080';
-            const contentUrl = "http://" + fspath.pathToUrl(`${SERVER_HOST}/api/files/content/:storageId/*`, props.path)
+            const contentUrl = "http://" + fspath.pathToUrl(`${SERVER_HOST}/api/files/contents/:storageId/*`, path)
             addUploadFile(file);
             makefile({
                 variables: { path, mimeType: file.type },
                 onCompleted: () => {
                     setFileStatus(file, UPLOADING);
                     axios.post(contentUrl, file, {
-                        headers: { 'Authorization': `Bearer ${localStorage.getItem('authentication-token')}` },
+                        headers: {
+                            "Authorization": `Bearer ${localStorage.getItem('authentication-token')}`,
+                            "Content-Type": file.type,
+                        },
                         onUploadProgress: (e) => { updateUploadFile(file, e.loaded); },
                     }).then((r) => {
                         if (r.status === 200) { setFileStatus(file, COMPLETED); }

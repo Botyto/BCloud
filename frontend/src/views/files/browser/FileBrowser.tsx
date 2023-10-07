@@ -18,10 +18,10 @@ export default function FileBrowser(props: ContentsProps) {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('authentication-token')}`
             },
+            responseType: 'blob',
         })
-        .then((r) => r.data())
-        .then((blob) => {
-            const url = window.URL.createObjectURL(blob);
+        .then((r) => {
+            const url = window.URL.createObjectURL(r.data);
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
@@ -38,7 +38,7 @@ export default function FileBrowser(props: ContentsProps) {
     
     const SERVER_HOST = 'localhost:8080';
     const downloadUrl = "http://" + fspath.pathToUrl(`${SERVER_HOST}/api/files/download/:storageId/*`, props.path)
-    const contentUrl = "http://" + fspath.pathToUrl(`${SERVER_HOST}/api/files/content/:storageId/*`, props.path)
+    const contentUrl = "http://" + fspath.pathToUrl(`${SERVER_HOST}/api/files/contents/:storageId/*`, props.path)
     const name = fspath.baseName(props.path);
     const Preview = GetPreview(props.file, [
         TxtPreview,

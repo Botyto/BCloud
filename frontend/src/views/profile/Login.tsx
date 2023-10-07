@@ -13,6 +13,11 @@ export default function Login() {
     const [register, registerVars] = useRegisterMutation();
     const navigate = useNavigate();
 
+    function setAuthToken(token: string) {
+        localStorage.setItem("authentication-token", token);
+        document.cookie = "Authorization=Bearer " + token + "; SameSite=None; Secure";
+    }
+
     function onLogin(e: MouseEvent<HTMLButtonElement>) {
         e.preventDefault();
         setError("");
@@ -26,9 +31,9 @@ export default function Login() {
                 username,
                 password,
             },
-            onCompleted(data, clientOptions) {
+            onCompleted(data) {
                 const token = data.profileAuthLogin.jwt;
-                localStorage.setItem("authentication-token", token);
+                setAuthToken(token);
                 navigate("/");
             },
             onError(error) {
@@ -50,9 +55,9 @@ export default function Login() {
                 username,
                 password,
             },
-            onCompleted(data, clientOptions) {
+            onCompleted(data) {
                 const token = data.profileAuthRegister.jwt;
-                localStorage.setItem("authentication-token", token);
+                setAuthToken(token);
                 navigate("/");
             },
             onError(error) {
