@@ -6,6 +6,7 @@ import { FileEntryHeader, FileEntry } from './FileEntry';
 import DirControls from './DirControls';
 import { Dialog, bindState, useDialogState } from '../../../../components/Dialog';
 import Picker from '../../picker/Picker';
+import { useFilesCopyMutation, useFilesRenameMutation, useFileDeleteMutation } from '../../filesApi';
 
 export default function DirectoryContents(props: ContentsProps) {
     const { t } = useTranslation("common");
@@ -95,14 +96,18 @@ export default function DirectoryContents(props: ContentsProps) {
         openPicker(paths, title, t("files.browser.dir.file.move.action"), doMove, undefined, undefined, ["DIRECTORY"]);
     }
 
+    const [moveFile, moveFileVars] = useFilesRenameMutation();
     function doMove(src: string[], dst: string) {
         if (dst === props.path) { return; }
-        console.log("Will move");
-        console.log(src);
-        console.log("To", dst);
-        setPickerFiles([]);
+        for (const fileSrc of src) {
+            const fileDst = fspath.join(null, [dst, fspath.baseName(fileSrc)]);
+            moveFile({
+                variables: { src: fileSrc, dst: fileDst },
+                onCompleted: () => { setPathSelected(fileSrc, false) },
+            });
+        }
     }
-
+    
     function onCopy(paths: string[], single: boolean) {
         var title = "";
         if (single) {
@@ -114,14 +119,19 @@ export default function DirectoryContents(props: ContentsProps) {
         }
         openPicker(paths, title, t("files.browser.dir.file.copy.action"), doCopy, undefined, undefined, ["DIRECTORY"]);
     }
-
+    
+    const [copyFile, copyFileVars] = useFilesCopyMutation();
     function doCopy(src: string[], dst: string) {
         if (dst === props.path) { return; }
-        console.log("Will copy");
-        console.log(src);
-        console.log("To", dst);
+        for (const fileSrc of src) {
+            const fileDst = fspath.join(null, [dst, fspath.baseName(fileSrc)]);
+            copyFile({
+                variables: { src: fileSrc, dst: fileDst },
+            });
+        }
     }
 
+    const [deleteFile, deleteFileVars] = useFileDeleteMutation();
     function onDelete(paths: string[], single: boolean) {
         var title = "";
         if (single) {
@@ -133,8 +143,12 @@ export default function DirectoryContents(props: ContentsProps) {
         }
         const ok = window.confirm(title);
         if (!ok) { return; }
-        console.log("Will delete");
-        console.log(paths);
+        for (const path of paths) {
+            deleteFile({
+                variables: { path },
+                onCompleted: () => { setPathSelected(path, false); },
+            });
+        }
     }
 
     function onShare(path: string) {
@@ -155,7 +169,7 @@ export default function DirectoryContents(props: ContentsProps) {
 
     function doLink(src: string[], path: string) {
         const linkedFile = src[0];
-        console.log("Will link", linkedFile, "to", path);
+        alert("Not implemented!")
     }
 
     // Render
@@ -207,6 +221,7 @@ export default function DirectoryContents(props: ContentsProps) {
                 input={!!pickerInputLabel}
                 inputLabel={pickerInputLabel}
                 inputDefault={pickerInputDefault}
+                disabledPaths={pickerFiles}
             />
         </Dialog>
         <DirControls path={props.path} />

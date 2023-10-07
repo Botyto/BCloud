@@ -159,7 +159,7 @@ class FileManager:
         if metadata.isfile:
             self.contents.delete(metadata)
         elif metadata.isdir:
-            raise NotImplementedError()
+            pass
         self.session.delete(metadata)
         # TODO delete links to this file
 

@@ -1,6 +1,8 @@
+from typing import List
 from uuid import UUID
 
 from .data import FileMetadata
+from .tools import fspath
 from .tools.files import FileManager
 
 from core.api.modules.gql import GqlMiniappModule, query, mutation
@@ -60,7 +62,7 @@ class FilesModule(GqlMiniappModule):
         self.manager.delete(path)
         self.log_activity("files.delete", {"path": path})
         return SuccessResult()
-
+    
     @mutation()
     def rename(self, src: str, dst: str) -> FileMetadata:
         self.log_activity("files.rename", {"src": src, "dst": dst})

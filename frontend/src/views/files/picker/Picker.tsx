@@ -1,21 +1,29 @@
 import React from 'react';
-import { useFilesListQuery } from '../filesApi';
+import { useTranslation } from 'react-i18next';
 import fspath from '../fspath';
+import { useFilesListQuery, useFilesMakedirsMutation } from '../filesApi';
 import Loading from '../../../components/Loading';
 
 interface PickerEntryProps {
     file: any;
     path: string;
+    disabled: boolean;
     onClick: () => void;
 }
 
 function PickerEntry(props: PickerEntryProps) {
-    return <div
-        style={{textDecoration: "underline", cursor: "pointer", color: "blue"}}
-        onClick={() => props.onClick()}
-    >
-        {props.file.name}
-    </div>;
+    if (props.disabled) {
+        return <div style={{textDecoration: "underline", cursor: "pointer", color: "gray"}}>
+            {props.file.name}
+        </div>;
+    } else {
+        return <div
+            style={{textDecoration: "underline", cursor: "pointer", color: "blue"}}
+            onClick={() => props.onClick()}
+        >
+            {props.file.name}
+        </div>;
+    }
 }
 
 interface PickerAction {
@@ -33,12 +41,31 @@ interface PickerProps {
     input?: boolean;
     inputLabel?: string;
     inputDefault?: string;
+    disabledPaths?: string[];
+    allowNewDirectory?: boolean;
 }
 
 export default function Picker(props: PickerProps) {
+    const { t } = useTranslation("common");
     const [path, setPath] = React.useState<string>(props.defaultPath);
     const [input, setInput] = React.useState<string>(props.inputDefault || "");
     const filesListVars = useFilesListQuery(path);
+    const [makedirs, makedirsVars] = useFilesMakedirsMutation();
+
+    function onNewDir(e: React.MouseEvent) {
+        e.preventDefault();
+        const name = prompt(t("files.browser.dir.new_dir.prompt"), "newdir");
+        if (!name) { return; }
+        const newPath = fspath.join(null, [path, name])
+        makedirs({
+            variables: {
+                path: newPath,
+            },
+            onError: (e: any) => {
+                alert(e.message);
+            },
+        });
+    }
 
     return <div style={{background: "white", border: "1px solid black", padding: "0.3rem"}}>
         <div>{props.title}</div>
@@ -49,6 +76,7 @@ export default function Picker(props: PickerProps) {
                     <PickerEntry
                         file={{name: ".."}}
                         path={fspath.dirName(path)}
+                        disabled={false}
                         onClick={() => {setPath(fspath.dirName(path))}}
                     />
                 ) : null
@@ -69,6 +97,7 @@ export default function Picker(props: PickerProps) {
                         key={file.id}
                         file={file}
                         path={filePath}
+                        disabled={props.disabledPaths && props.disabledPaths.includes(filePath) || false}
                         onClick={() => {setPath(filePath)}}
                     />
                 }))
@@ -83,6 +112,9 @@ export default function Picker(props: PickerProps) {
             </div>
         }
         <div>
+            {
+                (props.allowNewDirectory !== false) && <button onClick={onNewDir}>New directory</button>
+            }
             {
                 props.actions.map((action) => {
                     return <button key={action.name} onClick={() => {

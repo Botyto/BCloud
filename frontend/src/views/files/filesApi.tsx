@@ -59,3 +59,45 @@ export function useFilesMakedirsMutation() {
         refetchQueries: [FILES_LIST],
     });
 }
+
+const FILES_COPY = gql`
+${FILE_DETAILS}
+mutation filesCopy($src: String!, $dst: String!) {
+    filesFilesCopy(src: $src, dst: $dst) {
+        ...FileDetails
+    }
+}`;
+
+export function useFilesCopyMutation() {
+    return useMutation(FILES_COPY, {
+        refetchQueries: [FILES_LIST],
+    });
+}
+
+const FILES_RENAME = gql`
+${FILE_DETAILS}
+mutation filesRename($src: String!, $dst: String!) {
+    filesFilesRename(src: $src, dst: $dst) {
+        ...FileDetails
+    }
+}`;
+
+export function useFilesRenameMutation() {
+    return useMutation(FILES_RENAME, {
+        refetchQueries: [FILES_LIST],
+    });
+}
+
+const FILES_DELETE = gql`
+mutation filesDelete($path: String!) {
+    filesFilesDelete(path: $path) {
+        success
+    }
+}`;
+
+export function useFileDeleteMutation() {
+    return useMutation(FILES_DELETE, {
+        refetchQueries: [FILES_LIST],
+    });
+}
+
