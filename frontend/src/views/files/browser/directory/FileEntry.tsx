@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import fspath from '../../fspath';
 import { BROWSER_ROUTE } from '../common';
 import MimeTypeIcon from '../MimeTypeIcon';
-import Picker from '../../picker/Picker';
 
 interface FileEntryHeaderProps {
     allSelected: boolean;
@@ -122,7 +121,9 @@ export function FileEntry(props: FileEntryProps) {
             <button style={{ minWidth: "5rem" }} onClick={onCopy}>{t("files.browser.dir.file.copy.button")}</button>
             <button style={{ minWidth: "5rem" }} onClick={onDelete}>{t("files.browser.dir.file.delete.button")}</button>
             <button style={{ minWidth: "5rem" }} onClick={onShare}>{t("files.browser.dir.file.share.button")}</button>
-            <button style={{ minWidth: "5rem" }} onClick={onAddLink}>{t("files.browser.dir.file.link.button")}</button>
+            <button style={{ minWidth: "5rem" }} onClick={onAddLink} disabled={props.file.type === "LINK"}>
+                {t("files.browser.dir.file.link.button")}
+            </button>
         </span>
     </li>;
 }
