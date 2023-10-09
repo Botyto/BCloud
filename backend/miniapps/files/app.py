@@ -3,6 +3,7 @@ from core.miniapp.miniapp import Miniapp
 from .storage import StorageModule
 from .files import FilesModule
 from .contents import ContentsModule
+from .importing import GoogleDriveImporter
 
 
 class FilesMiniapp(Miniapp):

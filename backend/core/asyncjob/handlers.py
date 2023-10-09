@@ -1,19 +1,12 @@
-from enum import Enum
 from typing import Callable, Dict
 
-from .state import State
+from .context import AsyncJobRuntimeContext
 
 
-class Action(Enum):
-    RUN = "RUN"
-    DELETE = "DELETE"
-    CANCEL = "CANCEL"
+HandlerType = Callable[[AsyncJobRuntimeContext], None]
 
 
-HandlerType = Callable[[Action, State|None, int, dict], None]
-
-
-class IssuerHandlers:
+class IssuerMap:
     issuer: str
     handlers: Dict[str, HandlerType]
 
@@ -30,20 +23,20 @@ class IssuerHandlers:
 
 
 class JobHandlers:
-    app_handlers: Dict[str, IssuerHandlers]
+    by_issuer: Dict[str, IssuerMap]
 
     def __init__(self):
-        self.app_handlers = {}
+        self.by_issuer = {}
 
     def add(self, issuer: str, type: str, handler: HandlerType):
-        app_handler = self.app_handlers.get(issuer)
+        app_handler = self.by_issuer.get(issuer)
         if app_handler is None:
-            app_handler = IssuerHandlers(issuer)
-            self.app_handlers[issuer] = app_handler
+            app_handler = IssuerMap(issuer)
+            self.by_issuer[issuer] = app_handler
         app_handler.add(type, handler)
 
     def resolve(self, issuer: str, type: str) -> HandlerType|None:
-        app_handler = self.app_handlers.get(issuer)
+        app_handler = self.by_issuer.get(issuer)
         if app_handler is None:
             return None
         return app_handler.handlers.get(type)

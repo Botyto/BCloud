@@ -5,9 +5,10 @@ from sqlalchemy.orm import object_session
 from threading import current_thread, Thread
 from typing import Dict
 
-from .context import AsyncJobContext
+from .action import Action
+from .context import AsyncJobContext, AsyncJobRuntimeContext
 from .data import JobPromise
-from .handlers import Action, JobHandlers, HandlerType
+from .handlers import JobHandlers, HandlerType
 from .state import State
 
 from ..cronjob.schedule import Schedule
@@ -58,7 +59,8 @@ class AsyncJobs:
         if handler is not None:
             try:
                 logger.debug("Deleting job #%d", job.id)
-                handler(Action.DELETE, self.states.get(job.id), job.id, job.payload)
+                context = AsyncJobRuntimeContext(self.context, Action.DELETE, self.states.get(job.id), job.id, job.payload)
+                handler(context)
             except Exception as e:
                 logger.error("Job #%d failed to delete", job.id)
                 logger.exception(e)
@@ -78,7 +80,8 @@ class AsyncJobs:
         self.threads[job_id] = current_thread()
         try:
             logger.debug("Starting job #%d", job_id)
-            handler(action, state, job_id, payload)
+            context = AsyncJobRuntimeContext(self.context, action, state, job_id, payload)
+            handler(context)
         except Exception as e:
             logger.error("Job #%d failed", job_id)
             error_str = str(e)
@@ -97,7 +100,8 @@ class AsyncJobs:
                 else:
                     try:
                         logger.debug("Deleting job #%d", job_id)
-                        handler(Action.DELETE, state, job_id, payload)
+                        context = AsyncJobRuntimeContext(self.context, Action.DELETE, state, job_id, payload)
+                        handler(context)
                     except Exception as e:
                         logger.error("Job #%d failed to delete", job_id)
                     session.delete(promise)
@@ -147,7 +151,8 @@ class AsyncJobs:
                 if handler is not None:
                     try:
                         logger.debug("Deleting job #%d", job.id)
-                        handler(Action.DELETE, self.states.get(job.id), job.id, job.payload)
+                        context = AsyncJobRuntimeContext(self.context, Action.DELETE, self.states.get(job.id), job.id, job.payload)
+                        handler(context)
                     except Exception as e:
                         logger.error("Job #%d failed to delete", job.id, exc_info=e)
                 session.delete(job)

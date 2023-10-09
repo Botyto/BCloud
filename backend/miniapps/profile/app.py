@@ -3,7 +3,7 @@ from core.miniapp.miniapp import Miniapp
 from .activity import ActivityModule
 from .auth import AuthModule
 from .edit import EditModule
-from .importing.module import ImportingModule
+from .importing.module import ImportingModule, RestImportingModule
 
 
 class ProfileMiniapp(Miniapp):
@@ -13,4 +13,5 @@ class ProfileMiniapp(Miniapp):
             AuthModule,
             EditModule,
             ImportingModule,
+            RestImportingModule,
         ])
