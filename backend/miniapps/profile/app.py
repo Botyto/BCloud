@@ -4,6 +4,7 @@ from .activity import ActivityModule
 from .auth import AuthModule
 from .edit import EditModule
 from .importing.module import ImportingModule, RestImportingModule
+from .importing.google import GoogleImportingJob
 
 
 class ProfileMiniapp(Miniapp):
@@ -17,6 +18,6 @@ class ProfileMiniapp(Miniapp):
                 RestImportingModule,
             ],
             async_jobs=[
-                MiniappAsyncJob("importing.google", RestImportingModule.google_import_job)
+                MiniappAsyncJob("importing.google", GoogleImportingJob)
             ],
         )

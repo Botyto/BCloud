@@ -3,12 +3,12 @@ import logging
 from sqlalchemy import not_, select
 from sqlalchemy.orm import object_session
 from threading import current_thread, Thread
-from typing import Dict
+from typing import Dict, Type
 
 from .action import Action
 from .context import AsyncJobContext, AsyncJobRuntimeContext
 from .data import JobPromise
-from .handlers import JobHandlers, HandlerType
+from .handlers import JobHandlers, AsyncJobHandler
 from .state import State
 
 from ..cronjob.schedule import Schedule
@@ -56,12 +56,13 @@ class AsyncJobs:
         state = self.states.get(job.id)
         if state is not None:
             state.cancel()
-        handler = self.__resolve_handler(job.issuer, job.type)
-        if handler is not None:
+        handler_type = self.__resolve_handler_type(job.issuer, job.type)
+        if handler_type is not None:
             try:
                 logger.debug("Deleting job #%d", job.id)
-                context = AsyncJobRuntimeContext(self.context, Action.DELETE, self.states.get(job.id), job.id, job.payload)
-                handler(context)
+                context = AsyncJobRuntimeContext(self.context, self.states.get(job.id), job.id, job.payload)
+                handler = handler_type(context)
+                handler.delete()
             except Exception as e:
                 logger.error("Job #%d failed to delete", job.id)
                 logger.exception(e)
@@ -72,17 +73,18 @@ class AsyncJobs:
     def cancel(self, job: JobPromise):
         self.delete(job)
 
-    def __resolve_handler(self, issuer: str, type: str) -> HandlerType|None:
+    def __resolve_handler_type(self, issuer: str, type: str) -> Type[AsyncJobHandler]|None:
         return self.handlers.resolve(issuer, type)
 
-    def __job_proc(self, handler: HandlerType, action: Action, job_id: int, payload: dict):
+    def __job_proc(self, handler_type: Type[AsyncJobHandler], action: Action, job_id: int, payload: dict):
         state = State()
         self.states[job_id] = state
         self.threads[job_id] = current_thread()
         try:
             logger.debug("Starting job #%d", job_id)
-            context = AsyncJobRuntimeContext(self.context, action, state, job_id, payload)
-            handler(context)
+            context = AsyncJobRuntimeContext(self.context, state, job_id, payload)
+            handler = handler_type(context)
+            handler.trigger(action)
         except Exception as e:
             logger.error("Job #%d failed", job_id)
             error_str = str(e)
@@ -101,8 +103,9 @@ class AsyncJobs:
                 else:
                     try:
                         logger.debug("Deleting job #%d", job_id)
-                        context = AsyncJobRuntimeContext(self.context, Action.DELETE, state, job_id, payload)
-                        handler(context)
+                        context = AsyncJobRuntimeContext(self.context, state, job_id, payload)
+                        handler = handler_type(context)
+                        handler.delete()
                     except Exception as e:
                         logger.error("Job #%d failed to delete", job_id)
                     session.delete(promise)
@@ -118,14 +121,14 @@ class AsyncJobs:
             else:
                 logger.warning("Job #%d already running", promise.id)
             return
-        handler = self.__resolve_handler(promise.issuer, promise.type)
-        if handler is None:
+        handler_type = self.__resolve_handler_type(promise.issuer, promise.type)
+        if handler_type is None:
             logger.warning("No handler for job #%d", promise.id)
             return
         Thread(
             target=self.__job_proc,
             args=(
-                handler,
+                handler_type,
                 Action.RUN,
                 promise.id,
                 promise.payload,
@@ -148,12 +151,13 @@ class AsyncJobs:
                 .where((JobPromise.completed_at_utc + JobPromise.valid_for) < datetime.utcnow())
             promises = session.scalars(statement).all()
             for job in promises:
-                handler = self.__resolve_handler(job.issuer, job.type)
-                if handler is not None:
+                handler_type = self.__resolve_handler_type(job.issuer, job.type)
+                if handler_type is not None:
                     try:
                         logger.debug("Deleting job #%d", job.id)
-                        context = AsyncJobRuntimeContext(self.context, Action.DELETE, self.states.get(job.id), job.id, job.payload)
-                        handler(context)
+                        context = AsyncJobRuntimeContext(self.context, self.states.get(job.id), job.id, job.payload)
+                        handler = handler_type(context)
+                        handler.delete()
                     except Exception as e:
                         logger.error("Job #%d failed to delete", job.id, exc_info=e)
                 session.delete(job)

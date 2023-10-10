@@ -3,7 +3,6 @@ from ..data.context import DataContext
 from ..data.sql.database import Database
 from ..msg import Messages
 
-from .action import Action
 from .state import State
 
 
@@ -20,14 +19,12 @@ class AsyncJobContext(DataContext):
 
 
 class AsyncJobRuntimeContext(AsyncJobContext):
-    action: Action
     state: State|None
     job_id: int
     payload: dict|None
 
-    def __init__(self, base: AsyncJobContext, action: Action, state: State|None, job_id: int, payload: dict|None):
+    def __init__(self, base: AsyncJobContext, state: State|None, job_id: int, payload: dict|None):
         self._extend(base)
-        self.action = action
         self.state = state
         self.job_id = job_id
         self.payload = payload

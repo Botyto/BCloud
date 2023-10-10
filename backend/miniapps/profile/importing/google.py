@@ -12,8 +12,8 @@ from google.oauth2.credentials import Credentials
 from google.auth.external_account_authorized_user import Credentials as ExternalCredentials
 
 from core.api.modules.rest import ApiContext
-from core.asyncjob.action import Action
-from core.asyncjob.context import AsyncJobContext, AsyncJobRuntimeContext
+from core.asyncjob.context import AsyncJobContext
+from core.asyncjob.handlers import AsyncJobHandler
 
 from .context import ImportingContext
 
@@ -94,8 +94,11 @@ class RestGoogleImporting(BaseGoogleImporting):
             },
         })
 
-    @staticmethod
-    def _creds_from_token(flow: InstalledAppFlow, token_info: dict):
+
+class GoogleImportingJob(AsyncJobHandler, BaseGoogleImporting):
+    dprogress: float
+
+    def _creds_from_token(self, flow: InstalledAppFlow, token_info: dict):
         return Credentials(
             token=token_info['access'],
             refresh_token=token_info['refresh'],
@@ -105,30 +108,31 @@ class RestGoogleImporting(BaseGoogleImporting):
             scopes=token_info['scope'],
         )
 
-    @staticmethod
-    async def __run_and_progress(importer: GoogleImporter, context: GoogleImportingContext, dprogress: float):
+    async def __run_and_progress(self, importer: GoogleImporter, context: GoogleImportingContext):
         assert context.state is not None
         await importer.run(context)
-        context.state.set_progress(context.state.progress + dprogress)
+        context.state.set_progress(context.state.progress + self.dprogress)
 
-    @classmethod
-    def google_import_job(cls, context: AsyncJobRuntimeContext):
-        if context.action != Action.RUN:
+    def run(self):
+        assert self.context.state is not None
+        assert self.context.payload is not None
+        user_id = UUID(self.context.payload["user_id"])
+        flow = self._google_make_flow(self._google_client_secrets(self.context))
+        credentials = self._creds_from_token(flow, self.context.payload["token_info"])
+        importing_context = ImportingContext(self.context, user_id)
+
+        all_importers = self._google_make_importers()
+        if not all_importers:
+            self.set_error("No importers found")
             return
-        assert context.state is not None
-        assert context.payload is not None
-        user_id = UUID(context.payload["user_id"])
-        flow = cls._google_make_flow(cls._google_client_secrets(context))
-        credentials = cls._creds_from_token(flow, context.payload["token_info"])
-        importing_context = ImportingContext(context, user_id)
-        all_importers = cls._google_make_importers()
-        dprogress = 1.0 / len(all_importers)
+        self.dprogress = 1.0 / len(all_importers)
+
         tasks: List[Coroutine] = []
         for service_name, importers in itertools.groupby(all_importers, lambda i: i.SERVICE):
-            service = cls._google_make_service(service_name, credentials)
+            service = self._google_make_service(service_name, credentials)
             google_context = GoogleImportingContext(importing_context, service)
             for importer in importers:
-                subtask = RestGoogleImporting.__run_and_progress(importer, google_context, dprogress)
+                subtask = self.__run_and_progress(importer, google_context)
                 tasks.append(subtask)
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -136,6 +140,6 @@ class RestGoogleImporting(BaseGoogleImporting):
         try:
             loop.run_until_complete(import_task)
         except Exception as e:
-            context.state.set_error(str(e))
+            self.set_error(str(e))
         else:
-            context.state.complete()
+            self.set_complete()

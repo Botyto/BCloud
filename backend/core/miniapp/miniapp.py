@@ -4,7 +4,7 @@ from typing import Callable, Dict, List, Type
 from .context import MiniappContext
 from .data import MiniappVersion
 
-from ..asyncjob.handlers import HandlerType
+from ..asyncjob.handlers import AsyncJobHandler
 from ..data.sql.columns import ensure_str_fit
 
 
@@ -28,7 +28,7 @@ class MiniappModule:
 @dataclass
 class MiniappAsyncJob:
     type: str
-    handler: HandlerType
+    handler: Type[AsyncJobHandler]
 
 
 class Miniapp:
