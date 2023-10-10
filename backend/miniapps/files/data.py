@@ -38,9 +38,9 @@ class FileMetadata(Model):
     storage: Mapped["FileStorage"] = relationship("FileStorage", foreign_keys=[storage_id])
     root_storage_id: Mapped[PyUUID] = mapped_column(ForeignKey("FileStorage.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=True, default=None)
     root_storage: Mapped["FileStorage"] = relationship("FileStorage", foreign_keys=[root_storage_id])
-    atime_utc: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    mtime_utc: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    ctime_utc: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    atime_utc: Mapped[datetime] = mapped_column(DateTime)
+    mtime_utc: Mapped[datetime] = mapped_column(DateTime)
+    ctime_utc: Mapped[datetime] = mapped_column(DateTime)
 
     @property
     def user_id(self) -> PyUUID:

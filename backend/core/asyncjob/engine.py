@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import logging
 from sqlalchemy import not_, select
 from sqlalchemy.orm import object_session
@@ -12,7 +12,7 @@ from .handlers import JobHandlers, AsyncJobHandler
 from .state import State
 
 from ..cronjob.schedule import Schedule
-from ..data.sql.columns import ensure_str_fit
+from ..data.sql.columns import ensure_str_fit, utcnow_tz
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class AsyncJobs:
             promise.type = type
             promise.payload = payload
             promise.valid_for = valid_for
-            promise.created_at_utc = datetime.utcnow().replace(tzinfo=timezone.utc)
+            promise.created_at_utc = utcnow_tz()
             session.add(promise)
             session.commit()
             self.__start_job(promise)
@@ -98,7 +98,7 @@ class AsyncJobs:
                     promise.error = state.error
                     state.complete()
                 elif promise.valid_for.total_seconds() > 0:
-                    promise.completed_at_utc = datetime.utcnow().replace(tzinfo=timezone.utc)
+                    promise.completed_at_utc = utcnow_tz()
                     state.complete()
                 else:
                     try:
@@ -109,6 +109,7 @@ class AsyncJobs:
                     except Exception as e:
                         logger.error("Job #%d failed to delete", job_id)
                     session.delete(promise)
+                    session.commit()
                     state.complete()
             del self.threads[job_id]
             del self.states[job_id]

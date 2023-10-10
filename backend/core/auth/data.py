@@ -3,7 +3,7 @@ from enum import Enum as PyEnum
 from typing import List
 from uuid import UUID as PyUUID, uuid4
 
-from ..data.sql.columns import Boolean, Bytes, DateTime, String, UUID, ForeignKey, Enum, Integer, JSON
+from ..data.sql.columns import Boolean, Bytes, DateTime, String, UUID, ForeignKey, Enum, Integer, JSON, utcnow_tz
 from ..data.sql.columns import Mapped, mapped_column, relationship
 from ..data.sql.database import Model
 
@@ -34,7 +34,7 @@ class User(Model):
         super().__init__()
         Passwords.validate(password)
         self.id = uuid4()
-        self.created_at_utc = datetime.utcnow()
+        self.created_at_utc = utcnow_tz()
         self.enabled = True
         self.username = username
         self.password = Passwords.hash(password)
@@ -67,7 +67,7 @@ class Login(Model):
         self.id = uuid4()
         self.user_id = user.id
         self.user = user
-        now = datetime.utcnow().replace(tzinfo=timezone.utc)
+        now = utcnow_tz()
         self.created_at_utc = now
         self.expire_at_utc = now + self.VALID_DURATION
         self.last_used_utc = now

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from enum import Enum
 from functools import partial
 from re import Pattern
@@ -12,6 +11,7 @@ from ..context import ApiContext
 from ..handlers import HttpApiHandler, ApiHandlerMixin, ApiResponse
 
 from ...auth.data import Activity
+from ...data.sql.columns import utcnow_tz
 from ...http.handlers import SessionHandlerMixin
 from ...miniapp.miniapp import MiniappContext, MiniappModule, Miniapp
 from ...typeinfo import MethodInfo, TypeInfo
@@ -65,7 +65,7 @@ class RestMiniappModule(MiniappModule, RestApiHandler):
     def log_activity(self, type: str, payload: dict|None = None):
         self.get_current_user()
         activity = Activity(
-            created_at_utc=datetime.now().astimezone(timezone.utc),
+            created_at_utc=utcnow_tz(),
             issuer=self.miniapp.id,
             user_id=self.user_id,
             type=type,

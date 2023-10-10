@@ -1,11 +1,11 @@
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 from uuid import UUID, uuid4
 
 from ..data import FileMetadata, FileStorage, DIRECTORY_MIME
 
 from core.api.pages import PagesInput
-from core.data.sql.columns import ensure_str_fit
+from core.data.sql.columns import ensure_str_fit, utcnow_tz
 
 
 class StorageManager:
@@ -49,7 +49,13 @@ class StorageManager:
         if not name:
             raise ValueError("Storage name cannot be empty")
         ensure_str_fit("name", name, FileStorage.name)
-        root = FileMetadata(id=uuid4(), name="root", mime_type=DIRECTORY_MIME)
+        root = FileMetadata(
+            id=uuid4(),
+            name="root",
+            mime_type=DIRECTORY_MIME,
+            ctime_utc=utcnow_tz(),
+            mtime_utc=utcnow_tz(),
+            atime_utc=utcnow_tz())
         storage = FileStorage(id=uuid4(), name=name, user_id=self.user_id)
         storage.root_dir = root
         root.storage = storage

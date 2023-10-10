@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from sqlalchemy import Column
 from sqlalchemy import Boolean, Enum, Float, Integer, String, Text
 from sqlalchemy import Date, DateTime, Interval, Time
@@ -6,6 +8,9 @@ from sqlalchemy.dialects.mysql import LONGBLOB as Bytes
 from sqlalchemy.orm import InstrumentedAttribute, Mapped, mapped_column, relationship
 
 STRING_MAX = 2**12 - 1
+
+def utcnow_tz():
+    return datetime.utcnow().replace(tzinfo=timezone.utc)
 
 def strmaxlen(column_or_size: InstrumentedAttribute|int) -> int:
     if isinstance(column_or_size, int):
