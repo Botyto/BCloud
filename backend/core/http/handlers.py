@@ -60,7 +60,19 @@ class HttpApiHandler(SessionHandlerMixin, RequestHandler):
     def write_error(self, status_code: int, **kwargs: Any) -> None:
         result = {"code": status_code, "error": self._reason}
         if self.settings.get("serve_traceback") and "exc_info" in kwargs:
-            result["traceback"] = traceback.format_exception(*kwargs["exc_info"])
+            lines = traceback.format_exception(*kwargs["exc_info"])
+            i = 0
+            while i < len(lines):
+                if "\n" in lines[i]:
+                    sublines = lines[i].split("\n")
+                    j = 0
+                    for subline in sublines:
+                        if subline:
+                            lines.insert(i + j + 1, subline)
+                            j += 1
+                    lines.remove(lines[i])
+                i += 1
+            result["traceback"] = lines
         self.write(result)
         self.finish()
 
