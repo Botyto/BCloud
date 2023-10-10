@@ -61,12 +61,12 @@ class GoogleDriveImporter(GoogleImporter):
             for i, gfile in enumerate(gfiles):
                 if gfile.mime == "application/vnd.google-apps.folder":
                     continue
-                media = context.service.files().get_media(fileId=gfile.id)  # type: ignore
                 path = fspath.join(storage.id, gfile.path)
                 try:
                     files.makedirs(fspath.dirname(path))
                     file = files.makefile(path, gfile.mime)
                     logger.debug("Downloading file %d/%d", i + 1, len(gfiles))
+                    media = context.service.files().get_media(fileId=gfile.id)  # type: ignore
                     with files.contents.open(file, OpenMode.WRITE) as fh:
                         downloader = MediaIoBaseDownload(fh, media)
                         done = False
