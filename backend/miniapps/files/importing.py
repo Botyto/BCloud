@@ -61,7 +61,7 @@ class GoogleDriveImporter(GoogleImporter):
             for i, gfile in enumerate(gfiles):
                 if gfile.mime == "application/vnd.google-apps.folder":
                     continue
-                path = fspath.join(storage.id, gfile.path)
+                path = fspath.join(storage.id, f"/{gfile.path}")
                 try:
                     files.makedirs(fspath.dirname(path))
                     file = files.makefile(path, gfile.mime)
