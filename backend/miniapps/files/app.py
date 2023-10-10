@@ -8,8 +8,11 @@ from .importing import GoogleDriveImporter
 
 class FilesMiniapp(Miniapp):
     def __init__(self):
-        super().__init__("files", module_types=[
-            StorageModule,
-            FilesModule,
-            ContentsModule,
-        ])
+        super().__init__("files",
+            module_types=[
+                StorageModule,
+                FilesModule,
+                ContentsModule,
+            ],
+            dependencies=["profile"],
+        )

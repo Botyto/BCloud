@@ -17,8 +17,8 @@ class App:
         self.context = context
 
     def run(self):
-        self.context.asyncjobs.start()
         self.context.miniapps.start()
+        self.context.asyncjobs.start()
         schema_builder = SchemaBuilder(self.context.graphql_methods, "miniapps")
         graphene_schema = schema_builder.build()
         server_context = ServerContext(self.context, graphene_schema)

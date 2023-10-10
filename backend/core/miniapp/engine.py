@@ -91,9 +91,9 @@ class Manager:
             statement = select(MiniappVersion)
             all_version = session.scalars(statement).all()
             for app in self.enabled_apps:
-                if app._update_fns is None:
+                if app.update_fns is None:
                     continue
-                versions = list(app._update_fns)
+                versions = list(app.update_fns)
                 current: MiniappVersion|None = None
                 for version in all_version:
                     if version.id == app.id:
@@ -106,7 +106,7 @@ class Manager:
                     session.add(current)
                 versions.sort()
                 for version in versions:
-                    fn = app._update_fns[version]
+                    fn = app.update_fns[version]
                     if version > current.version:
                         logger.info(f"Installing miniapp `{app.id}` v{version}")
                         try:

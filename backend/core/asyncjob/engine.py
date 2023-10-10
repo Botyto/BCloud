@@ -46,6 +46,7 @@ class AsyncJobs:
             promise.type = type
             promise.payload = payload
             promise.valid_for = valid_for
+            promise.created_at_utc = datetime.utcnow().replace(tzinfo=timezone.utc)
             session.add(promise)
             session.commit()
             self.__start_job(promise)

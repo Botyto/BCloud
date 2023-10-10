@@ -40,9 +40,9 @@ class AuthHandlerMixin:
         return timedelta(days=30)
 
     def _get_login_jwt(self) -> str|None:
-        token: str|None = self.request.headers.get("Authorization", None)
+        token: str|None = self.request.headers.get("Authorization", self.request.headers.get("authorization", None))
         if token is None:
-            cookie = self.request.cookies.get("Authorization", None)
+            cookie = self.request.cookies.get("Authorization", self.request.cookies.get("authorization", None))
             if cookie is not None:
                 token = cookie.value
         if token is not None and token.startswith("Bearer "):

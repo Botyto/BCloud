@@ -48,13 +48,19 @@ def post(pattern: str|Pattern, kwargs: Dict[str, Any]|None = None, name: str|Non
 
 
 class RestMiniappModule(MiniappModule, RestApiHandler):
+    _context: ApiContext|None = None
+
     def __init__(self, miniapp: Miniapp, application, request, **kwargs):
         super(MiniappModule, self).__init__(application, request, **kwargs)
         super().__init__(miniapp, self.api_context)
 
-    @SessionHandlerMixin.context.setter
-    def context(self, _):
-        pass
+    @SessionHandlerMixin.context.getter
+    def context(self):
+        return self._context or SessionHandlerMixin.context.fget(self)
+
+    @context.setter
+    def context(self, value: ApiContext):
+        self._context = value
 
     def log_activity(self, type: str, payload: dict|None = None):
         self.get_current_user()

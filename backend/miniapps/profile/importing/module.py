@@ -11,6 +11,6 @@ class ImportingModule(GqlMiniappModule, GqlGoogleImporting):
 
 
 class RestImportingModule(RestMiniappModule, RestGoogleImporting):
-    @get("/profile/importing/google/(.*)")
-    def start_google_importing(self, auth_code: str):
-        return self._start_google_importing_impl(auth_code)
+    @get("/profile/importing/google")
+    def start_google_importing(self, state: str, code: str, scope: str):
+        return self._start_google_importing_impl(state, code, scope)

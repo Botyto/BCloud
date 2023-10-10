@@ -22,7 +22,7 @@ class GoogleDriveImporter(GoogleImporter):
     def __gather_files(self, output: list, service: Resource, parent="root", path=""):
         query = f"'{parent}' in parents and trashed = false"
         fields = "nextPageToken, files(id, name, mimeType)"
-        results = service.files().list(q=query, pageSize=100, fields=fields).execute()
+        results = service.files().list(q=query, pageSize=100, fields=fields).execute()  # type: ignore
         items = results.get('files', [])
         for item in items:
             if item['name'] in self.PHOTOS_NAMES and parent == "root":

@@ -1,8 +1,10 @@
+from dataclasses import dataclass
 from typing import Callable, Dict, List, Type
 
 from .context import MiniappContext
 from .data import MiniappVersion
 
+from ..asyncjob.handlers import HandlerType
 from ..data.sql.columns import ensure_str_fit
 
 
@@ -23,12 +25,19 @@ class MiniappModule:
         pass
 
 
+@dataclass
+class MiniappAsyncJob:
+    type: str
+    handler: HandlerType
+
+
 class Miniapp:
     id: str
-    _start_fn: LifetimeFunc|None
-    _stop_fn: LifetimeFunc|None
+    start_fn: LifetimeFunc|None
+    stop_fn: LifetimeFunc|None
     modules_types: List[Type[MiniappModule]]|None
-    _update_fns: Dict[int, UpdateFunc]|None
+    async_jobs: List[MiniappAsyncJob]|None
+    update_fns: Dict[int, UpdateFunc]|None
     mandatory: bool
     dependencies: List[str]|None
 
@@ -38,6 +47,7 @@ class Miniapp:
         start: LifetimeFunc|None = None,
         stop: LifetimeFunc|None = None,
         module_types: List[Type[MiniappModule]]|None = None,
+        async_jobs: List[MiniappAsyncJob]|None = None,
         update_fns: Dict[int, UpdateFunc]|None = None,
         mandatory: bool = True,
         dependencies: List[str]|None = None,
@@ -45,21 +55,25 @@ class Miniapp:
         assert id, "App ID cannot be empty"
         assert ensure_str_fit("App ID", id, MiniappVersion.id)
         self.id = id
-        self._start_fn = start
-        self._stop_fn = stop
+        self.start_fn = start
+        self.stop_fn = stop
         self.modules_types = module_types
-        self._update_fns = update_fns
+        self.async_jobs = async_jobs
+        self.update_fns = update_fns
         self.mandatory = mandatory
         self.dependencies = dependencies
 
     def start(self, context: MiniappContext):
-        if self._start_fn is not None:
-            self._start_fn(context)
+        if self.start_fn is not None:
+            self.start_fn(context)
         if self.modules_types is not None:
             for module_type in self.modules_types:
                 module_type.start(self, context)
+        if self.async_jobs is not None:
+            for async_job in self.async_jobs:
+                context.asyncjobs.handlers.add(self.id, async_job.type, async_job.handler)
 
     def update(self, context: MiniappContext):
-        if self._update_fns is not None:
-            for update_fn in self._update_fns.values():
+        if self.update_fns is not None:
+            for update_fn in self.update_fns.values():
                 update_fn(context)
