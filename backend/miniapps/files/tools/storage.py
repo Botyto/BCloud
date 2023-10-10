@@ -34,6 +34,12 @@ class StorageManager:
             statement = statement.where(FileStorage.slug == id_or_slug)
         return statement
     
+    def by_name(self, name: str):
+        statement = select(FileStorage) \
+            .where(FileStorage.user_id == self.user_id) \
+            .where(FileStorage.name == name)
+        return self.session.scalars(statement).all()
+    
     def get(self, id_or_slug: UUID|str):
         statement = self._get_statement(id_or_slug)
         return self.session.scalars(statement).one()
