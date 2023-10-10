@@ -33,9 +33,9 @@ class GoogleDriveImporter(GoogleImporter):
         query = f"'{parent}' in parents and trashed = false"
         fields = "nextPageToken, files(id, name, mimeType)"
         results = context.service.files().list(q=query, pageSize=100, fields=fields).execute()  # type: ignore
-        items = results.get('files', [])
+        items = results.get("files", [])
         for item in items:
-            if item['name'] in self.PHOTOS_NAMES and parent == "root":
+            if item["name"] in self.PHOTOS_NAMES and parent == "root":
                 continue
             item_path = f"{path}/{item['name']}"
             output.append(DriveFile(
