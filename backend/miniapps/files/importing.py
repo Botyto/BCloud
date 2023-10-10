@@ -25,7 +25,10 @@ class DriveFile:
 
 class GoogleDriveImporter(GoogleImporter):
     SERVICE = "drive"
-    SCOPES = {"https://www.googleapis.com/auth/drive.metadata.readonly"}
+    SCOPES = {
+        "https://www.googleapis.com/auth/drive.metadata.readonly",
+        "https://www.googleapis.com/auth/drive.readonly",
+    }
 
     PHOTOS_NAMES = {"Google Photos", "Google Фото"}
 
@@ -61,9 +64,10 @@ class GoogleDriveImporter(GoogleImporter):
             for i, gfile in enumerate(gfiles):
                 if gfile.mime == "application/vnd.google-apps.folder":
                     continue
-                path = fspath.join(storage.id, f"/{gfile.path}")
+                path = fspath.join(storage.id, gfile.path)
                 try:
                     files.makedirs(fspath.dirname(path))
+                    session.commit()
                     file = files.makefile(path, gfile.mime)
                     logger.debug("Downloading file %d/%d", i + 1, len(gfiles))
                     media = context.service.files().get_media(fileId=gfile.id)  # type: ignore
@@ -72,7 +76,8 @@ class GoogleDriveImporter(GoogleImporter):
                         done = False
                         while not done:
                             status, done = downloader.next_chunk()
-                        logger.debug("Finished downloading file %d/%d", i + 1, len(gfiles))
+                    logger.debug("Finished downloading file %d/%d", i + 1, len(gfiles))
+                    session.commit()
                 except FileAlreadyExists:
                     continue  # file already downloaded/exists
 

@@ -29,7 +29,7 @@ class Address:
 
     @classmethod
     def join_keys(cls, *keys: str) -> str:
-        return os.path.join(*keys)
+        return os.path.join(*(k.lstrip("/") for k in keys))
 
     def __str__(self):
         return os.path.join(

@@ -65,7 +65,7 @@ def build_app():
         database=cast(str, env.get("DB_DATABASE", "bcloud")),
     )
     blob_settings = BlobSettings(
-        fs_root=cast(str, env.get("BLOB_FS_ROOT")),
+        fs_root=os.path.abspath(cast(str, env.get("BLOB_FS_ROOT"))),
         sql_conn_str=cast(str, env.get("BLOB_SQL"))
     )
     context = DataContext(base_context, sql_settings, blob_settings)

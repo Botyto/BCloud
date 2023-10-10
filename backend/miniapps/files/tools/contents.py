@@ -28,6 +28,8 @@ class FileContents:
         if isinstance(file, FileMetadata):
             file = file.abspath
         storage_id, path = fspath.strip_storage(file)
+        if path.startswith("/root"):
+            path = path[5:]
         if not isinstance(storage_id, UUID):
             raise ValueError("File path must be absolute and have UUID as storage ID")
         key = Address.join_keys(str(storage_id), self.namespace.name, path)

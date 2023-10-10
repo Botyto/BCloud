@@ -47,7 +47,10 @@ class FsBlobs(Blobs):
         self.root = root
 
     def _addr_to_path(self, address: Address, create_dirs: bool = True, ensure_exists: bool = False) -> str:
-        path = os.path.join(self.root, str(address) + ".bin")
+        address_str = str(address)
+        if address_str.startswith("/"):
+            address_str = address_str[1:]
+        path = os.path.join(self.root, address_str)
         if create_dirs:
             dirname = os.path.dirname(path)
             os.makedirs(dirname, exist_ok=True)

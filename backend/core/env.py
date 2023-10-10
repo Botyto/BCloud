@@ -104,8 +104,8 @@ class Environment(EnvironmentData):
     
     @property
     def temp_path(self):
-        return cast(str, self.get("TEMP_PATH", "./tempdata"))
+        return os.path.abspath(cast(str, self.get("TEMP_PATH", "./tempdata")))
     
     @property
     def appdata_path(self):
-        return cast(str, self.get("APPDATA_PATH", "./appdata"))
+        return os.path.abspath(cast(str, self.get("APPDATA_PATH", "./appdata")))
