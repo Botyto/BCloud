@@ -162,6 +162,7 @@ cython_debug/
 logs/
 appdata/
 tempdata/
+config/
 
 .env
 env.json
