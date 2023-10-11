@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+import io
 import logging
+import pickle
 from typing import List
 
 from .tools import fspath
@@ -62,29 +64,45 @@ class GoogleDriveImporter(GoogleImporter):
             storage = self.__get_gdrive_storage(context, session)
             files = FileManager(context.files, context.user_id, session)
             for i, gfile in enumerate(gfiles):
-                if gfile.mime == "application/vnd.google-apps.folder":
-                    continue
                 path = fspath.join(storage.id, gfile.path)
-                try:
+                if gfile.mime == "application/vnd.google-apps.folder":
+                    logger.debug("Creating directory %d/%d - %s", i + 1, len(gfiles), path)
                     files.makedirs(fspath.dirname(path))
                     session.commit()
-                    file = files.makefile(path, gfile.mime)
-                    logger.debug("Downloading file %d/%d", i + 1, len(gfiles))
-                    media = context.service.files().get_media(fileId=gfile.id)  # type: ignore
-                    with files.contents.open(file, OpenMode.WRITE) as fh:
-                        downloader = MediaIoBaseDownload(fh, media)
-                        done = False
-                        while not done:
-                            status, done = downloader.next_chunk()
-                    logger.debug("Finished downloading file %d/%d", i + 1, len(gfiles))
-                    session.commit()
-                except FileAlreadyExists:
-                    continue  # file already downloaded/exists
+                else:
+                    try:
+                        files.makedirs(fspath.dirname(path))
+                        session.commit()
+                        file = files.makefile(path, gfile.mime)
+                        logger.debug("Downloading file %d/%d - %s", i + 1, len(gfiles), path)
+                        try:
+                            media = context.service.files().get_media(fileId=gfile.id)  # type: ignore
+                            buffer = io.BytesIO()
+                            downloader = MediaIoBaseDownload(buffer, media)
+                            done = False
+                            while not done:
+                                status, done = downloader.next_chunk()
+                            files.contents.write(file, buffer.getvalue())
+                        except Exception as e:
+                            logger.debug("Failed to download file %d/%d - %s", i + 1, len(gfiles), str(e))
+                            continue
+                        logger.debug("Finished downloading file %d/%d", i + 1, len(gfiles))
+                        session.commit()
+                    except FileAlreadyExists:
+                        continue  # file already downloaded/exists
 
     async def run(self, context: GoogleImportingContext):
         files: List[DriveFile] = []
-        logger.debug("Gethering files")
-        self.__gather_files(files, context)
-        files.sort(key=lambda f: f.path)
+        cache_addr = context.temp_file_addr("gdrive_import", f"files.pickle")
+        if context.files.exists(cache_addr):
+            logger.debug("Loading cached files")
+            with context.files.open(cache_addr, OpenMode.READ) as fh:
+                files = pickle.load(fh)
+        else:
+            logger.debug("Gethering files")
+            self.__gather_files(files, context)
+            files.sort(key=lambda f: f.path)
+            with context.files.open(cache_addr, OpenMode.WRITE) as fh:
+                pickle.dump(files, fh)
         self.__download_files(files, context)
         logger.debug("Finished importing")

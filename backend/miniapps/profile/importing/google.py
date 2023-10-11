@@ -119,7 +119,7 @@ class GoogleImportingJob(AsyncJobHandler, BaseGoogleImporting):
         user_id = UUID(self.context.payload["user_id"])
         flow = self._google_make_flow(self._google_client_secrets(self.context))
         credentials = self._creds_from_token(flow, self.context.payload["token_info"])
-        importing_context = ImportingContext(self.context, user_id)
+        importing_context = ImportingContext(self.context, self, user_id)
 
         all_importers = self._google_make_importers()
         if not all_importers:
@@ -138,6 +138,9 @@ class GoogleImportingJob(AsyncJobHandler, BaseGoogleImporting):
         asyncio.set_event_loop(loop)
         import_task = asyncio.gather(*tasks, return_exceptions=True)
         try:
+            def exc_handler(loop: asyncio.AbstractEventLoop, context: dict):
+                self.set_error(context["message"])
+            loop.set_exception_handler(exc_handler)
             loop.run_until_complete(import_task)
         except Exception as e:
             self.set_error(str(e))

@@ -3,6 +3,8 @@ from typing import Dict, Type
 from .action import Action
 from .context import AsyncJobRuntimeContext
 
+from ..data.blobs.address import Address
+
 
 class AsyncJobHandler:
     TYPE: str
@@ -22,6 +24,9 @@ class AsyncJobHandler:
     def set_error(self, error: str):
         assert self.context.state is not None
         self.context.state.set_error(error)
+
+    def temp_file_addr(self, *parts: str):
+        return Address("asyncjobs", Address.join_keys(str(self.context.job_id), *parts), True)
 
     def trigger(self, action: Action):
         match action:
