@@ -10,7 +10,6 @@ fragment FileDetails on FileMetadata {
     mtimeUtc
     ctimeUtc
     type
-    totalSize
 }`;
 
 const FILES_LIST = gql`
