@@ -15,5 +15,5 @@ class ProfileMiniapp(Miniapp):
             ModuleRegistry(EditModule),
             ModuleRegistry(ImportingModule),
             ModuleRegistry(RestImportingModule),
-            AsyncjobRegistry("importing.google", GoogleImportingJob),
+            AsyncjobRegistry(GoogleImportingJob),
         )

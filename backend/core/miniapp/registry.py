@@ -26,12 +26,11 @@ class MsgRegistry(MiniappRegistry):
 
 
 class AsyncjobRegistry(MiniappRegistry):
-    type: str
-    handler: Type[AsyncJobHandler]
+    handler_type: Type[AsyncJobHandler]
 
-    def __init__(self, type: str, handler: Type[AsyncJobHandler]):
+    def __init__(self, handler_type: Type[AsyncJobHandler]):
         self.type = type
-        self.handler = handler
+        self.handler_type = handler_type
 
     def start(self, miniapp: "Miniapp", context: MiniappContext):
-        context.asyncjobs.handlers.add(miniapp.id, self.type, self.handler)
+        context.asyncjobs.handlers.add(miniapp.id, self.handler_type.TYPE, self.handler_type)

@@ -96,6 +96,8 @@ class RestGoogleImporting(BaseGoogleImporting):
 
 
 class GoogleImportingJob(AsyncJobHandler, BaseGoogleImporting):
+    TYPE = "importing.google"
+    
     dprogress: float
 
     def _creds_from_token(self, flow: InstalledAppFlow, token_info: dict):
