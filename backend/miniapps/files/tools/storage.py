@@ -15,9 +15,15 @@ class StorageManager:
     user_id: UUID|None
     session: Session
 
-    def __init__(self, user_id: UUID|None, session: Session):
+    def __init__(self, user_id: UUID|None, session: Session, allow_no_user: bool = False):
+        if not allow_no_user and user_id is None:
+            raise AuthError()
         self.user_id = user_id
         self.session = session
+
+    @classmethod
+    def without_user(cls, user_id: UUID|None, session: Session):
+        return cls(user_id, session, allow_no_user=True)
 
     def list(self, pages: PagesInput):
         statement = select(FileStorage)
