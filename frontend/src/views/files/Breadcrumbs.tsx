@@ -34,15 +34,18 @@ export function Breadcrumbs(props: BreacumbsProps) {
     return <span>
         {
             props.pieces.map((piece, i) => {
+                const first = i === 0;
+                const last = i === props.pieces.length - 1;
+                const sep = first ? ":/" : !last ? "/" : "";
                 return (piece.current) ? (
                     <span key={i}>
                         {piece.name}
-                        {(i < props.pieces.length - 1) ? " / " : ""}
+                        {sep}
                     </span>
                 ) : (
                     <span key={i}>
                         <Link to={piece.url}>{piece.name}</Link>
-                        {(i < props.pieces.length - 1) ? " / " : ""}
+                        {sep}
                     </span>
                 );
             })
