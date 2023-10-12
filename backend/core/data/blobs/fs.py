@@ -58,6 +58,8 @@ class FsBlobs(Blobs):
             assert not create_dirs, "Cannot ensure_exists and create_dirs at the same time"
             if not os.path.isfile(path):
                 raise FileNotFoundError(path)
+        path = "/".join(part.strip() for part in path.split("/"))
+        path = os.path.normpath(path)
         return path
 
     def exists(self, address: Address):
