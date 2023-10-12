@@ -1,4 +1,4 @@
-from core.miniapp.miniapp import Miniapp
+from core.miniapp.miniapp import Miniapp, ModuleRegistry
 
 from .storage import StorageModule
 from .files import FilesModule
@@ -9,10 +9,8 @@ from .importing import GoogleDriveImporter
 class FilesMiniapp(Miniapp):
     def __init__(self):
         super().__init__("files",
-            module_types=[
-                StorageModule,
-                FilesModule,
-                ContentsModule,
-            ],
+            ModuleRegistry(StorageModule),
+            ModuleRegistry(FilesModule),
+            ModuleRegistry(ContentsModule),
             dependencies=["profile"],
         )

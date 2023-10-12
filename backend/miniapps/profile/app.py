@@ -1,4 +1,4 @@
-from core.miniapp.miniapp import Miniapp, MiniappAsyncJob
+from core.miniapp.miniapp import Miniapp, ModuleRegistry, AsyncjobRegistry
 
 from .activity import ActivityModule
 from .auth import AuthModule
@@ -10,14 +10,10 @@ from .importing.google import GoogleImportingJob
 class ProfileMiniapp(Miniapp):
     def __init__(self):
         super().__init__("profile",
-            module_types=[
-                ActivityModule,
-                AuthModule,
-                EditModule,
-                ImportingModule,
-                RestImportingModule,
-            ],
-            async_jobs=[
-                MiniappAsyncJob("importing.google", GoogleImportingJob)
-            ],
+            ModuleRegistry(ActivityModule),
+            ModuleRegistry(AuthModule),
+            ModuleRegistry(EditModule),
+            ModuleRegistry(ImportingModule),
+            ModuleRegistry(RestImportingModule),
+            AsyncjobRegistry("importing.google", GoogleImportingJob),
         )

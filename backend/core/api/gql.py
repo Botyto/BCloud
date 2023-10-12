@@ -2,7 +2,7 @@ from .modules.api import ApiMiniappModule, urlspec
 
 from ..api.handlers import ApiHandlerMixin
 from ..graphql.handlers import BaseGraphQLHandler, BaseGraphQLSubscriptionHandler, BaseSchemaHandler
-from ..miniapp.miniapp import Miniapp
+from ..miniapp.miniapp import Miniapp, ModuleRegistry
 
 def empty_func(_):
     pass
@@ -35,9 +35,7 @@ class GraphQLSchemaModule(ApiMiniappModule, BaseSchemaHandler):
 class GraphQLMiniapp(Miniapp):
     def __init__(self):
         super().__init__("gql",
-            module_types=[
-                GraphQLModule,
-                GraphQLSubscriptionModule,
-                GraphQLSchemaModule,
-            ],
+            ModuleRegistry(GraphQLModule),
+            ModuleRegistry(GraphQLSubscriptionModule),
+            ModuleRegistry(GraphQLSchemaModule),
         )
