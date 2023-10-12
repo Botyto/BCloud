@@ -1,5 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
+import hashlib
 import os
 from typing import TYPE_CHECKING
 import uuid
@@ -26,6 +27,11 @@ class Address:
             n += 1
             address.key = original_key + f"-{n}"
         return address
+    
+    @classmethod
+    def scrambled(cls, namespace: str, key: str, temporary: bool = False):
+        hashed_key = hashlib.sha256(key.encode("utf-8")).hexdigest()
+        return cls(namespace, hashed_key, temporary=temporary)
 
     @classmethod
     def join_keys(cls, *keys: str) -> str:

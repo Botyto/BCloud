@@ -19,10 +19,12 @@ NAMESPACE_CONTENT = Namespace("content", True)
 class FileContents:
     blobs: Blobs
     namespace: Namespace
+    scramble: bool
 
-    def __init__(self, blobs: Blobs, namespace: Namespace):
+    def __init__(self, blobs: Blobs, namespace: Namespace, scramble: bool = False):
         self.blobs = blobs
         self.namespace = namespace
+        self.scramble = scramble
 
     def address(self, file: FileMetadata|str, temporary: bool = False):
         if isinstance(file, FileMetadata):
@@ -33,6 +35,8 @@ class FileContents:
         if not isinstance(storage_id, UUID):
             raise ValueError("File path must be absolute and have UUID as storage ID")
         key = Address.join_keys(str(storage_id), self.namespace.name, path)
+        if self.scramble:
+            return Address.scrambled("files", key, temporary)
         return Address("files", key, temporary)
     
     def exists(self, file: FileMetadata):
