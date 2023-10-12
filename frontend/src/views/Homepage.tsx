@@ -27,6 +27,7 @@ export default function Homepage() {
                 <li>/profile</li>
                 <li><Link to="/profile/login">/profile/login</Link></li>
                 <li><Link to="/profile/activity">/profile/activity</Link></li>
+                <li><Link to="/profile/import">/profile/import</Link></li>
                 <li><Link to="/files">/files</Link></li>
             </ul>
         </>;
