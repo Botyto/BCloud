@@ -34,9 +34,10 @@ class FileContents:
             path = path[5:]
         if not isinstance(storage_id, UUID):
             raise ValueError("File path must be absolute and have UUID as storage ID")
-        key = Address.join_keys(str(storage_id), self.namespace.name, path)
         if self.scramble:
-            return Address.scrambled("files", key, temporary)
+            prefix = Address.join_keys(str(storage_id), self.namespace.name)
+            return Address.scrambled("files", prefix, path, temporary)
+        key = Address.join_keys(str(storage_id), self.namespace.name, path)
         return Address("files", key, temporary)
     
     def exists(self, file: FileMetadata):

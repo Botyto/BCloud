@@ -29,9 +29,10 @@ class Address:
         return address
     
     @classmethod
-    def scrambled(cls, namespace: str, key: str, temporary: bool = False):
+    def scrambled(cls, namespace: str, prefix: str, key: str, temporary: bool = False):
         hashed_key = hashlib.sha256(key.encode("utf-8")).hexdigest()
-        return cls(namespace, hashed_key, temporary=temporary)
+        key = cls.join_keys(prefix, hashed_key)
+        return cls(namespace, key, temporary=temporary)
 
     @classmethod
     def join_keys(cls, *keys: str) -> str:
