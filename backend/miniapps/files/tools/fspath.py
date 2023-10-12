@@ -57,10 +57,11 @@ def join(storage_id: UUID|str|None, *parts: str):
         return f"{storage_id}{STORAGE_SEP}{SEP.join(parts)}"
     return SEP.join(parts)
 
-def normapth(path: str):
+def normpath(path: str):
     storage_id, parts = get_parts(path)
     i = 0
     while i < len(parts):
+        parts[i] = parts[i].strip()
         if parts[i] == CURRENT_DIR:
             del parts[i]
         elif parts[i] == PARENT_DIR:
@@ -75,24 +76,24 @@ def normapth(path: str):
 
 def get_parts(path: str):
     storage_id, path = strip_storage(path)
-    parts = [part for part in path.split(SEP) if part]
+    parts = [part.strip() for part in path.split(SEP) if part]
     return storage_id, parts
 
 def dirname(path: str):
     sep_idx = path.rfind(SEP)
     if sep_idx == -1 or sep_idx == len(path) - 1:
         return path
-    return path[:sep_idx + 1]
+    return path[:sep_idx + 1].strip()
 
 def basename(path: str):
     sep_idx = path.rfind(SEP)
     if sep_idx == -1:
         _, path = strip_storage(path)
         return path
-    return path[sep_idx + 1:]
+    return path[sep_idx + 1:].strip()
 
 def ext(path: str):
     period_idx = path.rfind(".")
     if period_idx == -1:
         return ""
-    return path[period_idx:]
+    return path[period_idx:].strip()

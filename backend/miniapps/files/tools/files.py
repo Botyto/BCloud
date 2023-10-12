@@ -88,7 +88,7 @@ class FileManager:
         if not basename:
             raise ValueError("File name cannot be empty")
         ensure_str_fit("File name", basename, FileMetadata.name)
-        dir_path = fspath.dirname(path)
+        dir_path = fspath.normpath(fspath.dirname(path))
         dir = self.by_path(dir_path)
         if dir is None:
             raise DirectoryNotFound(path)
@@ -185,7 +185,7 @@ class FileManager:
             raise FileNotFoundError(src)
         if src_meta.isroot:
             raise ValueError("Cannot rename root directory")
-        dst_dir = fspath.dirname(dst)
+        dst_dir = fspath.normpath(fspath.dirname(dst))
         dst_dir_meta = self.by_path(dst_dir)
         if dst_dir_meta is None or not dst_dir_meta.isdir:
             raise DirectoryNotFound(dst)

@@ -56,6 +56,7 @@ function normPath(path: string) {
     var [storageId, parts] = getParts(path);
     var i = 0;
     while (i < parts.length) {
+        parts[i] = parts[i].trim();
         if (parts[i] == currentDir) {
             parts = parts.splice(i, 1);
         } else if (parts[i] == parentDir) {

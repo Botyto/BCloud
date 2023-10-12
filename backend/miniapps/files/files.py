@@ -69,7 +69,6 @@ class FilesModule(GqlMiniappModule):
         return self.manager.rename(src, dst)
 
 
-
 class DeleteFileEvent(MiniappSqlEvent):
     TARGET = Session
     IDENTIFIER = "before_flush"
