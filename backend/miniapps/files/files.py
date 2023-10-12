@@ -1,13 +1,13 @@
-from typing import List
+from sqlalchemy.orm import Session
 from uuid import UUID
 
 from .data import FileMetadata
-from .tools import fspath
 from .tools.files import FileManager
 
 from core.api.modules.gql import GqlMiniappModule, query, mutation
 from core.auth.handlers import AuthError
 from core.graphql.result import SuccessResult
+from core.miniapp.sql import MiniappSqlEvent
 
 
 class FilesModule(GqlMiniappModule):
@@ -67,3 +67,18 @@ class FilesModule(GqlMiniappModule):
     def rename(self, src: str, dst: str) -> FileMetadata:
         self.log_activity("files.rename", {"src": src, "dst": dst})
         return self.manager.rename(src, dst)
+
+
+
+class DeleteFileEvent(MiniappSqlEvent):
+    TARGET = Session
+    IDENTIFIER = "before_flush"
+
+    def run(self, session: Session, flush_context, instances):
+        manager: FileManager|None = None
+        for entity in session.deleted:
+            if not isinstance(entity, FileMetadata):
+                continue
+            if manager is None:
+                manager = FileManager.without_user(self.context.files, session)
+            manager.contents.delete(entity)

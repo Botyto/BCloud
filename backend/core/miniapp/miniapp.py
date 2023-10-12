@@ -3,8 +3,10 @@ from typing import Callable, Dict, List
 from .context import MiniappContext
 from .data import MiniappVersion
 from .registry import MiniappRegistry
+
 from .registry import AsyncjobRegistry, MsgRegistry
-from .module import ModuleRegistry
+from .sql import MiniappSqlEvent, SqlEventRegistry
+from .module import MiniappModule, ModuleRegistry
 
 from ..data.sql.columns import ensure_str_fit
 

@@ -68,6 +68,8 @@ class FsBlobs(Blobs):
         path = self._addr_to_path(address, create_dirs=False)
         if os.path.isfile(path):
             return os.remove(path)
+        elif os.path.isdir(path):
+            return shutil.rmtree(path)
     
     def open(self, address: Address, mode: OpenMode):
         path = self._addr_to_path(address, create_dirs=mode != OpenMode.READ)

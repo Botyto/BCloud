@@ -26,5 +26,5 @@ class ModuleRegistry(MiniappRegistry):
     def __init__(self, module_type: Type[MiniappModule]):
         self.module_type = module_type
 
-    def start(self, miniapp: Miniapp, context: MiniappContext):
+    def start(self, miniapp: "Miniapp", context: MiniappContext):
         self.module_type.start(miniapp, context)

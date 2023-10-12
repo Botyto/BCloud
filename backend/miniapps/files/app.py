@@ -1,7 +1,7 @@
-from core.miniapp.miniapp import Miniapp, ModuleRegistry
+from core.miniapp.miniapp import Miniapp, ModuleRegistry, SqlEventRegistry
 
 from .storage import StorageModule
-from .files import FilesModule
+from .files import FilesModule, DeleteFileEvent
 from .contents import ContentsModule
 from .importing import GoogleDriveImporter
 
@@ -12,5 +12,6 @@ class FilesMiniapp(Miniapp):
             ModuleRegistry(StorageModule),
             ModuleRegistry(FilesModule),
             ModuleRegistry(ContentsModule),
+            SqlEventRegistry(DeleteFileEvent),
             dependencies=["profile"],
         )

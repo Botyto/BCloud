@@ -11,9 +11,9 @@ class ContentsModule(RestMiniappModule):
     @property
     def manager(self):
         if self._manager is None:
-            if self.current_user is None:
+            if self.user_id is None:
                 raise AuthError()
-            self._manager = FileManager(self.context.files, self.current_user, self.session)
+            self._manager = FileManager(self.context.files, self.user_id, self.session)
         return self._manager
 
     @property

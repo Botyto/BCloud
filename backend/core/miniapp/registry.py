@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 class MiniappRegistry:
-    def start(self, miniapp: Miniapp, context: MiniappContext):
+    def start(self, miniapp: "Miniapp", context: MiniappContext):
         raise NotImplementedError()
 
 
@@ -21,7 +21,7 @@ class MsgRegistry(MiniappRegistry):
         self.msg = msg
         self.handler = handler
 
-    def start(self, miniapp: Miniapp, context: MiniappContext):
+    def start(self, miniapp: "Miniapp", context: MiniappContext):
         context.msg.register(self.msg, self.handler)
 
 
@@ -33,5 +33,5 @@ class AsyncjobRegistry(MiniappRegistry):
         self.type = type
         self.handler = handler
 
-    def start(self, miniapp: Miniapp, context: MiniappContext):
+    def start(self, miniapp: "Miniapp", context: MiniappContext):
         context.asyncjobs.handlers.add(miniapp.id, self.type, self.handler)
