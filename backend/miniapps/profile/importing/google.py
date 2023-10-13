@@ -66,10 +66,12 @@ class BaseGoogleImporting:
         return build(service, "v3", credentials=creds)
 
     @classmethod
-    def _google_make_flow(cls, client_secrets: str):
+    def _google_make_flow(cls, client_secrets: str, scopes: Set[str]|None = None):
         if not os.path.isfile(client_secrets):
             raise Exception("Google services aren't setup")
-        flow = InstalledAppFlow.from_client_secrets_file(client_secrets, cls._google_all_scopes())
+        if scopes is None:
+            scopes = cls._google_all_scopes()
+        flow = InstalledAppFlow.from_client_secrets_file(client_secrets, scopes)
         flow.redirect_uri = "http://localhost:3000/profile/import/google/callback"
         return flow
     
@@ -97,7 +99,10 @@ class GqlGoogleImporting(BaseGoogleImporting):
 
 class RestGoogleImporting(BaseGoogleImporting):
     def _start_google_importing_impl(self, state: str, code: str, scope: str):
-        flow = self._google_make_flow(self._google_client_secrets(self.context))
+        flow = self._google_make_flow(
+            self._google_client_secrets(self.context),
+            set(scope.split(",")),
+        )
         token: OAuth2Token = flow.fetch_token(code=code)
         self.context.asyncjobs.schedule("profile", "importing.google", {
             "state": self.decode_state(state),
