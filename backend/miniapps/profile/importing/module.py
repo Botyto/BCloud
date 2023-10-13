@@ -34,11 +34,11 @@ class ImportingModule(GqlMiniappModule, GqlGoogleImporting):
         return ImportingOptions([importer.SERVICE for importer in self._google_all_importers()])
 
     @mutation()
-    def google_init(self) -> GoogleAuthUrl:
-        return self._google_init_impl()
+    def google_init(self, options: List[str]) -> GoogleAuthUrl:
+        return self._google_init_impl(options)
 
 
 class RestImportingModule(RestMiniappModule, RestGoogleImporting):
-    @get("/profile/importing/google")
-    def start_google_importing(self, state: str, code: str, scope: str):
-        return self._start_google_importing_impl(state, code, scope)
+    @get("/api/profile/import/google/callback")
+    def start_google_importing(self, state: str, code: str, scope: str, options: str):
+        return self._start_google_importing_impl(state, code, scope, options.split(","))

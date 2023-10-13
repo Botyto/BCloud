@@ -47,26 +47,3 @@ export function useActivityLogQuery(page: number) {
         },
     });
 }
-
-const RUNNING_IMPORTS = gql`
-query RunningImports {
-    profileImportingRunning {
-        jobs
-    }
-}`;
-
-export function useRunningImportsQuery() {
-    return useQuery(RUNNING_IMPORTS);
-}
-
-const IMPORT_GOOGLE_OPTIONS = gql`
-query ImportGoogleOptions {
-    profileImportingGoogleOptions {
-        options
-    }
-}`;
-
-export function useImportGoogleOptionsQuery() {
-    return useQuery(IMPORT_GOOGLE_OPTIONS);
-}
-

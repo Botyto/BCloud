@@ -70,14 +70,28 @@ class BaseGoogleImporting:
         if not os.path.isfile(client_secrets):
             raise Exception("Google services aren't setup")
         flow = InstalledAppFlow.from_client_secrets_file(client_secrets, cls._google_all_scopes())
-        flow.redirect_uri = "http://localhost:8080/profile/importing/google"
+        flow.redirect_uri = "http://localhost:3000/profile/import/google/callback"
         return flow
+    
+    @classmethod
+    def encode_state(cls, options: List[str]):
+        return ",".join(options)
+    
+    @classmethod
+    def decode_state(cls, state: str):
+        return {
+            "options": state.split(","),
+        }
 
 
 class GqlGoogleImporting(BaseGoogleImporting):
-    def _google_init_impl(self) -> GoogleAuthUrl:
+    def _google_init_impl(self, options: List[str]) -> GoogleAuthUrl:
         flow = self._google_make_flow(self._google_client_secrets(self.context))
-        url, state = flow.authorization_url(access_type="offline", include_granted_scopes="true")
+        url, state = flow.authorization_url(
+            access_type="offline",
+            include_granted_scopes="true",
+            state=self.encode_state(options),
+        )
         return GoogleAuthUrl(url)
 
 
@@ -86,6 +100,7 @@ class RestGoogleImporting(BaseGoogleImporting):
         flow = self._google_make_flow(self._google_client_secrets(self.context))
         token: OAuth2Token = flow.fetch_token(code=code)
         self.context.asyncjobs.schedule("profile", "importing.google", {
+            "state": self.decode_state(state),
             "user_id": str(self.context.user_id),
             "token_info": {
                 "access": token["access_token"],
@@ -130,6 +145,9 @@ class GoogleImportingJob(AsyncJobHandler, BaseGoogleImporting):
         self.dprogress = 1.0 / len(all_importers)
 
         tasks: List[Coroutine] = []
+        options = self.context.payload.get("options")
+        if options is not None:
+            all_importers = [i for i in all_importers if i.SERVICE in options]
         for service_name, importers in itertools.groupby(all_importers, lambda i: i.SERVICE):
             service = self._google_make_service(service_name, credentials)
             google_context = GoogleImportingContext(importing_context, service)

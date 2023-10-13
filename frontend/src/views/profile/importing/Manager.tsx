@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Loading from '../../../components/Loading';
-import { useRunningImportsQuery } from '../api';
+import { useRunningImportsQuery } from './api';
 
 export default function Importing() {
     const { t } = useTranslation("common");

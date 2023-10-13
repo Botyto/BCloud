@@ -1,14 +1,17 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import axios from 'axios';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Loading from '../../../components/Loading';
-import { useImportGoogleOptionsQuery, useRunningImportsQuery } from '../api';
+import { useImportGoogleOptionsQuery, useRunningImportsQuery, useImportGoogleInitMutation } from './api';
 
-export default function Google() {
+export function Google() {
     const { t } = useTranslation("common");
     const runningVars = useRunningImportsQuery();
     const optionsVars = useImportGoogleOptionsQuery();
     const [useOptions, setUseOptions] = React.useState<string[] | null>(null);
+    const [init, initVars] = useImportGoogleInitMutation();
+    const [err, setErr] = React.useState<string | null>(null);
     
     function setUseOption(option: string, value: boolean) {
         if (useOptions === null) { return; }
@@ -58,14 +61,51 @@ export default function Google() {
         </div>
     }
 
+    function onRun(e: React.MouseEvent) {
+        e.preventDefault();
+        init({
+            variables: {
+                options: useOptions,
+            },
+            onCompleted: (data) => {
+                window.location.href = data.profileImportingGoogleInit.url;
+            },
+            onError: (error) => {
+                setErr(error.message);
+            },
+        })
+    }
+
     return <>
         <div>{header}</div>
         {
             running || <>
                 {t("profile.importing.google.description")}
                 {options}
-                <button disabled={useOptions?.length === 0}>{t("profile.importing.run")}</button>
+                <button
+                    disabled={useOptions?.length === 0}
+                    onClick={onRun}
+                >
+                    {t("profile.importing.run")}
+                </button>
+                <div style={{ color: "red" }}>{err}</div>
             </>
         }
+    </>;
+}
+
+export function GoogleCallback(props: any) {
+    const [params, setParams] = useSearchParams();
+    const code = params.get("code");
+    const state = params.get("state");
+    const scope = params.get("scope");
+
+    useEffect(() => {
+        axios.get("/api/profile/import/google/callback", {")
+    }, []);
+
+    return <>
+        <Loading />
+        {state}
     </>;
 }
