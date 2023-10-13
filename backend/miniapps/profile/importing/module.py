@@ -40,5 +40,5 @@ class ImportingModule(GqlMiniappModule, GqlGoogleImporting):
 
 class RestImportingModule(RestMiniappModule, RestGoogleImporting):
     @get("/api/profile/import/google/callback")
-    def start_google_importing(self, state: str, code: str, scope: str, options: str):
-        return self._start_google_importing_impl(state, code, scope, options.split(","))
+    def start_google_importing(self, state: str, code: str, scope: str):
+        return self._start_google_importing_impl(state, code, scope)

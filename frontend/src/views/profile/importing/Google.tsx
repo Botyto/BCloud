@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import axios from 'axios';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Loading from '../../../components/Loading';
-import { useImportGoogleOptionsQuery, useRunningImportsQuery, useImportGoogleInitMutation } from './api';
+import { useImportGoogleOptionsQuery, useRunningImportsQuery, useImportGoogleInitMutation, refetchRunningImportsQuery } from './api';
+import { useApolloClient } from '@apollo/client';
 
 export function Google() {
     const { t } = useTranslation("common");
@@ -96,16 +97,33 @@ export function Google() {
 
 export function GoogleCallback(props: any) {
     const [params, setParams] = useSearchParams();
+    const navigate = useNavigate();
     const code = params.get("code");
     const state = params.get("state");
     const scope = params.get("scope");
+    const [err, setErr] = React.useState<string | null>(null);
+    const { t } = useTranslation("common");
+    const client = useApolloClient();
 
     useEffect(() => {
-        axios.get("/api/profile/import/google/callback", {")
+        const baseUrl = "http://localhost:8080/api/profile/import/google/callback";
+        const url = `${baseUrl}?code=${code}&state=${state}&scope=${scope}`;
+        axios.get(url)
+        .then((res) => {
+            refetchRunningImportsQuery(client);
+            navigate("/profile/import");
+        })
+        .catch((err) => {
+            setErr(err.message);
+        });
     }, []);
 
-    return <>
-        <Loading />
-        {state}
-    </>;
+    if (err) {
+        return <>
+            <div>(<Link to="/profile/import">{t("profile.back_to_importing")}</Link>)</div>
+            <div style={{ color: "red" }}>{err}</div>
+        </>;
+    } else {
+        return <Loading/>;
+    }
 }

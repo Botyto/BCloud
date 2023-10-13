@@ -1,4 +1,4 @@
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { gql, useMutation, useQuery, useApolloClient, ApolloClient } from '@apollo/client';
 
 const RUNNING_IMPORTS = gql`
 query RunningImports {
@@ -9,6 +9,12 @@ query RunningImports {
 
 export function useRunningImportsQuery() {
     return useQuery(RUNNING_IMPORTS);
+}
+
+export function refetchRunningImportsQuery(client: ApolloClient<object>) {
+    client.refetchQueries({
+        include: [RUNNING_IMPORTS]
+    });
 }
 
 const GOOGLE_OPTIONS = gql`
