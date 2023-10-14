@@ -129,16 +129,17 @@ class GoogleDriveImporter(GoogleImporter):
 
     def __import_download(self, context: DriveFileContext, export: DriveExport|None):
         try:
-            context.files.makedirs(fspath.dirname(context.path))
-            context.session.commit()
-            file = context.files.makefile(context.path, context.mime)
             logger.debug("Downloading file %s - %s", context.file_n, context.path)
             try:
+                final_path = context.path
                 if export is not None:
                     request = context.service.files().export_media(fileId=context.google_id, mimeType=export.mime)  # type: ignore
-                    context.path += export.ext
+                    final_path += export.ext
                 else:
                     request = context.service.files().get_media(fileId=context.google_id)  # type: ignore
+                context.files.makedirs(fspath.dirname(final_path))
+                context.session.commit()
+                file = context.files.makefile(final_path, context.mime)
                 buffer = io.BytesIO()
                 downloader = MediaIoBaseDownload(buffer, request)
                 done = False

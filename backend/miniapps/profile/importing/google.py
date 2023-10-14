@@ -95,15 +95,13 @@ class GqlGoogleImporting(BaseGoogleImporting):
             state=self.encode_state(options),
         )
         return GoogleAuthUrl(url)
-
-
-class RestGoogleImporting(BaseGoogleImporting):
-    def _start_google_importing_impl(self, state: str, code: str, scope: str):
+    
+    def _google_start_impl(self, state: str, code: str, scope: str):
         flow = self._google_make_flow(
             self._google_client_secrets(self.context),
-            set(scope.split(",")),
+            set(scope.split(" ")),
         )
-        token: OAuth2Token = flow.fetch_token(code=code)
+        token: OAuth2Token = flow.fetch_token(code=code, state=state)
         self.context.asyncjobs.schedule("profile", "importing.google", {
             "state": self.decode_state(state),
             "user_id": str(self.context.user_id),

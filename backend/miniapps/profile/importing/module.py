@@ -3,10 +3,10 @@ from sqlalchemy import select
 from typing import List
 
 from core.api.modules.gql import mutation, query, GqlMiniappModule
-from core.api.modules.rest import get, RestMiniappModule
 from core.asyncjob.data import JobPromise
+from core.graphql.result import SuccessResult
 
-from .google import GoogleAuthUrl, GqlGoogleImporting, RestGoogleImporting
+from .google import GoogleAuthUrl, GqlGoogleImporting
 
 
 @dataclass
@@ -26,7 +26,8 @@ class ImportingModule(GqlMiniappModule, GqlGoogleImporting):
             .where(JobPromise.issuer == "profile") \
             .where(JobPromise.type.startswith("importing"))
         promises = self.session.scalars(statement).all()
-        promises = [p for p in promises if p.payload is not None and p.payload.get("user_id") == self.user_id]
+        user_id_str = str(self.user_id)
+        promises = [p for p in promises if p.payload is not None and p.payload.get("user_id") == user_id_str]
         return ImportingJobs([p.type for p in promises])
 
     @query()
@@ -37,8 +38,7 @@ class ImportingModule(GqlMiniappModule, GqlGoogleImporting):
     def google_init(self, options: List[str]) -> GoogleAuthUrl:
         return self._google_init_impl(options)
 
-
-class RestImportingModule(RestMiniappModule, RestGoogleImporting):
-    @get("/api/profile/import/google/callback")
-    def start_google_importing(self, state: str, code: str, scope: str):
-        return self._start_google_importing_impl(state, code, scope)
+    @mutation()
+    def google_start(self, state: str, code: str, scope: str) -> SuccessResult:
+        self._google_start_impl(state, code, scope)
+        return SuccessResult()

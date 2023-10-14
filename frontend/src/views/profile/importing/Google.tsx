@@ -1,10 +1,8 @@
 import React, { useEffect } from 'react';
-import axios from 'axios';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useImportGoogleOptionsQuery, useRunningImportsQuery, useImportGoogleInitMutation, useImportGoogleStartMutation } from './api';
 import Loading from '../../../components/Loading';
-import { useImportGoogleOptionsQuery, useRunningImportsQuery, useImportGoogleInitMutation, refetchRunningImportsQuery } from './api';
-import { useApolloClient } from '@apollo/client';
 
 export function Google() {
     const { t } = useTranslation("common");
@@ -96,32 +94,31 @@ export function Google() {
 }
 
 export function GoogleCallback(props: any) {
-    const [params, setParams] = useSearchParams();
+    const [params, _] = useSearchParams();
     const navigate = useNavigate();
     const code = params.get("code");
     const state = params.get("state");
     const scope = params.get("scope");
-    const [err, setErr] = React.useState<string | null>(null);
     const { t } = useTranslation("common");
-    const client = useApolloClient();
+    const [googleStart, googleStartVars] = useImportGoogleStartMutation();
 
     useEffect(() => {
-        const baseUrl = "http://localhost:8080/api/profile/import/google/callback";
-        const url = `${baseUrl}?code=${code}&state=${state}&scope=${scope}`;
-        axios.get(url)
-        .then((res) => {
-            refetchRunningImportsQuery(client);
-            navigate("/profile/import");
-        })
-        .catch((err) => {
-            setErr(err.message);
+        googleStart({
+            variables: {
+                code,
+                state,
+                scope,
+            },
+            onCompleted: (data) => {
+                navigate("/profile/import");
+            },
         });
     }, []);
 
-    if (err) {
+    if (googleStartVars.error !== undefined) {
         return <>
             <div>(<Link to="/profile/import">{t("profile.back_to_importing")}</Link>)</div>
-            <div style={{ color: "red" }}>{err}</div>
+            <div style={{ color: "red" }}>{googleStartVars.error.message}</div>
         </>;
     } else {
         return <Loading/>;
