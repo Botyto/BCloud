@@ -179,3 +179,4 @@ class GoogleDriveImporter(GoogleImporter):
                 pickle.dump(files, fh)
         self.__download_files(files, context)
         logger.debug("Finished importing")
+        # TODO delete cache file
