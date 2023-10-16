@@ -44,3 +44,9 @@ export function primaryMimeType(mimeType: string) {
         return inputMimeType.startsWith(mimeType);
     };
 }
+
+export function listMimeType(mimeTypes: string[]) {
+    return function(inputMimeType: string) {
+        return mimeTypes.includes(inputMimeType);
+    }
+}

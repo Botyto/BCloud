@@ -9,6 +9,7 @@ import AudioPreview from '../previews/AudioPreview';
 import VideoPreview from '../previews/VideoPreview';
 import ImagePreview from '../previews/ImagePreview';
 import PdfPreview from '../previews/PdfPreview';
+import ArchivePreview from '../previews/ArchivePreview';
 
 export default function FileBrowser(props: ContentsProps) {
     const { t } = useTranslation("common");
@@ -46,6 +47,7 @@ export default function FileBrowser(props: ContentsProps) {
         VideoPreview,
         ImagePreview,
         PdfPreview,
+        ArchivePreview,
     ]);
 
     if (props.file.size === null) {

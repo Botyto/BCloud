@@ -113,4 +113,3 @@ export function useFileLinkMutation() {
         refetchQueries: [FILES_LIST],
     });
 }
-
