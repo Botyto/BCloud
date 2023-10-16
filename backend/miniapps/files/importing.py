@@ -81,22 +81,23 @@ class GoogleDriveImporter(GoogleImporter):
 
     def __gather_files(self, output: list, context: GoogleImportingContext, parent="root", path=""):
         query = f"'{parent}' in parents and trashed = false"
-        fields = "nextPageToken, files(id, name, mimeType)"
+        fields = "nextPageToken, files(id, name, mimeType, shortcutDetails)"
         results = context.service.files().list(q=query, pageSize=100, fields=fields).execute()  # type: ignore
         items = results.get("files", [])
         for item in items:
             if item["name"] in self.PHOTOS_NAMES and parent == "root":
                 continue
             item_path = f"{path}/{item['name']}"
-            output.append(DriveFile(
-                id=item["id"],
-                path=item_path,
-                mime=item["mimeType"],
-            ))
+            output.append(DriveFile(item["id"], item_path, item["mimeType"]))
             if item["mimeType"] == "application/vnd.google-apps.folder":
                 self.__gather_files(output, context, item["id"], item_path)
             elif item["mimeType"] == "application/vnd.google-apps.shortcut":
-                pass
+                target_id = item['shortcutDetails']['targetId']
+                target_mime = item['shortcutDetails']['targetMimeType']
+                if target_mime == "application/vnd.google-apps.folder":
+                    self.__gather_files(output, context, target_id, item_path)
+                else:
+                    output.append(DriveFile(target_id, item_path, target_mime))
 
     def __get_gdrive_storage(self, context: GoogleImportingContext, session: Session):
         storages = StorageManager(context.user_id, session)
