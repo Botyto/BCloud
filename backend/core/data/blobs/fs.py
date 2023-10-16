@@ -52,6 +52,9 @@ class FsBlobs(Blobs):
         address_str = str(address)
         if address_str.startswith("/"):
             address_str = address_str[1:]
+        for symbol in FORBIDDEN_SYMBOLS:
+            # TODO ensure two files with different address but same path don't overwrite
+            address_str = address_str.replace(symbol, "_")
         path = os.path.join(self.root, address_str)
         if create_dirs:
             dirname = os.path.dirname(path)
@@ -61,9 +64,6 @@ class FsBlobs(Blobs):
             if not os.path.isfile(path):
                 raise FileNotFoundError(path)
         path = "/".join(part.strip() for part in path.split("/"))
-        for symbol in FORBIDDEN_SYMBOLS:
-            # TODO ensure two files with different address but same path don't overwrite
-            path = path.replace(symbol, "_")
         path = os.path.normpath(path)
         return path
 
