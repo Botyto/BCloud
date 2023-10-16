@@ -5,6 +5,7 @@ function ImagePreview(props: PreviewProps) {
     return <img
         src={props.contentUrl}
         alt={props.file.name}
+        style={{ maxWidth: "100vw", maxHeight: "90vh" }}
     />;
 }
 
