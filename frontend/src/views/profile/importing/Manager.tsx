@@ -25,7 +25,7 @@ export default function Importing() {
                     <ul>
                         {
                             runningVars.data.profileImportingRunning.jobs.map((job: string) => {
-                                return <li key={job}>{job}</li>;
+                                return <li key={job}>{t(`profile.${job}.name`)}</li>;
                             })
                         }
                     </ul>
