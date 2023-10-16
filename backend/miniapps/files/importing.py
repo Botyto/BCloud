@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import io
 import logging
 import pickle
-from typing import Callable, List
+from typing import List
 
 from .tools import fspath
 from .tools.errors import FileAlreadyExists
@@ -95,6 +95,8 @@ class GoogleDriveImporter(GoogleImporter):
             ))
             if item["mimeType"] == "application/vnd.google-apps.folder":
                 self.__gather_files(output, context, item["id"], item_path)
+            elif item["mimeType"] == "application/vnd.google-apps.shortcut":
+                pass
 
     def __get_gdrive_storage(self, context: GoogleImportingContext, session: Session):
         storages = StorageManager(context.user_id, session)
@@ -106,6 +108,7 @@ class GoogleDriveImporter(GoogleImporter):
     OD_SPREADSHEET_EXP = DriveExport("application/x-vnd.oasis.opendocument.spreadsheet", ".ods")
     OD_TEXT_EXP = DriveExport("application/vnd.oasis.opendocument.text", ".odt")
     OD_PRESENTATION_EXP = DriveExport("application/vnd.oasis.opendocument.presentation", ".odp")
+    MAP_EXP = DriveExport("application/vnd.google-earth.kmz", ".kmz")
     PDF_EXP = DriveExport("application/pdf", ".pdf")
     def __import_file(self, context: DriveFileContext):
         match context.mime:
@@ -118,6 +121,8 @@ class GoogleDriveImporter(GoogleImporter):
                 return self.__import_download(context, self.OD_TEXT_EXP)
             case "application/vnd.google-apps.presentation":
                 return self.__import_download(context, self.OD_PRESENTATION_EXP)
+            case "application/vnd.google-apps.map":
+                return self.__import_download(context, self.MAP_EXP)
             case "application/vnd.google-apps.drawing":
                 return self.__import_download(context, self.PDF_EXP)
             case _:
@@ -163,6 +168,20 @@ class GoogleDriveImporter(GoogleImporter):
                 path = fspath.join(storage.id, gfile.path)
                 gfile_context = DriveFileContext(context, i, len(gfiles), files, session, path, gfile)
                 self.__import_file(gfile_context)
+
+    def __debug_gfiles(self, job_id: int):
+        with open(f"tempdata/asyncjobs/{job_id}/gdrive_import/files.pickle", "rb") as fh:
+            gfiles = pickle.load(fh)
+        import csv
+        with open(f"tempdata/asyncjobs/{job_id}/gdrive_import/files.csv", "wt", encoding="utf-8") as fh:
+            writer = csv.DictWriter(fh, fieldnames=["id", "path", "mime"])
+            writer.writeheader()
+            for gfile in gfiles:
+                writer.writerow({
+                    "id": gfile.id,
+                    "path": gfile.path,
+                    "mime": gfile.mime,
+                })
 
     async def run(self, context: GoogleImportingContext):
         files: List[DriveFile] = []

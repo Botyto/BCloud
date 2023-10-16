@@ -4,6 +4,8 @@ from typing import BinaryIO, cast
 
 from .base import Address, BlobIO, OpenMode, Blobs
 
+FORBIDDEN_SYMBOLS = ":*?\"<>|"
+
 
 class FsBlobIO(BlobIO):
     _path: str
@@ -59,6 +61,9 @@ class FsBlobs(Blobs):
             if not os.path.isfile(path):
                 raise FileNotFoundError(path)
         path = "/".join(part.strip() for part in path.split("/"))
+        for symbol in FORBIDDEN_SYMBOLS:
+            # TODO ensure two files with different address but same path don't overwrite
+            path = path.replace(symbol, "_")
         path = os.path.normpath(path)
         return path
 
