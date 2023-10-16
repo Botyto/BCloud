@@ -74,7 +74,7 @@ class ContentsModule(RestMiniappModule):
         mime_type = self.request.headers.get("Content-Type")
         if mime_type is not None:
             file.mime_type = mime_type
-        self.log_activity("files.write", {"path": file.abspath, "mime": file.mime_type})
+        self.log_activity("files.write", {"path": file.abspath, "mime": file.mime_type, "size": len(content)})
         self.contents.write(file, content)
         return response
 

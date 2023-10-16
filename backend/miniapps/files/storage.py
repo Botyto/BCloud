@@ -43,9 +43,7 @@ class StorageModule(GqlMiniappModule):
         success, name = self.manager.delete(id)
         if success:
             self.log_activity("storage.delete", {"id": str(id), "name": name})
-            return SuccessResult()
-        else:
-            return SuccessResult(False)
+        return SuccessResult(success)
     
     @mutation()
     def rename(self, id: UUID, name: str) -> FileStorage:

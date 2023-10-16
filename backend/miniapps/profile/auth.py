@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from sqlalchemy import select
+from typing import Tuple
 
 from core.api.modules.gql import GqlMiniappModule, query, mutation
-from core.auth.data import User, UserRole
+from core.auth.data import User, UserRole, Login
 from core.auth.handlers import AuthError
 from core.auth.manager import UserManager
 from core.graphql.result import SuccessResult
@@ -33,16 +34,24 @@ class AuthModule(GqlMiniappModule):
     @mutation()
     def register(self, username: str, password: str) -> LoginResult:
         user = self.manager.register(username, password, UserRole.USER)
-        result = self.login(username, password)
+        login, result = self.__internal_login(username, password)
         self.log_activity("auth.register")
+        self.__log_login(login)
         return result
+
+    def __internal_login(self, username: str, password: str) -> Tuple[Login, LoginResult]:
+        login, data = self.manager.login(username, password, self.handler.request)
+        self.handler.authenticate(data)
+        return login, LoginResult(jwt=self.handler.encode_jwt(data))
+
+    def __log_login(self, login: Login):
+        self.log_activity("auth.login", {"id": str(login.id)})
 
     @mutation()
     def login(self, username: str, password: str) -> LoginResult:
-        login, data = self.manager.login(username, password, self.handler.request)
-        self.handler.authenticate(data)
-        self.log_activity("auth.login", {"id": str(login.id)})
-        return LoginResult(jwt=self.handler.encode_jwt(data))
+        login, result = self.__internal_login(username, password)
+        self.__log_login(login)
+        return result
 
     @mutation()
     def logout(self) -> SuccessResult:

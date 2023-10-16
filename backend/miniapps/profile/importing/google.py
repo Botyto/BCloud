@@ -111,6 +111,7 @@ class GqlGoogleImporting(BaseGoogleImporting):
                 "scope": token.get("scope"),
             },
         })
+        return True
 
 
 class GoogleImportingJob(AsyncJobHandler, BaseGoogleImporting):

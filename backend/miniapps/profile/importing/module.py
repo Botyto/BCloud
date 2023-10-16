@@ -40,5 +40,8 @@ class ImportingModule(GqlMiniappModule, GqlGoogleImporting):
 
     @mutation()
     def google_start(self, state: str, code: str, scope: str) -> SuccessResult:
-        self._google_start_impl(state, code, scope)
-        return SuccessResult()
+        success = self._google_start_impl(state, code, scope)
+        if success:
+            payload = self.decode_state(state)
+            self.log_activity("importing.google.start", payload)
+        return SuccessResult(success)

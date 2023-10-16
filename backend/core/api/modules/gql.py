@@ -77,14 +77,14 @@ class GqlMiniappModule(MiniappModule):
         return activity
     
     @classmethod
-    def _all_own_methods(cls):
+    def __all_own_methods(cls):
         all_attributes = [getattr(cls, m) for m in dir(cls)]
         return [m for m in all_attributes if callable(m)]
 
     @classmethod
     def start(cls, miniapp: Miniapp, context: MiniappContext):
         super().start(miniapp, context)
-        for method in cls._all_own_methods():
+        for method in cls.__all_own_methods():
             if not hasattr(method, "__gql__"):
                 continue
             info = cast(GqlMethodInternals, getattr(method, "__gql__", None))
