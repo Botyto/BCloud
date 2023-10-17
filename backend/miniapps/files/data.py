@@ -1,11 +1,12 @@
 from datetime import datetime, timezone
 from enum import Enum
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Enum as SqlEnum
 from typing import Generator, List, Tuple, Optional
 from uuid import UUID as PyUUID, uuid4
 
 from .tools import fspath
 
+from core.auth.access import AccessLevel
 from core.auth.data import User
 from core.data.sql.columns import DateTime, Integer, String, UUID
 from core.data.sql.columns import Mapped, mapped_column, relationship
@@ -41,6 +42,7 @@ class FileMetadata(Model):
     atime_utc: Mapped[datetime] = mapped_column(DateTime)
     mtime_utc: Mapped[datetime] = mapped_column(DateTime)
     ctime_utc: Mapped[datetime] = mapped_column(DateTime)
+    access: Mapped[AccessLevel] = mapped_column(SqlEnum(AccessLevel), default=AccessLevel.PRIVATE)
 
     @property
     def user_id(self) -> PyUUID:
