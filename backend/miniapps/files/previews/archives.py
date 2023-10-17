@@ -13,6 +13,7 @@ import lzma
 class ArchiveFile:
     path: str
     mime: str|None = None
+    size: int|None = None
 
 
 @dataclass
@@ -26,7 +27,7 @@ class ArchivePreviews:
         result: List[ArchiveFile] = []
         with zipfile.ZipFile(blob) as zf:
             for file in zf.filelist:
-                result.append(ArchiveFile(file.filename))
+                result.append(ArchiveFile(file.filename, size=file.file_size))
         return ArchivePreview(result)
     
     @staticmethod
@@ -34,7 +35,7 @@ class ArchivePreviews:
         result: List[ArchiveFile] = []
         with tarfile.open(fileobj=blob) as tf:
             for file in tf.getmembers():
-                result.append(ArchiveFile(file.name))
+                result.append(ArchiveFile(file.name, size=file.size))
         return ArchivePreview(result)
     
     @staticmethod
