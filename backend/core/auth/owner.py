@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from sqlalchemy import select
-from sqlalchemy.orm import class_mapper, MappedColumn, object_session
+from sqlalchemy.orm import class_mapper, MappedColumn, object_session, InstrumentedAttribute
 from typing import Callable, Dict, List, Tuple, Type
 
 from .data import User
@@ -20,11 +20,11 @@ class OwnerInfo:
 
 NO_INFO = OwnerInfo("", False)
 
-def find_owner_relationship(entity_type: Type[Model]) -> MappedColumn|None:
+def find_owner_relationship(entity_type: Type[Model]) -> InstrumentedAttribute|None:
     column_attrs = class_mapper(entity_type).column_attrs
     for column_attr in column_attrs:
-        attr: MappedColumn = getattr(entity_type, column_attr.key)
-        attr_info = attr.column.info
+        attr: InstrumentedAttribute = getattr(entity_type, column_attr.key)
+        attr_info = attr.info
         if attr_info is not None and attr_info.get("owner"):
             return attr
         
@@ -36,15 +36,15 @@ def resolve_owner_info(entity_type: Type[Model]) -> OwnerInfo:
         if attr is None:
             owner_info = NO_INFO
         else:
-            optional = attr.column.info.get("optional", False)
-            owner_info = OwnerInfo(attr.column.key, optional)
+            optional = attr.info.get("optional", False)
+            owner_info = OwnerInfo(attr.key, optional)
         TYPE_OWNER_INFO[entity_type] = owner_info
     return owner_info
 
 
 @dataclass
 class OwnerChainEntry:
-    member: MappedColumn
+    member: InstrumentedAttribute
     info: OwnerInfo
 
 TYPE_OWNER_CHAIN: Dict[Type[Model], List[OwnerChainEntry]] = {}
@@ -58,8 +58,8 @@ def resolve_owner_chain(entity_type: Type[Model], entity_owner_info: OwnerInfo):
         while owner_info:
             assert current_cls not in visited, f"Circular ownership for `{entity_type}`"
             visited.add(current_cls)
-            member: MappedColumn = getattr(current_cls, owner_info.member)
-            owner_class = member.column.type.python_type
+            member: InstrumentedAttribute = getattr(current_cls, owner_info.member)
+            owner_class = member.type.python_type
             assert current_cls is not owner_class, f"Class `{current_cls}` cannot be its own owner"
             chain.append(OwnerChainEntry(member, owner_info))
             current_cls = owner_class
@@ -82,7 +82,7 @@ def traverse_chain(
     for entry in chain:
         statement = statement \
             .join(entry.member) \
-            .add_columns(entry.member.column.type.python_type)
+            .add_columns(entry.member.type.python_type)
     for key in entity_type.__mapper__.primary_key:
         primary_key_attr = getattr(entity_type, key.name)
         primary_key_value = getattr(entity, key.name)
