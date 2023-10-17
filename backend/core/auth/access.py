@@ -23,6 +23,7 @@ __all__ = [
 
 class AccessLevel(PyEnum):
     SERVICE = "SERVICE"
+    HIDDEN = "HIDDEN"
     SECURE = "SECURE"
     PRIVATE = "PRIVATE"
     PUBLIC_READABLE = "PUBLIC_READALBE"
@@ -50,6 +51,7 @@ class AccessLevel(PyEnum):
 
 ACCESS_ORDER = [
     AccessLevel.SERVICE,
+    AccessLevel.HIDDEN,
     AccessLevel.SECURE,
     AccessLevel.PRIVATE,
     AccessLevel.PUBLIC_READABLE,
