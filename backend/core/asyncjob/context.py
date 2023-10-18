@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..cronjob.engine import Scheduler
 from ..data.blobs.base import Blobs
 from ..data.context import DataContext
@@ -31,3 +33,8 @@ class AsyncJobRuntimeContext(AsyncJobContext):
         self.state = state
         self.job_id = job_id
         self.payload = payload
+
+    def get_payload(self, key: str, default: Any = None):
+        if self.payload is None:
+            return default
+        return self.payload.get(key, default)

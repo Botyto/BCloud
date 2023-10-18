@@ -4,6 +4,8 @@ from typing import Any, Callable, Dict, List
 
 from .format import Format
 
+from core.asyncjob.context import AsyncJobRuntimeContext
+
 
 class TranscoderError(Exception):
     pass
@@ -50,12 +52,17 @@ class ParamDef:
         raise TypeError(f"Unknown parameter type '{self.kind}'")
 
 
-class TranscodeContext:
+class TranscodeContext(AsyncJobRuntimeContext):
     data: bytes
     params: Dict[str, Any]
 
+    def __init__(self, base: AsyncJobRuntimeContext, data: bytes, params: Dict[str, Any]):
+        self._extend(base)
+        self.data = data
+        self.params = params
+
     def set_progress(self, value: float):
-        pass
+        raise NotImplementedError()
 
 ALL_TRANSCODERS: List["Transcoder"] = []
 
@@ -64,8 +71,8 @@ class Transcoder:
     input: Format
     output: Format
     params: List[ParamDef]
-    run: Callable[[TranscodeContext], bytes]
-    available: Callable[[], bool]|bool
+    _run: Callable[[TranscodeContext], bytes]
+    _available: Callable[[], bool]|bool
 
     def __init__(self,
         input: Format, output: Format,
@@ -76,14 +83,30 @@ class Transcoder:
         self.input = input
         self.output = output
         self.params = params
-        self.run = run
+        self._run = run
         if available is True:
-            self.available = lambda: True
+            self._available = lambda: True
         elif available is False:
-            self.available = lambda: False
+            self._available = lambda: False
         else:
-            self.available = available
+            self._available = available
         ALL_TRANSCODERS.append(self)
 
     def __repr__(self):
         return f"{self.input.mime} -> {self.output.mime}"
+    
+    def available(self):
+        if isinstance(self._available, bool):
+            return self._available
+        return self._available()
+    
+    def run(self, context: TranscodeContext):
+        return self._run(context)
+    
+    @classmethod
+    def by_input(cls, input: Format):
+        return [t for t in ALL_TRANSCODERS if t.input == input]
+    
+    @classmethod
+    def find(cls, input: Format, output: Format):
+        return next(t for t in ALL_TRANSCODERS if t.input == input and t.output == output)

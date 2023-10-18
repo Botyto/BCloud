@@ -36,6 +36,10 @@ class Format:
         return [f for f in ALL_FORMATS if f.category == category]
     
     @classmethod
+    def by_ext(cls, ext: str):
+        return next(f for f in ALL_FORMATS if ext in f.extensions)
+    
+    @classmethod
     def by_mime(cls, mime: str):
         return next(f for f in ALL_FORMATS if f.mime == mime)
 

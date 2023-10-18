@@ -17,6 +17,7 @@ class AbsolutePathExpected(Exception):
         super().__init__(f"Absolute path expected, but got '{path}'")
 
 def isvalid(path: str):
+    """Returns True if the path is valid"""
     if not path:
         return False
     storage_id, path = strip_storage(path)
@@ -25,9 +26,11 @@ def isvalid(path: str):
     return True
 
 def hasstorage(path: str):
+    """Returns True if the path has a storage ID"""
     return path.find(":") != -1
 
 def strip_storage(path: str) -> Tuple[UUID|str|None, str]:
+    """Returns the storage ID and the path without the storage ID"""
     if hasstorage(path):
         colon_idx = path.find(":")
         storage_id = path[:colon_idx]
@@ -39,13 +42,16 @@ def strip_storage(path: str) -> Tuple[UUID|str|None, str]:
     return None, path
 
 def isabs(path: str):
+    """Returns True if the path is absolute"""
     return hasstorage(path) or path.startswith(SEP)
 
 def expect_abs(path: str):
+    """Raises an exception if the path is not absolute"""
     if not isabs(path):
         raise AbsolutePathExpected(path)
 
 def join(storage_id: UUID|str|None, *parts: str):
+    """Join two or more path components, inserting '/' as needed"""
     if not parts:
         if storage_id is not None:
             return f"{storage_id}{STORAGE_SEP}{SEP}"
@@ -58,6 +64,7 @@ def join(storage_id: UUID|str|None, *parts: str):
     return SEP.join(parts)
 
 def normpath(path: str):
+    """Normalize a pathname by collapsing redundant separators and up-level references"""
     storage_id, parts = get_parts(path)
     i = 0
     while i < len(parts):
@@ -75,17 +82,20 @@ def normpath(path: str):
     return join(storage_id, *parts)
 
 def get_parts(path: str):
+    """Returns the storage ID and a list of the path components"""
     storage_id, path = strip_storage(path)
     parts = [part.strip() for part in path.split(SEP) if part]
     return storage_id, parts
 
 def dirname(path: str):
+    """Returns the same path, but without the last component"""
     sep_idx = path.rfind(SEP)
     if sep_idx == -1 or sep_idx == len(path) - 1:
         return path
     return path[:sep_idx + 1].strip()
 
 def basename(path: str):
+    """Returns the final component of a pathname"""
     sep_idx = path.rfind(SEP)
     if sep_idx == -1:
         _, path = strip_storage(path)
@@ -93,6 +103,7 @@ def basename(path: str):
     return path[sep_idx + 1:].strip()
 
 def ext(path: str):
+    """Returns the extension of the path (from the last '.' to end of the string)"""
     period_idx = path.rfind(".")
     if period_idx == -1:
         return ""
