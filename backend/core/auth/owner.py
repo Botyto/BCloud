@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from sqlalchemy import select
-from sqlalchemy.orm import class_mapper, MappedColumn, object_session, InstrumentedAttribute
+from sqlalchemy.orm import class_mapper, object_session, InstrumentedAttribute
 from typing import Callable, Dict, List, Tuple, Type
 
 from .data import User
@@ -21,9 +21,9 @@ class OwnerInfo:
 NO_INFO = OwnerInfo("", False)
 
 def find_owner_relationship(entity_type: Type[Model]) -> InstrumentedAttribute|None:
-    column_attrs = class_mapper(entity_type).column_attrs
-    for column_attr in column_attrs:
-        attr: InstrumentedAttribute = getattr(entity_type, column_attr.key)
+    relationships = class_mapper(entity_type).relationships
+    for key, relationship in relationships.items():
+        attr: InstrumentedAttribute = getattr(entity_type, key)
         attr_info = attr.info
         if attr_info is not None and attr_info.get("owner"):
             return attr
@@ -55,11 +55,11 @@ def resolve_owner_chain(entity_type: Type[Model], entity_owner_info: OwnerInfo):
         chain = []
         current_cls = entity_type
         visited = set()
-        while owner_info:
+        while owner_info and owner_info is not NO_INFO:
             assert current_cls not in visited, f"Circular ownership for `{entity_type}`"
             visited.add(current_cls)
             member: InstrumentedAttribute = getattr(current_cls, owner_info.member)
-            owner_class = member.type.python_type
+            owner_class = member.prop.mapper.class_
             assert current_cls is not owner_class, f"Class `{current_cls}` cannot be its own owner"
             chain.append(OwnerChainEntry(member, owner_info))
             current_cls = owner_class
@@ -82,21 +82,21 @@ def traverse_chain(
     for entry in chain:
         statement = statement \
             .join(entry.member) \
-            .add_columns(entry.member.type.python_type)
+            .add_columns(entry.member.prop.mapper.class_)
     for key in entity_type.__mapper__.primary_key:
         primary_key_attr = getattr(entity_type, key.name)
         primary_key_value = getattr(entity, key.name)
         statement = statement.where(primary_key_attr == primary_key_value)
     entity2 = session.scalars(statement).one()
     assert entity is entity2
-    assert isinstance(entity, User)
     owner = entity
     info = None
     for entry in chain:
         info = entry.info
         if fn is not None:
             fn(owner)
-        owner = getattr(owner, entry.member.column.key)
+        owner = getattr(owner, entry.member.key)
         if owner is None:
             break
+    assert owner is None or isinstance(owner, User)
     return owner, info

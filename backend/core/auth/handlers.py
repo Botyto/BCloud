@@ -47,6 +47,8 @@ class AuthHandlerMixin:
                 token = cookie.value
         if token is not None and token.startswith("Bearer "):
             token = token[len("Bearer "):]
+        if isinstance(token, str) and token.lower() == "null":
+            return
         return token
     
     def get_current_user(self):

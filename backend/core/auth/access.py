@@ -1,7 +1,7 @@
 from enum import Enum as PyEnum
 import logging
 from sqlalchemy import event
-from sqlalchemy.orm import class_mapper, MappedColumn, Session, QueryContext
+from sqlalchemy.orm import class_mapper, Session, QueryContext, InstrumentedAttribute
 from typing import Dict, Tuple, Type
 from uuid import UUID
 
@@ -72,16 +72,16 @@ def find_access_info(entity_type: Type[Model]) -> AccessInfo:
     if access_info is None:
         column_attrs = class_mapper(entity_type).column_attrs
         for column_attr in column_attrs:
-            attr: MappedColumn = getattr(entity_type, column_attr.key)
-            if attr.column.type.python_type == AccessInfo:
+            attr: InstrumentedAttribute = getattr(entity_type, column_attr.key)
+            if attr.type.python_type == AccessLevel:
                 if access_info is not None:
                     raise ValueError(f"Multiple access fields for entity type {entity_type}")
-                column_info = attr.column.info
-                if column_info is None:
+                attr_info = attr.info
+                if attr_info is None:
                     access_info = AccessInfo(column_attr.key)
-                    attr.column.info = {"access": access_info}
+                    attr.info = {"access": access_info}  # type: ignore
                 else:
-                    access_info = attr.column.info["access"]
+                    access_info = attr.info.get("access")
         access_info = access_info or NO_INFO
         TYPE_ACCESS_INFO[entity_type] = access_info
     return access_info
@@ -106,7 +106,7 @@ def get_access_level_and_owner(entity: Model) -> Tuple[AccessLevel, User|None, O
     owner, owner_info = traverse_chain(entity, update_access)
     return max_access, owner, owner_info
 
-def ensure_access(user_id: UUID, target: Model, min_access: AccessLevel, should_raise: bool = True):
+def ensure_access(user_id: UUID|None, target: Model, min_access: AccessLevel, should_raise: bool = True):
     access, owner, owner_info = get_access_level_and_owner(target)
     if owner is None:
         if owner_info is not None and not owner_info.optional:
@@ -120,11 +120,11 @@ def ensure_access(user_id: UUID, target: Model, min_access: AccessLevel, should_
                 return False
     return True
 
-def will_read(user_id: UUID, target: Model, should_raise: bool = True):
+def will_read(user_id: UUID|None, target: Model, should_raise: bool = True):
     assert target is not None
     return ensure_access(user_id, target, AccessLevel.PUBLIC_READABLE, should_raise)
 
-def will_write(user_id: UUID, target: Model, should_raise: bool = True):
+def will_write(user_id: UUID|None, target: Model, should_raise: bool = True):
     assert target is not None
     if user_id is None:
         raise AuthError("Not authenticated")
@@ -139,16 +139,13 @@ class EnsureAccessContextManager:
         self.session = session
 
     def __enter__(self):
-        assert self.TAG not in self.session.info, "Already ensuring access"
-        self.session.info[self.TAG] = True
+        count = self.session.info.get(self.TAG, 0)
+        self.session.info[self.TAG] = count + 1
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.session.info.pop(self.TAG)
+        self.session.info[self.TAG] -= 1
 
 def resolve_user_id(session: Session):
-    # TODO disable access checks due to manual management
-    if session.info.get(EnsureAccessContextManager.TAG):
-        return
     handler = session.info.get("handler")
     if handler is None:
         return
@@ -159,17 +156,17 @@ def resolve_user_id(session: Session):
 @event.listens_for(Model, "load", propagate=True)
 def on_instance_load(target: Model, context: QueryContext):
     session: Session = context.session
-    user_id = resolve_user_id(session)
-    if user_id is None:
+    if session.info.get(EnsureAccessContextManager.TAG, 0) > 0:
         return
+    user_id = resolve_user_id(session)
     with EnsureAccessContextManager(session):
         will_read(user_id, target)
 
 @event.listens_for(Session, "before_flush")
 def on_before_flush(session: Session, flush_context, instances):
-    user_id = resolve_user_id(session)
-    if user_id is None:
+    if session.info.get(EnsureAccessContextManager.TAG, 0) > 0:
         return
+    user_id = resolve_user_id(session)
     with EnsureAccessContextManager(session):
         for target in session.dirty:
             will_write(user_id, target)

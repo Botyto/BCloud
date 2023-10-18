@@ -36,7 +36,7 @@ class FileMetadata(Model):
     parent: Mapped["FileMetadata"] = relationship("FileMetadata", remote_side=[id])
     children: Mapped[List["FileMetadata"]] = relationship("FileMetadata", uselist=True, back_populates="parent")
     storage_id: Mapped[PyUUID] = mapped_column(ForeignKey("FileStorage.id", onupdate="CASCADE", ondelete="CASCADE"))
-    storage: Mapped["FileStorage"] = relationship("FileStorage", foreign_keys=[storage_id])
+    storage: Mapped["FileStorage"] = relationship("FileStorage", foreign_keys=[storage_id], info={"owner": True})
     root_storage_id: Mapped[PyUUID] = mapped_column(ForeignKey("FileStorage.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=True, default=None)
     root_storage: Mapped["FileStorage"] = relationship("FileStorage", foreign_keys=[root_storage_id])
     atime_utc: Mapped[datetime] = mapped_column(DateTime)
@@ -122,7 +122,7 @@ class FileStorage(Model):
     __tablename__ = "FileStorage"
     id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True, default=uuid4)
     user_id: Mapped[PyUUID] = mapped_column(ForeignKey(User.id, onupdate="CASCADE", ondelete="CASCADE"))
-    user: Mapped[User] = relationship(User)
+    user: Mapped[User] = relationship(User, info={"owner": True})
     name: Mapped[str] = mapped_column(String(512))
     slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info={"slug": True})
     all_files: Mapped[List[FileMetadata]] = relationship(FileMetadata, uselist=True, back_populates="storage", foreign_keys=[FileMetadata.storage_id])

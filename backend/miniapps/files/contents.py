@@ -2,7 +2,6 @@ from .tools import fspath
 from .tools.files import FileManager
 
 from core.api.modules.rest import RestMiniappModule, get, post, ApiResponse
-from core.auth.handlers import AuthError
 
 
 class ContentsModule(RestMiniappModule):
@@ -11,8 +10,6 @@ class ContentsModule(RestMiniappModule):
     @property
     def manager(self):
         if self._manager is None:
-            if self.user_id is None:
-                raise AuthError()
             self._manager = FileManager(self.context.files, self.user_id, self.session)
         return self._manager
 
@@ -37,7 +34,7 @@ class ContentsModule(RestMiniappModule):
         try:
             content = self.contents.read(file)
         except FileNotFoundError:
-            response.set_status(404)
+            response.set_status(204)
             return response
         disposition = disposition_fmt.format(file.name)
         response.set_header("Content-Disposition", disposition)
