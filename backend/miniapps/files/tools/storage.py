@@ -14,16 +14,16 @@ class StorageManager:
 
     user_id: UUID|None
     session: Session
+    service: bool = False
 
-    def __init__(self, user_id: UUID|None, session: Session, allow_no_user: bool = False):
-        if not allow_no_user and user_id is None:
-            raise AuthError()
+    def __init__(self, user_id: UUID|None, session: Session, service: bool = False):
         self.user_id = user_id
         self.session = session
+        self.service = service
 
     @classmethod
-    def without_user(cls, user_id: UUID|None, session: Session):
-        return cls(user_id, session, allow_no_user=True)
+    def for_service(cls, user_id: UUID|None, session: Session):
+        return cls(user_id, session, service=True)
 
     def list(self, pages: PagesInput):
         statement = select(FileStorage)

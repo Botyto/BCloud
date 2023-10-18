@@ -125,7 +125,9 @@ def will_read(user_id: UUID, target: Model, should_raise: bool = True):
     return ensure_access(user_id, target, AccessLevel.PUBLIC_READABLE, should_raise)
 
 def will_write(user_id: UUID, target: Model, should_raise: bool = True):
-    assert user_id is not None and target is not None
+    assert target is not None
+    if user_id is None:
+        raise AuthError("Not authenticated")
     return ensure_access(user_id, target, AccessLevel.PUBLIC_WRITABLE, should_raise)
 
 
@@ -151,11 +153,8 @@ def resolve_user_id(session: Session):
     if handler is None:
         return
     if not isinstance(handler, AuthHandlerMixin):
-        raise AuthError("Not authenticated")
-    user_id = handler.get_current_user()
-    if user_id is None:
-        raise AuthError("Not authenticated")
-    return user_id
+        return
+    return handler.get_current_user()
 
 @event.listens_for(Model, "load", propagate=True)
 def on_instance_load(target: Model, context: QueryContext):

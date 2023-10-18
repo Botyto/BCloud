@@ -21,6 +21,7 @@ class FileManager:
     blobs: Blobs
     user_id: UUID|None
     session: Session
+    service: bool = False
     _contents: FileContents|None = None
     _storage: StorageManager|None = None
 
@@ -33,19 +34,18 @@ class FileManager:
     @property
     def storage(self):
         if self._storage is None:
-            self._storage = StorageManager(self.user_id, self.session)
+            self._storage = StorageManager(self.user_id, self.session, service=self.service)
         return self._storage
 
-    def __init__(self, blobs: Blobs, user_id: UUID|None, session: Session, allow_no_user: bool = False):
-        if not allow_no_user and user_id is None:
-            raise AuthError()
+    def __init__(self, blobs: Blobs, user_id: UUID|None, session: Session, service: bool = False):
         self.blobs = blobs
         self.user_id = user_id
         self.session = session
+        self.service = service
 
     @classmethod
-    def without_user(cls, blobs: Blobs, session: Session):
-        return cls(blobs, None, session, allow_no_user=True)
+    def for_service(cls, blobs: Blobs, session: Session):
+        return cls(blobs, None, session, service=True)
 
     def _follow_link(self, metadata: FileMetadata|None) -> FileMetadata|None:
         if metadata is not None and metadata.type == FileType.LINK:
@@ -74,8 +74,6 @@ class FileManager:
         statement = select(FileMetadata) \
             .where(FileMetadata.id == id)
         file = self.session.scalars(statement).one()
-        if self.user_id is not None and file.user_id != self.user_id:
-            raise AuthError()
         return file
     
     def exists(self, path: str):
