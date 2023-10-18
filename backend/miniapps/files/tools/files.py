@@ -81,6 +81,18 @@ class FileManager:
     def exists(self, path: str):
         return self.by_path(path) is not None
     
+    def unique_name(self, path: str):
+        if not self.exists(path):
+            return path
+        ext = fspath.ext(path)
+        base_path = path[:-len(ext)]
+        i = 2
+        while True:
+            new_path = f"{base_path} ({i}){ext}"
+            if not self.exists(new_path):
+                return new_path
+            i += 1
+    
     def makefile(self, path: str, mime_type: str|None = None):
         if mime_type is not None:
             ensure_str_fit("MIME-Type", mime_type, FileMetadata.mime_type)
