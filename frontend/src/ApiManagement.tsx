@@ -17,7 +17,7 @@ function ApiManagement(props: any) {
 		});
 		
 		const httpLink = new HttpLink({
-			uri: `http://${SERVER_HOST}/graphql`,
+			uri: `http://${SERVER_HOST}/api/graphql`,
 			fetchOptions: {
 				crossOriginIsolated: false,
 			}
@@ -49,7 +49,7 @@ function ApiManagement(props: any) {
 		});
 		
 		const wsLink = new GraphQLWsLink(createClient({
-			url: `ws://${SERVER_HOST}/graphql/subscription`,
+			url: `ws://${SERVER_HOST}/api/graphql/subscription`,
 			connectionParams: () => {
 				return {
 					authToken: localStorage.getItem('authentication-token'),

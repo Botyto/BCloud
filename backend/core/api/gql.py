@@ -8,14 +8,14 @@ def empty_func(_):
     pass
 
 
-@urlspec(r"/graphql", None, "graphql")
+@urlspec(r"/api/graphql", None, "graphql")
 class GraphQLModule(ApiMiniappModule, ApiHandlerMixin, BaseGraphQLHandler):
     @property
     def graphql_context(self):
         return self.api_context
 
 
-@urlspec(r"/graphql/subscription", None, "graphql/subscription")
+@urlspec(r"/api/graphql/subscription", None, "graphql/subscription")
 class GraphQLSubscriptionModule(ApiMiniappModule, ApiHandlerMixin, BaseGraphQLSubscriptionHandler):
     @property
     def graphql_context(self):
@@ -27,7 +27,7 @@ class GraphQLSubscriptionModule(ApiMiniappModule, ApiHandlerMixin, BaseGraphQLSu
         return super()._get_login_jwt()
 
 
-@urlspec(r"/graphql/schema", None, "graphql/schema")
+@urlspec(r"/api/graphql/schema", None, "graphql/schema")
 class GraphQLSchemaModule(ApiMiniappModule, BaseSchemaHandler):
     pass
 
