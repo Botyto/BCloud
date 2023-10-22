@@ -79,7 +79,16 @@ export function Dialog(props: DialogProps|any) {
     function handleClick(e: React.MouseEvent) {
         if (!props.closeOnOutside) { return; }
         if (!ref.current) { return; }
-        if (isClickInsideRectangle(e, ref.current)) { return; }
+        if (e.target === ref.current) {
+            if (isClickInsideRectangle(e, ref.current)) { return; }
+        } else {
+            // don't close if target is child of dialog
+            let target = e.target as HTMLElement;
+            while (target) {
+                if (target === ref.current) { return; }
+                target = target.parentElement!;
+            }
+        }
         props.onClose?.();
         props.close();
     }

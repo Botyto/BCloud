@@ -100,7 +100,6 @@ export function FileEntry(props: FileEntryProps) {
         props.onAddLink();
     }
 
-
     return <li style={{ border: "solid 1px black" }}>
         <input
             type="checkbox"

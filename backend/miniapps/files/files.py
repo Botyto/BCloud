@@ -1,11 +1,12 @@
 from sqlalchemy.orm import Session
 from uuid import UUID
 
+
 from .data import FileMetadata
 from .tools.files import FileManager
 
 from core.api.modules.gql import GqlMiniappModule, query, mutation
-from core.auth.handlers import AuthError
+from core.auth.access import AccessLevel
 from core.graphql.result import SuccessResult
 from core.miniapp.sql import MiniappSqlEvent
 
@@ -65,6 +66,15 @@ class FilesModule(GqlMiniappModule):
     def rename(self, src: str, dst: str) -> FileMetadata:
         self.log_activity("files.rename", {"src": src, "dst": dst})
         return self.manager.rename(src, dst)
+
+    @mutation()
+    def set_access(self, path: str, access: AccessLevel) -> FileMetadata:
+        file = self.manager.by_path(path)
+        if file is None:
+            raise FileNotFoundError(path)
+        file.access = access
+        self.log_activity("files.access", {"path": path, "access": str(access)})
+        return file
 
 
 class DeleteFileEvent(MiniappSqlEvent):

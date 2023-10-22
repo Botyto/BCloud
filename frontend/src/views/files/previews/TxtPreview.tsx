@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import Loading from '../../../components/Loading';
-import { PreviewProps, Preview, exactMimeType } from './preview';
+import { PreviewProps, Preview, primaryMimeType } from './preview';
 
 function TxtPreview(props: PreviewProps) {
     const [contents, setContents] = React.useState<string|undefined>(undefined);
@@ -25,4 +25,4 @@ function TxtPreview(props: PreviewProps) {
     );
 }
 
-export default new Preview(exactMimeType("text/plain"), TxtPreview, true);
+export default new Preview(primaryMimeType("text"), TxtPreview, true);

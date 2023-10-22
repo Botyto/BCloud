@@ -10,6 +10,7 @@ fragment FileDetails on FileMetadata {
     mtimeUtc
     ctimeUtc
     type
+    access
 }`;
 
 const FILES_LIST = gql`
@@ -110,6 +111,20 @@ mutation filesLink($path: String!, $target: String!) {
 
 export function useFileLinkMutation() {
     return useMutation(FILES_LINK, {
+        refetchQueries: [FILES_LIST],
+    });
+}
+
+const FILES_SET_ACCESS = gql`
+${FILE_DETAILS}
+mutation filesDelete($path: String!, $access: InputEnumAccessLevel!) {
+    filesFilesSetAccess(path: $path, access: $access) {
+        ...FileDetails
+    }
+}`;
+
+export function useFileSetAccessMutation() {
+    return useMutation(FILES_SET_ACCESS, {
         refetchQueries: [FILES_LIST],
     });
 }

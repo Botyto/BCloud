@@ -6,7 +6,7 @@ import { FileEntryHeader, FileEntry } from './FileEntry';
 import DirControls from './DirControls';
 import { Dialog, bindState, useDialogState } from '../../../../components/Dialog';
 import Picker from '../../picker/Picker';
-import { useFilesCopyMutation, useFilesRenameMutation, useFileDeleteMutation, useFileLinkMutation } from '../../filesApi';
+import { useFilesCopyMutation, useFilesRenameMutation, useFileDeleteMutation, useFileLinkMutation, useFileSetAccessMutation } from '../../filesApi';
 
 export default function DirectoryContents(props: ContentsProps) {
     const { t } = useTranslation("common");
@@ -50,7 +50,7 @@ export default function DirectoryContents(props: ContentsProps) {
     const [pickerInputDefault, setPickerInputDefault] = useState<string>("");
     const [pickerShowTypes, setPickerShowTypes] = useState<string[]|undefined>(undefined);
     const picker = useDialogState();
-
+    
     function openPicker(
         paths: string[],
         title: string,
@@ -58,8 +58,8 @@ export default function DirectoryContents(props: ContentsProps) {
         action: (src: string[], dst: string)=>void,
         inputLabel: string = "",
         inputDefault: string = "",
-        showTypes: string[]|undefined = undefined,
-    ) {
+        showTypes: string[]|undefined = undefined)
+    {
         setPickerFiles(paths);
         setPickerTitle(title);
         setPickerActionName(actionName);
@@ -69,7 +69,7 @@ export default function DirectoryContents(props: ContentsProps) {
         setPickerShowTypes(showTypes);
         picker.open();
     }
-
+    
     function resetPicker() {
         setPickerFiles([]);
         setPickerTitle("");
@@ -79,9 +79,15 @@ export default function DirectoryContents(props: ContentsProps) {
         setPickerInputDefault("");
         setPickerShowTypes(undefined);
     }
+
+    // Share
+    
+    const [sharePath, setSharePath] = useState<string>("");
+    const [shareAccess, setShareAccess] = useState<string>("");
+    const share = useDialogState();
     
     // Actions
-
+        
     const [renameFile, renameFileVars] = useFilesRenameMutation();
     function onRename(path: string) {
         const originalName = fspath.baseName(path);
@@ -165,7 +171,28 @@ export default function DirectoryContents(props: ContentsProps) {
     }
 
     function onShare(path: string) {
-        alert("Not implemented!");
+        setSharePath(path);
+        const basename = fspath.baseName(path);
+        const file = props.file.children.find((f: any) => f.name === basename);
+        setShareAccess(file.access);
+        share.open();
+    }
+
+    const [setAccess, setAccessVars] = useFileSetAccessMutation();
+    function doShare(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        setAccess({
+            variables: {
+                path: sharePath,
+                access: shareAccess,
+            },
+            onCompleted: () => {
+                share.close();
+            },
+            onError: (e) => {
+                alert("Error:\n" + e.message);
+            },
+        })
     }
 
     const [makeLink, makeLinkVars] = useFileLinkMutation();
@@ -228,6 +255,19 @@ export default function DirectoryContents(props: ContentsProps) {
                 )
             }
         </div>
+        <Dialog {...bindState(share)}>
+            <form onSubmit={doShare}>
+                <select value={shareAccess} onChange={(e) => setShareAccess(e.target.value)}>
+                    <option value="SERVICE" disabled>Service</option>
+                    <option value="HIDDEN">Hidden</option>
+                    <option value="SECURE">Secured</option>
+                    <option value="PRIVATE">Only you can see</option>
+                    <option value="PUBLIC_READABLE">Everyone can see</option>
+                    <option value="PUBLIC_WRITABLE">Everyone can edit</option>
+                </select>
+                <input type="submit" value="Save"/>
+            </form>
+        </Dialog>
         <Dialog {...bindState(picker)}>
             <Picker
                 title={pickerTitle}
