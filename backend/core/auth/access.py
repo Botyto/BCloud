@@ -126,8 +126,6 @@ def will_read(user_id: UUID|None, target: Model, should_raise: bool = True):
 
 def will_write(user_id: UUID|None, target: Model, should_raise: bool = True):
     assert target is not None
-    if user_id is None:
-        raise AuthError("Not authenticated")
     return ensure_access(user_id, target, AccessLevel.PUBLIC_WRITABLE, should_raise)
 
 
