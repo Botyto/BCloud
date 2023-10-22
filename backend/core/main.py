@@ -36,9 +36,12 @@ env.add_os_env(400)
 os.makedirs(env.appdata_path, exist_ok=True)
 os.makedirs(env.temp_path, exist_ok=True)
 
-clear_old_logs("logs", timedelta(days=1))
+LOGS_PATH = "logs"
+logs_max_age_days = cast(int|None, env.get("LOG_MAX_AGE_DAYS"))
+if logs_max_age_days is not None:
+    clear_old_logs(LOGS_PATH, timedelta(days=logs_max_age_days))
 log_level = logging.DEBUG if env.debug else logging.INFO
-setup_logging(log_level, "logs")
+setup_logging(log_level, LOGS_PATH)
 logger = logging.getLogger(__name__)
 cmdline_str = " ".join(sys.argv[1:])
 if cmdline_str:
