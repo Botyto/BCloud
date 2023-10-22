@@ -1,3 +1,4 @@
 sqlalchemy==2.0.20
 alembic
 unidecode
+mysqlclient
