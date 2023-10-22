@@ -1,4 +1,7 @@
 sqlalchemy==2.0.20
 alembic
 unidecode
+mariadb
+mysql-connector-python
+pymysql
 mysqlclient
