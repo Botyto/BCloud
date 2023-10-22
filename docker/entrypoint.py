@@ -57,10 +57,6 @@ def start_backend():
     execpy(BG, main_path, "", prefix="backend", cwd=workdir)
 
 def main():
-    print(os.getcwd())
-    for file in os.listdir(os.getcwd()):
-        print(file)
-
     logging.info("Starting")
     start_backend()
 
