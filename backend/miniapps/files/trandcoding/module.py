@@ -133,9 +133,10 @@ class TranscodingHandler(AsyncJobHandler):
         dst_format = Format.by_ext(dst_ext)
         transcoder = Transcoder.find(src_format, dst_format)
         with self.context.database.make_session() as session:
-            files = FileManager.without_user(self.context.files, session)
+            files = FileManager.for_service(self.context.files, session)
             file_id = UUID(self.context.get_payload("file_id"))
             src_file = files.by_id(file_id)
+            user_id = src_file.user_id
             dst_path = self.__make_dst_path(src_file.abspath, dst_ext, files)
             contents = FileContents(self.context.files, NAMESPACE_CONTENT)
             src_data = contents.read(src_file)
@@ -145,7 +146,7 @@ class TranscodingHandler(AsyncJobHandler):
         dst_data = transcoder.run(context)
         del src_data
         with self.context.database.make_session() as session:
-            files = FileManager.without_user(self.context.files, session)
+            files = FileManager(self.context.files, user_id, session)
             dst_file = files.makefile(dst_path, dst_format.mime)
             contents = FileContents(self.context.files, NAMESPACE_CONTENT)
             contents.write(dst_file, dst_data)
