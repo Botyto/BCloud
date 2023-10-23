@@ -84,12 +84,7 @@ class Transcoder:
         self.output = output
         self.params = params
         self._run = run
-        if available is True:
-            self._available = lambda: True
-        elif available is False:
-            self._available = lambda: False
-        else:
-            self._available = available
+        self._available = available
         ALL_TRANSCODERS.append(self)
 
     def __repr__(self):
