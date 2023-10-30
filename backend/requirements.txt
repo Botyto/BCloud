@@ -1,1 +1,2 @@
 -r core/requirements.txt
+-r miniapps/requirements.txt
