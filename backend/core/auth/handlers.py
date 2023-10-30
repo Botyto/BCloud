@@ -9,6 +9,7 @@ from .context import AuthContext
 from .data import Login
 
 from ..http.context import ServerContext
+from ..data.sql.columns import utcnow_tz
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ class AuthHandlerMixin:
             if self.sensitive_authentication_errors:
                 raise AuthError("Login disabled")
             raise AuthError()
-        now = datetime.utcnow().replace(tzinfo=timezone.utc)
+        now = utcnow_tz()
         if login.expire_at_utc.replace(tzinfo=timezone.utc) < now:
             if self.sensitive_authentication_errors:
                 raise AuthError("Login expired")

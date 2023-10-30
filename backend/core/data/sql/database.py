@@ -4,7 +4,6 @@ from sqlalchemy import create_engine, Engine, event, DateTime, Column
 from sqlalchemy.orm import DeclarativeBase, MappedColumn, sessionmaker, Session
 from typing import List
 
-from .settings import SqlSettings
 from .slugs import ensure_slug_setup
 
 from ..context import DataContext
@@ -32,16 +31,7 @@ class Database:
 
     @property
     def connection_string(self):
-        db_host = self.context.sql.host
-        if self.context.sql.is_sqlite:
-            return f"sqlite:///{db_host}"
-        else:
-            db_name = self.context.sql.database
-            if not db_name:
-                db_name = SqlSettings.default_database(self.context.env.production)
-            db_user = self.context.sql.username
-            db_pass = self.context.sql.password
-            return f"mariadb://{db_user}:{db_pass}@{db_host}/{db_name}?charset=utf8mb4"
+        return self.context.sql.connection_string
 
     def make_session(self, info: dict|None = None) -> Session:
         return self._sessionmaker(info=info)

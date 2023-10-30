@@ -53,19 +53,17 @@ def load_miniapps():
     from .api.gql import GraphQLMiniapp
     from miniapps.profile.app import ProfileMiniapp
     from miniapps.files.app import FilesMiniapp
+    from miniapps.notes.app import NotesMiniapp
     return [
         GraphQLMiniapp,
         ProfileMiniapp,
         FilesMiniapp,
+        NotesMiniapp,
     ]
 
 def build_app():
     sql_settings = SqlSettings(
-        host=cast(str, env.get("DB_HOST", "localhost")),
-        port=cast(int, env.get("DB_PORT", 3306)),
-        username=cast(str, env.get("DB_USERNAME", "bcloud")),
-        password=cast(str, env.get("DB_PASSWORD", "bcloud")),
-        database=cast(str, env.get("DB_DATABASE", "bcloud")),
+        cast(str, env.get("DB_CONNECTION", "sqlite:///./data.db")),
     )
     blob_settings = BlobSettings(
         fs_root=os.path.abspath(cast(str, env.get("BLOB_FS_ROOT"))),
@@ -104,11 +102,7 @@ class MigrationAction(Enum):
 
 def run_migration(action: MigrationAction, title: str|None = None):
     sql_settings = SqlSettings(
-        host=cast(str, env.get("DB_HOST", "localhost")),
-        port=cast(int, env.get("DB_PORT", 3306)),
-        username=cast(str, env.get("DB_ADMIN_USERNAME", env.get("DB_USERNAME", "bcloud"))),
-        password=cast(str, env.get("DB_ADMIN_PASSWORD", env.get("DB_PASSWORD", "bcloud"))),
-        database=cast(str, env.get("DB_DATABASE", "bcloud")),
+        cast(str, env.get("DB_ADMIN_CONNECTION", "sqlite:///./data.db")),
     )
     blob_settings = BlobSettings(
         fs_root=cast(str, env.get("BLOB_FS_ROOT", ".")),
