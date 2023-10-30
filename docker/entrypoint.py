@@ -56,9 +56,14 @@ def start_backend():
     workdir = os.path.join("/", "data")
     execpy(BG, main_path, "", prefix="backend", cwd=workdir)
 
+def start_nginx():
+    logging.info("Starting nginx")
+    exec(BG, "nginx", prefix="nginx")
+
 def main():
     logging.info("Starting")
     start_backend()
+    start_nginx()
 
     logging.info("Done")
     wait_all()
