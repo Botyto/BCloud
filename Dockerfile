@@ -11,6 +11,9 @@ RUN git sparse-checkout init
 RUN git sparse-checkout set frontend
 RUN git checkout HEAD
 
+ARG PUBLIC_URL
+RUN echo "VITE_BACKEND_URL=$PUBLIC_URL" > /app/frontend/.env
+
 WORKDIR /app/frontend
 RUN npm install
 RUN npm run build
