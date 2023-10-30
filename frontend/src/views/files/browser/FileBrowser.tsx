@@ -37,9 +37,9 @@ export default function FileBrowser(props: ContentsProps) {
         });
     }
     
-    const SERVER_HOST = 'localhost:8080';
-    const downloadUrl = "http://" + fspath.pathToUrl(`${SERVER_HOST}/api/files/download/:storageId/*`, props.path)
-    const contentUrl = "http://" + fspath.pathToUrl(`${SERVER_HOST}/api/files/contents/:storageId/*`, props.path)
+    const SERVER_HOST = import.meta.env.VITE_BACKEND_URL;
+    const downloadUrl = fspath.pathToUrl(`${SERVER_HOST}/api/files/download/:storageId/*`, props.path)
+    const contentUrl = fspath.pathToUrl(`${SERVER_HOST}/api/files/contents/:storageId/*`, props.path)
     const name = fspath.baseName(props.path);
     const Preview = GetPreview(props.file, [
         TxtPreview,

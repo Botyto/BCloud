@@ -106,8 +106,8 @@ export default function DirControls(props: DirControlsProps) {
         for (var i = 0; i < uploadRef.current.files.length; ++i) {
             const file = uploadRef.current.files[i];
             const path = fspath.join(storageId, [...parts, file.name]);
-            const SERVER_HOST = 'localhost:8080';
-            const contentUrl = "http://" + fspath.pathToUrl(`${SERVER_HOST}/api/files/contents/:storageId/*`, path)
+            const SERVER_HOST = import.meta.env.VITE_BACKEND_URL;
+            const contentUrl = fspath.pathToUrl(`${SERVER_HOST}/api/files/contents/:storageId/*`, path)
             addUploadFile(file);
             makefile({
                 variables: { path, mimeType: file.type },

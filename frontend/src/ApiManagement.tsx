@@ -8,7 +8,7 @@ import OfflineLink from 'apollo-link-offline';
 import Loading from './components/Loading';
 
 function ApiManagement(props: any) {
-	const SERVER_HOST = 'localhost:8080';
+	const SERVER_HOST = import.meta.env.VITE_BACKEND_URL;
 	const [client, setClient] = useState<ApolloClient<NormalizedCacheObject>|null>(null);
 	
 	useEffect(() => {
@@ -17,7 +17,7 @@ function ApiManagement(props: any) {
 		});
 		
 		const httpLink = new HttpLink({
-			uri: `http://${SERVER_HOST}/api/graphql`,
+			uri: `${SERVER_HOST}/api/graphql`,
 			fetchOptions: {
 				crossOriginIsolated: false,
 			}
