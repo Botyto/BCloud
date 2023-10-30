@@ -26,7 +26,7 @@ RUN mkdir -p /var/lib/nginx && chmod -R 777 /var/lib/nginx
 RUN mkdir -p /var/log/nginx && chmod -R 777 /var/log/nginx
 RUN rm /etc/init.d/nginx
 
-RUN apt-get install -y libmariadb-dev libmariadb3 python-mysqldb
+RUN apt-get install -y libmariadb-dev libmariadb3
 
 ARG GITHUB_ACCESS_TOKEN
 RUN git clone --no-checkout https://$GITHUB_ACCESS_TOKEN@github.com/Botyto/BCloud.git /app
