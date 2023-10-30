@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import fspath from '../../fspath';
 import { useFilesMakedirsMutation, useFilesMakefileMutation } from '../../filesApi';
 import { Dialog, bindState, useDialogState } from '../../../../components/Dialog';
+import { SERVER_HOST } from '../../../../ApiManagement';
 
 const CREATING = "creating";
 const UPLOADING = "uploading";
@@ -106,7 +107,6 @@ export default function DirControls(props: DirControlsProps) {
         for (var i = 0; i < uploadRef.current.files.length; ++i) {
             const file = uploadRef.current.files[i];
             const path = fspath.join(storageId, [...parts, file.name]);
-            const SERVER_HOST = import.meta.env.VITE_BACKEND_URL;
             const contentUrl = fspath.pathToUrl(`${SERVER_HOST}/api/files/contents/:storageId/*`, path)
             addUploadFile(file);
             makefile({

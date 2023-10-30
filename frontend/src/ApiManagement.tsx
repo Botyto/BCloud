@@ -7,8 +7,9 @@ import { persistCache, LocalStorageWrapper  } from 'apollo3-cache-persist';
 import OfflineLink from 'apollo-link-offline';
 import Loading from './components/Loading';
 
+const SERVER_HOST: string = import.meta.env.VITE_BACKEND_URL;
+
 function ApiManagement(props: any) {
-	const SERVER_HOST = import.meta.env.VITE_BACKEND_URL;
 	const [client, setClient] = useState<ApolloClient<NormalizedCacheObject>|null>(null);
 	
 	useEffect(() => {
@@ -98,4 +99,4 @@ function ApiManagement(props: any) {
 	}
 }
 
-export { ApiManagement };
+export { ApiManagement, SERVER_HOST };

@@ -10,6 +10,7 @@ import VideoPreview from '../previews/VideoPreview';
 import ImagePreview from '../previews/ImagePreview';
 import PdfPreview from '../previews/PdfPreview';
 import ArchivePreview from '../previews/ArchivePreview';
+import { SERVER_HOST } from '../../../ApiManagement';
 
 export default function FileBrowser(props: ContentsProps) {
     const { t } = useTranslation("common");
@@ -37,7 +38,6 @@ export default function FileBrowser(props: ContentsProps) {
         });
     }
     
-    const SERVER_HOST = import.meta.env.VITE_BACKEND_URL;
     const downloadUrl = fspath.pathToUrl(`${SERVER_HOST}/api/files/download/:storageId/*`, props.path)
     const contentUrl = fspath.pathToUrl(`${SERVER_HOST}/api/files/contents/:storageId/*`, props.path)
     const name = fspath.baseName(props.path);
