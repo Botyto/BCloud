@@ -26,22 +26,36 @@ class NotesNote(Model):
     favorite: Mapped[bool] = mapped_column(Boolean, default=False)
     archived: Mapped[bool] = mapped_column(Boolean, default=False)
     tags: Mapped[List["NotesTag"]] = relationship("NotesTag", uselist=True, back_populates="note")
-    preview_id: Mapped[PyUUID] = mapped_column(UUID, ForeignKey("FileMetadata.id", onupdate="CASCADE", ondelete="CASCADE"))
-    preview: Mapped["FileMetadata"] = relationship("FileMetadata", foreign_keys=[preview_id])
+    files: Mapped[List["NotesFile"]] = relationship("NotesFile", uselist=True, back_populates="note")
+
+
+class FileKind(PyEnum):
+    ATTACHMENT = "attachment"
+    PREVIEW = "preview"
+
+
+class NotesFile(Model):
+    __tablename__ = "NotesFile"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    note_id: Mapped[PyUUID] = mapped_column(ForeignKey(NotesNote.id, onupdate="CASCADE", ondelete="CASCADE"))
+    note: Mapped[NotesNote] = relationship(NotesNote, info={"owner": True}, back_populates="files")
+    kind: Mapped[FileKind] = mapped_column(Enum(FileKind))
+    file_id: Mapped[PyUUID] = mapped_column(UUID, ForeignKey("FileMetadata.id", onupdate="CASCADE", ondelete="CASCADE"))
+    file: Mapped["FileMetadata"] = relationship("FileMetadata", foreign_keys=[file_id])
 
 
 class NotesTag(Model):
     __tablename__ = "NotesTag"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     note_id: Mapped[PyUUID] = mapped_column(ForeignKey(NotesNote.id, onupdate="CASCADE", ondelete="CASCADE"))
-    note: Mapped[NotesNote] = relationship(NotesNote, info={"owner": True})
+    note: Mapped[NotesNote] = relationship(NotesNote, info={"owner": True}, back_populates="tags")
     tag: Mapped[str] = mapped_column(String(128))
 
 
 class CollectionView(PyEnum):
     NOTES = "notes"
-    LINKS = "links"
-    STREAM = "stream"
+    BOOKMARKS = "bookmars"
+    CHAT = "chat"
 
 
 class NotesCollection(Model):
