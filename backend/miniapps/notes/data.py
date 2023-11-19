@@ -1,11 +1,11 @@
-from enum import Enum
+from enum import Enum as PyEnum
 from datetime import datetime
 from sqlalchemy import ForeignKey
 from typing import List
 from uuid import UUID as PyUUID, uuid4
 
 from core.auth.data import User
-from core.data.sql.columns import Boolean, DateTime, Float, Integer, String, UUID, STRING_MAX, utcnow_tz
+from core.data.sql.columns import Boolean, DateTime, Enum, Float, Integer, String, UUID, STRING_MAX, utcnow_tz
 from core.data.sql.columns import mapped_column, relationship, Mapped
 from core.data.sql.database import Model
 from core.data.sql.slugs import SLUG_LENGTH
@@ -21,10 +21,10 @@ class NotesNote(Model):
     created_at_utc: Mapped[datetime] = mapped_column(DateTime, default=utcnow_tz)
     slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info={"slug": True})
     sort_key: Mapped[float] = mapped_column(Float, default=0.0)
-    title: Mapped[str] = mapped_column(String(2048))
+    title: Mapped[str] = mapped_column(String(4096))
     content: Mapped[str] = mapped_column(String(STRING_MAX))
     favorite: Mapped[bool] = mapped_column(Boolean, default=False)
-    hidden: Mapped[bool] = mapped_column(Boolean, default=False)
+    archived: Mapped[bool] = mapped_column(Boolean, default=False)
     tags: Mapped[List["NotesTag"]] = relationship("NotesTag", uselist=True, back_populates="note")
     preview_id: Mapped[PyUUID] = mapped_column(UUID, ForeignKey("FileMetadata.id", onupdate="CASCADE", ondelete="CASCADE"))
     preview: Mapped["FileMetadata"] = relationship("FileMetadata", foreign_keys=[preview_id])
@@ -35,10 +35,10 @@ class NotesTag(Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     note_id: Mapped[PyUUID] = mapped_column(ForeignKey(NotesNote.id, onupdate="CASCADE", ondelete="CASCADE"))
     note: Mapped[NotesNote] = relationship(NotesNote, info={"owner": True})
-    tag: Mapped[str] = mapped_column(String(64))
+    tag: Mapped[str] = mapped_column(String(128))
 
 
-class CollectionView(Enum):
+class CollectionView(PyEnum):
     NOTES = "notes"
     LINKS = "links"
     STREAM = "stream"
@@ -54,5 +54,5 @@ class NotesCollection(Model):
     parent: Mapped["NotesCollection"|None] = relationship("NotesCollection", remote_side=[id])
     children: Mapped[List["NotesCollection"]] = relationship("NotesCollection", uselist=True, back_populates="parent")
     slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info={"slug": True})
-    name: Mapped[str] = mapped_column(String(64))
-    view: Mapped[CollectionView] = mapped_column(String(16), default=CollectionView.NOTES.value)
+    name: Mapped[str] = mapped_column(String(128))
+    view: Mapped[CollectionView] = mapped_column(Enum(CollectionView), default=CollectionView.NOTES.value)

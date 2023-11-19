@@ -52,13 +52,16 @@ class NotesModule(GqlMiniappModule):
         return SuccessResult()
 
     @mutation()
-    def edit(self, id: UUID,
-        title: str|None, content: str|None,
+    def edit(self,
+        id: UUID,
+        title: str|None,
+        content: str|None,
         tags: List[str]|None,
-        favorite: bool|None, hidden: bool|None,
+        favorite: bool|None,
+        archived: bool|None,
         sort_key: float|None,
     ) -> NotesNote:
-        if all(arg is None for arg in (title, content, tags, favorite, hidden, sort_key)):
+        if all(arg is None for arg in (title, content, tags, favorite, archived, sort_key)):
             raise ValueError("Nothing to edit")
         # validate strings
         if title is not None:
@@ -80,8 +83,8 @@ class NotesModule(GqlMiniappModule):
             note.tags = [NotesTag(tag=tag) for tag in tags]
         if favorite is not None:
             note.favorite = favorite
-        if hidden is not None:
-            note.hidden = hidden
+        if archived is not None:
+            note.archived = archived
         if sort_key is not None:
             note.sort_key = sort_key
         self.session.commit()
