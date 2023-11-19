@@ -8,17 +8,20 @@ from core.data.sql.columns import ensure_str_fit
 from core.graphql.result import SuccessResult
 
 from .data import NotesCollection, NotesNote, NotesTag
+from .collections import ArchivedFilter
 
 
 class NotesModule(GqlMiniappModule):
     @query()
-    def list(self, collection_id: int, pages: PagesInput) -> PagesResult[NotesNote]:
+    def list(self, collection_id: int, archived: ArchivedFilter, pages: PagesInput) -> PagesResult[NotesNote]:
         statement = select(NotesNote).where(NotesNote.collection_id == collection_id)
+        statement = archived.filter(statement)
         return pages.of(self.session, statement)
 
     @query()
-    def search(self, tag: str, pages: PagesInput) -> PagesResult[NotesNote]:
+    def search(self, tag: str, archived: ArchivedFilter, pages: PagesInput) -> PagesResult[NotesNote]:
         statement = select(NotesNote).where(NotesNote.tags.any(NotesTag.tag == tag))
+        statement = archived.filter(statement)
         return pages.of(self.session, statement)
 
     @mutation()

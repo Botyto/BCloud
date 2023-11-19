@@ -56,3 +56,4 @@ class NotesCollection(Model):
     slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info={"slug": True})
     name: Mapped[str] = mapped_column(String(128))
     view: Mapped[CollectionView] = mapped_column(Enum(CollectionView), default=CollectionView.NOTES.value)
+    archived: Mapped[bool] = mapped_column(Boolean, default=False)
