@@ -13,14 +13,10 @@ from .collections import ArchivedFilter
 
 class NotesModule(GqlMiniappModule):
     @query()
-    def list(self, collection_id: int, archived: ArchivedFilter, pages: PagesInput) -> PagesResult[NotesNote]:
+    def list(self, collection_id: int, archived: ArchivedFilter, tag: str|None, pages: PagesInput) -> PagesResult[NotesNote]:
         statement = select(NotesNote).where(NotesNote.collection_id == collection_id)
-        statement = archived.filter(statement)
-        return pages.of(self.session, statement)
-
-    @query()
-    def search(self, tag: str, archived: ArchivedFilter, pages: PagesInput) -> PagesResult[NotesNote]:
-        statement = select(NotesNote).where(NotesNote.tags.any(NotesTag.tag == tag))
+        if tag is not None:
+            statement = statement.where(NotesNote.tags.any(NotesTag.tag == tag))
         statement = archived.filter(statement)
         return pages.of(self.session, statement)
 
