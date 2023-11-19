@@ -32,6 +32,7 @@ class NotesNote(Model):
 class FileKind(PyEnum):
     ATTACHMENT = "attachment"
     PREVIEW = "preview"
+    CACHE = "cache"
 
 
 class NotesFile(Model):
