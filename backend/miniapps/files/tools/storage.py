@@ -48,19 +48,25 @@ class StorageManager:
         if self.user_id is not None:
             statement = statement.where(FileStorage.user_id == self.user_id)
         statement = statement.where(FileStorage.name == name)
-        return self.session.scalars(statement).all()
+        return self.session.scalars(statement).first()
     
     def get(self, id_or_slug: UUID|str):
         statement = self._get_statement(id_or_slug)
         return self.session.scalars(statement).one()
     
+    def get_or_create(self, name: str):
+        storage = self.by_name(name)
+        if storage:
+            return storage
+        return self.create(name)
+
     def root(self, id_or_slug: UUID|str):
         statement = self._get_statement(id_or_slug).join(FileStorage.root_dir)
         storage = self.session.scalars(statement).one()
         return storage.root_dir
     
-    def create(self, name: str, *, service: bool = False):
-        if not service and name.startswith(self.SERVICE_PREFIX):
+    def create(self, name: str):
+        if not self.service and name.startswith(self.SERVICE_PREFIX):
             raise ValueError(f"Storage name cannot start with {self.SERVICE_PREFIX}")
         if not name:
             raise ValueError("Storage name cannot be empty")

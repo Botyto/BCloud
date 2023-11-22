@@ -51,41 +51,62 @@ class NotesModule(GqlMiniappModule):
         return SuccessResult()
 
     @mutation()
-    def edit(self,
-        id: UUID,
-        title: str|None,
-        content: str|None,
-        tags: List[str]|None,
-        favorite: bool|None,
-        archived: bool|None,
-        sort_key: float|None,
-    ) -> NotesNote:
-        if all(arg is None for arg in (title, content, tags, favorite, archived, sort_key)):
-            raise ValueError("Nothing to edit")
-        # validate strings
-        if title is not None:
-            ensure_str_fit("title", title, NotesNote.title)
-        if content is not None:
-            ensure_str_fit("content", content, NotesNote.content)
-        if tags:
-            for tag in tags:
-                ensure_str_fit("tag", tag, NotesTag.tag)
-        # edit
+    def rename(self, id: UUID, title: str) -> NotesNote:
+        ensure_str_fit("title", title, NotesNote.title)
         statement = select(NotesNote).where(NotesNote.id == id)
         note = self.session.scalars(statement).one()
-        if title is not None:
-            note.title = title
-        if content is not None:
-            note.content = content
-        if tags is not None:
-            # TODO optimize tag replacement
-            note.tags = [NotesTag(tag=tag) for tag in tags]
-        if favorite is not None:
-            note.favorite = favorite
-        if archived is not None:
-            note.archived = archived
-        if sort_key is not None:
-            note.sort_key = sort_key
-        self.session.commit()
+        note.title = title
+        self.log_activity("note.rename", {"id": str(id), "title": title})
+        return note
+    
+    @mutation()
+    def edit(self, id: UUID, content: str):
+        ensure_str_fit("content", content, NotesNote.content)
+        statement = select(NotesNote).where(NotesNote.id == id)
+        note = self.session.scalars(statement).one()
+        note.content = content
         self.log_activity("note.edit", {"id": str(id), "title": note.title})
+        return note
+    
+    @mutation()
+    def add_tag(self, id: UUID, tag: str):
+        ensure_str_fit("tag", tag, NotesTag.tag)
+        statement = select(NotesNote).where(NotesNote.id == id)
+        note = self.session.scalars(statement).one()
+        if tag in note.tags:
+            return note
+        note.tags.append(NotesTag(tag=tag))
+        self.log_activity("note.add_tag", {"id": str(id), "title": note.title, "tag": tag})
+        return note
+    
+    @mutation()
+    def remove_tag(self, id: UUID, tag: str):
+        ensure_str_fit("tag", tag, NotesTag.tag)
+        statement = select(NotesNote).where(NotesNote.id == id)
+        note = self.session.scalars(statement).one()
+        note.tags = [tag for tag in note.tags if tag.tag != tag]
+        self.log_activity("note.remove_tag", {"id": str(id), "title": note.title, "tag": tag})
+        return note
+    
+    @mutation()
+    def set_favorite(self, id: UUID, favorite: bool):
+        statement = select(NotesNote).where(NotesNote.id == id)
+        note = self.session.scalars(statement).one()
+        note.favorite = favorite
+        self.log_activity("note.set_favorite", {"id": str(id), "title": note.title, "favorite": favorite})
+        return note
+    
+    @mutation()
+    def set_archived(self, id: UUID, archived: bool):
+        statement = select(NotesNote).where(NotesNote.id == id)
+        note = self.session.scalars(statement).one()
+        note.archived = archived
+        self.log_activity("note.set_archived", {"id": str(id), "title": note.title, "archived": archived})
+        return note
+    
+    @mutation()
+    def set_sort_key(self, id: UUID, sort_key: float):
+        statement = select(NotesNote).where(NotesNote.id == id)
+        note = self.session.scalars(statement).one()
+        note.sort_key = sort_key
         return note
