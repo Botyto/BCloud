@@ -4,6 +4,7 @@ from sqlalchemy import ForeignKey
 from typing import List
 from uuid import UUID as PyUUID, uuid4
 
+from core.auth.access import AccessLevel
 from core.auth.data import User
 from core.data.sql.columns import Boolean, DateTime, Enum, Float, Integer, String, UUID, STRING_MAX, utcnow_tz
 from core.data.sql.columns import mapped_column, relationship, Mapped
@@ -72,3 +73,4 @@ class NotesCollection(Model):
     name: Mapped[str] = mapped_column(String(128))
     view: Mapped[CollectionView] = mapped_column(Enum(CollectionView), default=CollectionView.NOTES.value)
     archived: Mapped[bool] = mapped_column(Boolean, default=False)
+    access: Mapped[AccessLevel] = mapped_column(Enum(AccessLevel), default=AccessLevel.PRIVATE)
