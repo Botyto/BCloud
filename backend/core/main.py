@@ -53,10 +53,12 @@ def load_miniapps():
     from .api.gql import GraphQLMiniapp
     from miniapps.profile.app import ProfileMiniapp
     from miniapps.files.app import FilesMiniapp
+    from miniapps.notes.app import NotesMiniapp
     return [
         GraphQLMiniapp,
         ProfileMiniapp,
         FilesMiniapp,
+        NotesMiniapp,
     ]
 
 def build_app():
