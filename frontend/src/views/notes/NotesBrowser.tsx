@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-import CollectionsView from './CollectionsView';
+import CollectionsManager from './CollectionsManager';
 
 export default function NotesBrowser() {
     const { t } = useTranslation("common");
@@ -10,6 +10,6 @@ export default function NotesBrowser() {
         <div>
             {t("notes.title")} (<Link to="/">{t("notes.back_to_homepage")}</Link>)
         </div>
-        <CollectionsView/>
+        <CollectionsManager/>
     </div>;
 }

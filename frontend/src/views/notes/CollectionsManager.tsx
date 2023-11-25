@@ -4,7 +4,7 @@ import CollectionsTree from './CollectionsTree';
 import { Dialog, bindState, useDialogState } from '../../components/Dialog';
 import { useCollectionsNewMutation } from './api';
 
-export default function CollectionsView() {
+export default function CollectionsManager() {
     const { t } = useTranslation("common");
     const [newCollection, newCollectionData] = useCollectionsNewMutation();
     const addCollectionDlg = useDialogState();
