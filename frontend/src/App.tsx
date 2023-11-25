@@ -7,6 +7,7 @@ import NotFound from "./views/NotFound";
 
 import ProfileRoutes from "./views/profile/routes";
 import FilesRoutes from "./views/files/routes"
+import NotesRoutes from "./views/notes/routes"
 
 export default function App() {
     return <BrowserRouter>
@@ -15,6 +16,7 @@ export default function App() {
                 <Route index element={<Homepage/>}/>
                 {...ProfileRoutes}
                 {...FilesRoutes}
+                {...NotesRoutes}
                 <Route path="*" element={<NotFound/>} />
             </Route>
         </Routes>
