@@ -48,3 +48,19 @@ export function useCollectionsNewMutation() {
         ],
     });
 }
+
+const COLLECTIONS_GET = gql`
+${COLLECTION_PROPS}
+query CollectionsGet($id: Int!) {
+    notesCollectionsGet(id: $id) {
+        ...CollectionProps
+    }
+}`;
+
+export function useCollectionsGetQuery(id: number) {
+    return useQuery(COLLECTIONS_GET, {
+        variables: {
+            id: id,
+        },
+    });
+}

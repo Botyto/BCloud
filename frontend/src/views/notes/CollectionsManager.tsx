@@ -31,7 +31,7 @@ export default function CollectionsManager() {
 
     return <>
         <CollectionsTree/>
-        <button onClick={() => addCollectionDlg.open()}>new collection</button>
+        <button onClick={() => addCollectionDlg.open()}>{t("notes.collections.new.button")}</button>
         <Dialog {...bindState(addCollectionDlg)}>
             <input
                 type="text"

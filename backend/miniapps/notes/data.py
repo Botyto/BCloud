@@ -18,7 +18,7 @@ class NotesNote(Model):
     __tablename__ = "NotesNote"
     id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True, default=uuid4)
     collection_id: Mapped[int] = mapped_column(ForeignKey("NotesCollection.id", onupdate="CASCADE", ondelete="CASCADE"))
-    collection: Mapped["NotesCollection"] = relationship("NotesCollection", info={"owner": True})
+    collection: Mapped["NotesCollection"] = relationship("NotesCollection", info={"owner": True}, back_populates="notes")
     created_at_utc: Mapped[datetime] = mapped_column(DateTime, default=utcnow_tz)
     slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info={"slug": True})
     sort_key: Mapped[float] = mapped_column(Float, default=0.0)
@@ -56,7 +56,7 @@ class NotesTag(Model):
 
 class CollectionView(PyEnum):
     NOTES = "notes"
-    BOOKMARKS = "bookmars"
+    BOOKMARKS = "bookmarks"
     CHAT = "chat"
 
 
@@ -74,3 +74,4 @@ class NotesCollection(Model):
     view: Mapped[CollectionView] = mapped_column(Enum(CollectionView), default=CollectionView.NOTES.value)
     archived: Mapped[bool] = mapped_column(Boolean, default=False)
     access: Mapped[AccessLevel] = mapped_column(Enum(AccessLevel), default=AccessLevel.PRIVATE)
+    notes: Mapped[List[NotesNote]] = relationship("NotesNote", uselist=True, back_populates="collection")

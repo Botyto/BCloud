@@ -45,6 +45,14 @@ class CollectionsModule(GqlMiniappModule):
         self.session.commit()
         self.log_activity("collection.create", {"id": str(collection.id), "name": name, "view": view.value})
         return collection
+    
+    @query()
+    def get(self, id: int) -> NotesCollection:
+        statement = select(NotesCollection) \
+            .where(NotesCollection.id == id)
+        if self.user_id is not None:
+            statement = statement.where(NotesCollection.user_id == self.user_id)
+        return self.session.scalars(statement).one()
 
     @mutation()
     def delete(self, id: int) -> SuccessResult:
