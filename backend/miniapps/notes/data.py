@@ -1,7 +1,7 @@
 from enum import Enum as PyEnum
 from datetime import datetime
 from sqlalchemy import ForeignKey
-from typing import List
+from typing import List, Optional
 from uuid import UUID as PyUUID, uuid4
 
 from core.auth.access import AccessLevel
@@ -67,7 +67,7 @@ class NotesCollection(Model):
     user: Mapped[User] = relationship(User, info={"owner": True})
     created_at_utc: Mapped[datetime] = mapped_column(DateTime, default=utcnow_tz)
     parent_id: Mapped[int|None] = mapped_column(Integer, ForeignKey("NotesCollection.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=True, default=None)
-    parent: Mapped["NotesCollection"|None] = relationship("NotesCollection", remote_side=[id])
+    parent: Mapped[Optional["NotesCollection"]] = relationship("NotesCollection", remote_side=[id])
     children: Mapped[List["NotesCollection"]] = relationship("NotesCollection", uselist=True, back_populates="parent")
     slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info={"slug": True})
     name: Mapped[str] = mapped_column(String(128))

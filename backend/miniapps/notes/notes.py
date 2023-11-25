@@ -60,7 +60,7 @@ class NotesModule(GqlMiniappModule):
         return note
     
     @mutation()
-    def edit(self, id: UUID, content: str):
+    def edit(self, id: UUID, content: str) -> NotesNote:
         ensure_str_fit("content", content, NotesNote.content)
         statement = select(NotesNote).where(NotesNote.id == id)
         note = self.session.scalars(statement).one()
@@ -69,7 +69,7 @@ class NotesModule(GqlMiniappModule):
         return note
     
     @mutation()
-    def add_tag(self, id: UUID, tag: str):
+    def add_tag(self, id: UUID, tag: str) -> NotesNote:
         ensure_str_fit("tag", tag, NotesTag.tag)
         statement = select(NotesNote).where(NotesNote.id == id)
         note = self.session.scalars(statement).one()
@@ -80,7 +80,7 @@ class NotesModule(GqlMiniappModule):
         return note
     
     @mutation()
-    def remove_tag(self, id: UUID, tag: str):
+    def remove_tag(self, id: UUID, tag: str) -> NotesNote:
         ensure_str_fit("tag", tag, NotesTag.tag)
         statement = select(NotesNote).where(NotesNote.id == id)
         note = self.session.scalars(statement).one()
@@ -89,7 +89,7 @@ class NotesModule(GqlMiniappModule):
         return note
     
     @mutation()
-    def set_favorite(self, id: UUID, favorite: bool):
+    def set_favorite(self, id: UUID, favorite: bool) -> NotesNote:
         statement = select(NotesNote).where(NotesNote.id == id)
         note = self.session.scalars(statement).one()
         note.favorite = favorite
@@ -97,7 +97,7 @@ class NotesModule(GqlMiniappModule):
         return note
     
     @mutation()
-    def set_archived(self, id: UUID, archived: bool):
+    def set_archived(self, id: UUID, archived: bool) -> NotesNote:
         statement = select(NotesNote).where(NotesNote.id == id)
         note = self.session.scalars(statement).one()
         note.archived = archived
@@ -105,7 +105,7 @@ class NotesModule(GqlMiniappModule):
         return note
     
     @mutation()
-    def set_sort_key(self, id: UUID, sort_key: float):
+    def set_sort_key(self, id: UUID, sort_key: float) -> NotesNote:
         statement = select(NotesNote).where(NotesNote.id == id)
         note = self.session.scalars(statement).one()
         note.sort_key = sort_key

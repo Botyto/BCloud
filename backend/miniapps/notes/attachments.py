@@ -51,5 +51,5 @@ class NoteAttachmentsModule(GqlMiniappModule):
         return note_file
 
     @mutation()
-    def remove_attachment(self, id: UUID, attachment_id: int):
+    def remove_attachment(self, id: UUID, attachment_id: int) -> NotesNote:
         raise NotImplementedError()
