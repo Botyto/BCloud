@@ -8,9 +8,10 @@ interface NoteContentProps {
 
 export default function NoteContent(props: NoteContentProps) {
     if (props.editable && props.onEdit) {
+        const onEdit = props.onEdit; // to avoid ESLint warning
         return <textarea
             value={props.note.content}
-            onChange={(e) => props.onEdit(e.target.value)}
+            onChange={(e) => onEdit(e.target.value)}
         />;
     } else {
         return <div>
