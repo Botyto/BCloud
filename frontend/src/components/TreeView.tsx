@@ -48,7 +48,7 @@ function TreeNode(props: TreeNodeProps) {
     const CollapseComponent = props.collapseComponent || DefaultCollapseComponent;
     const collapsed = props.collapsedItems.includes(props.item);
     const hasChildren = props.item.children && props.item.children.length > 0;
-    return <span>
+    return <div>
         <CollapseComponent
             collapsed={collapsed}
             collapsible={hasChildren && props.collapsible}
@@ -68,7 +68,7 @@ function TreeNode(props: TreeNodeProps) {
                 />;
             })
         }
-    </span>;
+    </div>;
 }
 
 interface TreeViewProps {
