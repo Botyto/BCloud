@@ -17,7 +17,7 @@ export default function NotesBrowser() {
             {t("notes.title")} (<Link to="/">{t("notes.back_to_homepage")}</Link>)
         </div>
         <div>
-            <span style={{display: "inline-block"}}>
+            <span style={{display: "inline-block", verticalAlign: "top"}}>
                 <CollectionsManager/>
             </span>
             <span style={{display: "inline-block"}}>
