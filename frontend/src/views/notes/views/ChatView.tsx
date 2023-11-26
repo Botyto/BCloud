@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CollectionViewProps } from './types';
-import { useNotesListQuery } from './api';
+import { useCreateNoteMutation, useNotesListQuery } from './api';
 import Loading from '../../../components/Loading';
 
 interface EntryProps {
@@ -9,14 +9,36 @@ interface EntryProps {
 }
 
 function Entry(props: EntryProps) {
-    return <div style={{display: "inline-block"}}>
-        {props.note.title}
+    return <div style={{
+        border: "1px solid black",
+        borderRadius: "0.5rem",
+        backgroundColor: "#eee",
+        margin: "0.5rem",
+        padding: "0.5rem",
+    }}>
+        {props.note.content}
+        <div style={{fontSize: "0.5rem"}}><i>{props.note.createdAtUtc}</i></div>
     </div>
 }
 
 export default function ChatView(props: CollectionViewProps) {
     const { t } = useTranslation("common");
     const notesData = useNotesListQuery(props.collection.id, 0);
+    const [newNoteContent, setNewNoteContent] = useState<string>("");
+    const [createNote, createNoteData] = useCreateNoteMutation();
+
+    function saveNote(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        createNote({
+            variables: {
+                collectionId: props.collection.id,
+                title: "",
+                content: newNoteContent,
+                tags: [],
+            },
+        })
+        setNewNoteContent("");
+    }
     
     return <div>
         <div>
@@ -33,14 +55,19 @@ export default function ChatView(props: CollectionViewProps) {
                     </span>
                 ) : (
                     notesData.data.notesNotesList.items.map((note: any) => {
-                        return <Entry note={note}/>
+                        return <Entry key={note.id} note={note}/>
                     })
                 )
             }
         </div>
-        <div>
-            <input type="text" placeholder={t("notes.view.chat.new.placeholder")}/>
-            <button>{t("notes.view.chat.new.button")}</button>
-        </div>
+        <form onSubmit={saveNote}>
+            <input
+                type="text"
+                placeholder={t("notes.view.chat.new.placeholder")}
+                value={newNoteContent}
+                onChange={(e) => setNewNoteContent(e.target.value)}
+            />
+            <button type="submit">{t("notes.view.chat.new.button")}</button>
+        </form>
     </div>;
 }

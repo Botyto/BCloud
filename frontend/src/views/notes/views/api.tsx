@@ -29,6 +29,7 @@ export function useNotesListQuery(collectionId: number, page: number) {
             archived: "ALL",
             pages: {
                 page: page,
+                sort: ["-created_at_utc"]
             }
         }
     });
