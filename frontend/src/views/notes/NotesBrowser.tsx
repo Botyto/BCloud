@@ -20,7 +20,7 @@ export default function NotesBrowser() {
             <span style={{display: "inline-block", verticalAlign: "top"}}>
                 <CollectionsManager/>
             </span>
-            <span style={{display: "inline-block"}}>
+            <span style={{display: "inline-block", border: "1px solid black"}}>
                 {
                     (noteId) ? (
                         <NoteView noteId={noteId}/>
