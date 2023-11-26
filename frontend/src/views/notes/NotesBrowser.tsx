@@ -24,8 +24,10 @@ export default function NotesBrowser() {
                 {
                     (noteId) ? (
                         <NoteView noteId={noteId}/>
+                    ) : (collectionId) ? (
+                        <CollectionView collectionId={parseInt(collectionId)}/>
                     ) : (
-                        <CollectionView collectionId={parseInt(collectionId || "0")}/>
+                        <></>
                     )
                 }
             </span>

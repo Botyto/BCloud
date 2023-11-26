@@ -29,7 +29,7 @@ export default function ChatView(props: CollectionViewProps) {
                     </span>
                 ) : (notesData.data.notesNotesList.items.length == 0) ? (
                     <span>
-                        {t("notes.notes.chat.empty")}
+                        {t("notes.view.chat.empty")}
                     </span>
                 ) : (
                     notesData.data.notesNotesList.items.map((note: any) => {
@@ -39,8 +39,8 @@ export default function ChatView(props: CollectionViewProps) {
             }
         </div>
         <div>
-            <input type="text" placeholder={t("notes.notes.chat.new.placeholder")}/>
-            <button>{t("notes.notes.chat.new.button")}</button>
+            <input type="text" placeholder={t("notes.view.chat.new.placeholder")}/>
+            <button>{t("notes.view.chat.new.button")}</button>
         </div>
     </div>;
 }

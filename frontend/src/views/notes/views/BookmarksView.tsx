@@ -29,7 +29,7 @@ export default function BookmarksView(props: CollectionViewProps) {
                     </span>
                 ) : (notesData.data.notesNotesList.items.length == 0) ? (
                     <span>
-                        {t("notes.notes.bookmarks.empty")}
+                        {t("notes.view.bookmarks.empty")}
                     </span>
                 ) : (
                     notesData.data.notesNotesList.items.map((note: any) => {
@@ -38,6 +38,6 @@ export default function BookmarksView(props: CollectionViewProps) {
                 )
             }
         </div>
-        <button>{t("notes.notes.bookmarks.new.button")}</button>
+        <button>{t("notes.view.bookmarks.new.button")}</button>
     </div>;
 }

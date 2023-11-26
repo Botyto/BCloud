@@ -1,4 +1,4 @@
-import { gql, useQuery } from '@apollo/client';
+import { gql, useMutation, useQuery } from '@apollo/client';
 
 const NOTE_PROPS = gql`
 fragment NoteProps on NotesNote {
@@ -31,5 +31,19 @@ export function useNotesListQuery(collectionId: number, page: number) {
                 page: page,
             }
         }
+    });
+}
+
+const CREATE_NOTE = gql`
+${NOTE_PROPS}
+mutation CreateNote($collectionId: Int!, $title: String!, $content: String!, $tags: [String!]!) {
+    notesNotesCreate(collectionId: $collectionId, title: $title, content: $content, tags: $tags) {
+        ...NoteProps
+    }
+}`;
+
+export function useCreateNoteMutation() {
+    return useMutation(CREATE_NOTE, {
+        refetchQueries: [NOTES_LIST],
     });
 }

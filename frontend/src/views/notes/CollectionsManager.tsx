@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import CollectionsTree from './CollectionsTree';
-import { Dialog, bindState, useDialogState } from '../../components/Dialog';
+import { Dialog, bindState, bindTrigger, useDialogState } from '../../components/Dialog';
 import { useCollectionsNewMutation } from './api';
 
 export default function CollectionsManager() {
@@ -31,7 +31,7 @@ export default function CollectionsManager() {
 
     return <>
         <CollectionsTree/>
-        <button onClick={() => addCollectionDlg.open()}>{t("notes.collections.new.button")}</button>
+        <button {...bindTrigger(addCollectionDlg)}>{t("notes.collections.new.button")}</button>
         <Dialog {...bindState(addCollectionDlg)}>
             <input
                 type="text"
