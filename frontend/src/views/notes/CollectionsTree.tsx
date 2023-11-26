@@ -7,6 +7,12 @@ import { TreeComponentProps, TreeView } from '../../components/TreeView';
 
 function CollectionItem(props: TreeComponentProps) {
     return <Link to={"/notes/" + props.item.id}>
+        {
+            (props.item.view === "NOTES") ? ("📝") :
+            (props.item.view === "BOOKMARKS") ? ("🔗") :
+            (props.item.view === "CHAT") ? ("💬") :
+            ("📁")
+        }
         {props.item.name}
     </Link>;
 }

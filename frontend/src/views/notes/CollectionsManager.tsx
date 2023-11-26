@@ -9,6 +9,7 @@ export default function CollectionsManager() {
     const [newCollection, newCollectionData] = useCollectionsNewMutation();
     const addCollectionDlg = useDialogState();
     const [newCollectionName, setNewCollectionName] = useState<string>("");
+    const [newCollectionView, setNewCollectionView] = useState<string>("NOTES");
     
     function cancelAddCollection(e: React.MouseEvent<HTMLButtonElement>) {
         e.preventDefault();
@@ -19,14 +20,16 @@ export default function CollectionsManager() {
     function addCollection(e: React.MouseEvent<HTMLButtonElement>) {
         e.preventDefault();
         addCollectionDlg.close();
-        const name = newCollectionName.trim();
-        setNewCollectionName("");
+        if (newCollectionName.trim() === "") {
+            return;
+        }
         newCollection({
             variables: {
-                name: name,
-                view: "NOTES",
+                name: newCollectionName.trim(),
+                view: newCollectionView,
             },
         });
+        setNewCollectionName("");
     }
 
     return <>
@@ -39,6 +42,11 @@ export default function CollectionsManager() {
                 value={newCollectionName}
                 onChange={(e) => setNewCollectionName(e.target.value)}
             />
+            <select value={newCollectionView} onChange={(e) => setNewCollectionView(e.target.value)}>
+                <option value="NOTES">{t("notes.collections.new.view.notes")}</option>
+                <option value="BOOKMARKS">{t("notes.collections.new.view.bookmarks")}</option>
+                <option value="CHAT">{t("notes.collections.new.view.chat")}</option>
+            </select>
             <button onClick={cancelAddCollection}>{t("notes.collections.new.cancel")}</button>
             <button onClick={addCollection}>{t("notes.collections.new.add")}</button>
         </Dialog>

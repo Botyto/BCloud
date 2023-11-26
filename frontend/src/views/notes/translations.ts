@@ -10,6 +10,11 @@ export default {
             name: "New collection new",
             cancel: "Cancel",
             add: "Add",
+            view: {
+                notes: "📝 Notes",
+                bookmarks: "🔗 Bookmarks",
+                chat: "💬 Chat",
+            }
         },
     },
     collection: {

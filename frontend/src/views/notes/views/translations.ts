@@ -23,8 +23,8 @@ export default {
     chat: {
         empty: "No notes yet",
         new: {
-            name: "New note",
-            add: "Add",
+            button: ">",
+            placeholder: "New note",
         }
     },
 };
