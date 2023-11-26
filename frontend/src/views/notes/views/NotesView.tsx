@@ -5,6 +5,7 @@ import { Dialog, useDialogState, bindState } from '../../../components/Dialog';
 import { CollectionViewProps } from './types';
 import { useNotesListQuery, useCreateNoteMutation } from './api';
 import NoteEditor from './NoteEditor';
+import NoteContent from './NoteContent';
 
 interface NoteProps {
     note: any;
@@ -25,7 +26,7 @@ function Note(props: NoteProps) {
         <div style={{textDecoration: "underline", fontWeight: "bold"}}>
             {props.note.title}
         </div>
-        {props.note.content}
+        <NoteContent note={props.note}/>
     </div>
 }
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import NoteContent from './NoteContent';
 
 interface NoteEditorProps {
     note: any;
@@ -17,10 +18,10 @@ export default function NoteEditor(props: NoteEditorProps) {
         });
     }
 
-    function setNoteContent(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    function setNoteContent(newContent: string) {
         props.setNote({
             ...props.note,
-            content: e.target.value,
+            content: newContent,
         });
     }
 
@@ -33,9 +34,10 @@ export default function NoteEditor(props: NoteEditorProps) {
             />
         </div>
         <div>
-            <textarea
-                value={props.note.content}
-                onChange={setNoteContent}
+            <NoteContent
+                note={props.note}
+                editable={true}
+                onEdit={setNoteContent}
             />
         </div>
         <div>
