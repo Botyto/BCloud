@@ -58,6 +58,15 @@ export function bindState(state: DialogState) {
     }
 }
 
+export function bindTrigger(state: DialogState) {
+    return {
+        onClick: (e: React.MouseEvent) => {
+            e.preventDefault();
+            state.toggle();
+        },
+    }
+}
+
 function isClickInsideRectangle(e: React.MouseEvent, element: HTMLElement) {
     const r = element.getBoundingClientRect();
     return e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom;
