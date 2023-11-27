@@ -15,6 +15,7 @@ ${NOTE_PROPS}
 query NotesList($collectionId: Int!, $archived: InputEnumArchivedFilter!, $pages: InputPagesInput!) {
     notesNotesList(collectionId: $collectionId, archived: $archived, pages: $pages) {
         total
+        page
         maxPage
         items {
             ...NoteProps

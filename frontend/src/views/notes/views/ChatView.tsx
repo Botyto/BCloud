@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { VisibilityObserver } from 'reactjs-visibility';
 import { CollectionViewProps } from './types';
 import { useCreateNoteMutation, useNotesListQuery } from './api';
 import Loading from '../../../components/Loading';
@@ -39,6 +40,27 @@ export default function ChatView(props: CollectionViewProps) {
         })
         setNewNoteContent("");
     }
+
+    var chatEntries: any[] = notesData.data?.notesNotesList?.items;
+    if (chatEntries) {
+        chatEntries = chatEntries.toReversed();
+    }
+
+    function handleChangeVisibility(visible: boolean) {
+        if (!visible) { return; }
+        if (notesData.loading || notesData.error) { return; }
+        if (notesData.data.page >= notesData.data.maxPage) { return; }
+        notesData.fetchMore({
+            variables: {
+                collectionId: props.collection.id,
+                archived: "ALL",
+                pages: {
+                    page: notesData.data.page + 1,
+                    sort: ["-created_at_utc"]
+                }
+            },
+        });
+    };
     
     return <div>
         <div>
@@ -49,14 +71,19 @@ export default function ChatView(props: CollectionViewProps) {
                     <span style={{color: "red"}}>
                         {t("notes.collection.error", {error: notesData.error.message})}
                     </span>
-                ) : (notesData.data.notesNotesList.items.length == 0) ? (
+                ) : (chatEntries.length == 0) ? (
                     <span>
                         {t("notes.view.chat.empty")}
                     </span>
                 ) : (
-                    notesData.data.notesNotesList.items.map((note: any) => {
-                        return <Entry key={note.id} note={note}/>
-                    })
+                    <>
+                        <VisibilityObserver onChangeVisibility={handleChangeVisibility}/>
+                        {
+                            chatEntries.map((note: any) => {
+                                return <Entry key={note.id} note={note}/>;
+                            })
+                        }
+                    </>
                 )
             }
         </div>
