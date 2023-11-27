@@ -76,14 +76,17 @@ export default function ChatView(props: CollectionViewProps) {
                         {t("notes.view.chat.empty")}
                     </span>
                 ) : (
-                    <>
+                    <div
+                        style={{maxHeight: "30vh", overflow: "scroll"}}
+                        ref={(ref) => { ref?.scroll(0, ref.scrollHeight); }}
+                    >
                         <VisibilityObserver onChangeVisibility={handleChangeVisibility}/>
                         {
                             chatEntries.map((note: any) => {
                                 return <Entry key={note.id} note={note}/>;
                             })
                         }
-                    </>
+                    </div>
                 )
             }
         </div>
