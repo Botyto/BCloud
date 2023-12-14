@@ -7,7 +7,7 @@ from .attachments import NoteAttachmentsModule
 
 class NotesMiniapp(Miniapp):
     def __init__(self):
-        super().__init__("files",
+        super().__init__("notes",
             ModuleRegistry(CollectionsModule),
             ModuleRegistry(NotesModule),
             ModuleRegistry(NoteAttachmentsModule),
