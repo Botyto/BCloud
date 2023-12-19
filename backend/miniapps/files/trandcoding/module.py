@@ -13,7 +13,6 @@ from ..tools import fspath
 from core.api.modules.gql import GqlMiniappModule, mutation, query
 from core.asyncjob.data import JobPromise
 from core.asyncjob.handlers import AsyncJobHandler
-from core.data.blobs.address import Address
 
 
 @dataclass
