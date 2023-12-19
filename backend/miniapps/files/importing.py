@@ -103,7 +103,7 @@ class GoogleDriveImporter(GoogleImporter):
         storages = StorageManager(context.user_id, session)
         gdrive_storages = storages.by_name("Google Drive")
         if gdrive_storages:
-            return gdrive_storages[0]
+            return gdrive_storages[0]  # type: ignore
         return storages.create("Google Drive")
     
     OD_SPREADSHEET_EXP = DriveExport("application/x-vnd.oasis.opendocument.spreadsheet", ".ods")
