@@ -34,7 +34,7 @@ class StorageModule(GqlMiniappModule):
     
     @mutation()
     def create(self, name: str) -> FileStorage:
-        storage = self.manager.create(name, service=False)
+        storage = self.manager.create(name)
         self.log_activity("storage.create", {"id": str(storage.id), "name": name})
         return storage
 

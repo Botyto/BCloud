@@ -16,6 +16,7 @@ class NoteFileManager:
     STORAGE_NAME = StorageManager.SERVICE_PREFIX + "notes"
 
     kind: FileKind
+    user_id: UUID|None
     context: AsyncJobContext
     service: bool
     _session: Session|None = None
@@ -40,14 +41,14 @@ class NoteFileManager:
             self._session = self.context.database.make_session()
         return self._session
 
-    def __init__(self, kind: FileKind, context: AsyncJobContext, session: Session, service: bool =False):
+    def __init__(self, kind: FileKind, user_id: UUID|None, context: AsyncJobContext, session: Session, service: bool =False):
         self.kind = kind
         self.context = context
         self.service = service
 
     @classmethod
-    def for_service(cls, kind: FileKind, context: AsyncJobContext, session: Session):
-        return cls(kind, context, session, service=True)
+    def for_service(cls, kind: FileKind, user_id: UUID|None, context: AsyncJobContext, session: Session):
+        return cls(kind, user_id, context, session, service=True)
     
     def _file_path(self, storage: FileStorage, note: NotesNote, note_file: NotesFile) -> str:
         return f"{storage.id}:/{note.id}/{note_file.id}"

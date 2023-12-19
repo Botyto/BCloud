@@ -28,11 +28,11 @@ class NoteAttachmentsModule(GqlMiniappModule):
         return self.files.contents
 
     @mutation()
-    def add_attachment(self, id: UUID, mime_type: str) -> NotesFile:
+    def add_attachment(self, note_id: UUID, kind: FileKind, mime_type: str) -> NotesFile:
         statement = select(NotesNote).where(NotesNote.id == id)
         note = self.session.scalars(statement).one()
         note_file = NotesFile(
-            note_id=id,
+            note_id=note_id,
             note=note,
             kind=FileKind.ATTACHMENT,
         )
@@ -46,5 +46,5 @@ class NoteAttachmentsModule(GqlMiniappModule):
         return note_file
 
     @mutation()
-    def remove_attachment(self, id: UUID, attachment_id: int) -> NotesNote:
+    def remove_attachment(self, note_id: UUID, attachment_id: int) -> NotesNote:
         raise NotImplementedError()

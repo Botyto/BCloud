@@ -1,4 +1,24 @@
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { FieldFunctionOptions, TypePolicies, gql, useMutation, useQuery } from '@apollo/client';
+
+export const NOTES_FIELD_POLICY: TypePolicies = {
+    Query: {
+        fields: {
+            notesNotesList: {
+                keyArgs: false,
+                merge(existing: any, incoming: any, options: FieldFunctionOptions) {
+                    if (!existing) {
+                        return incoming;
+                    } else {
+                        return {
+                            ...incoming,
+                            items: [...existing.items, ...incoming.items],
+                        };
+                    }
+                }
+            },
+        },
+    },
+};
 
 const NOTE_PROPS = gql`
 fragment NoteProps on NotesNote {
@@ -49,3 +69,16 @@ export function useCreateNoteMutation() {
         refetchQueries: [NOTES_LIST],
     });
 }
+
+const ATTACH_FILE = gql`
+${NOTE_PROPS}
+mutation AttachNoteFile($noteId: UUID!, $kind: InputFileKind!, $mimeType: String!) {
+    notesNoteAttachmentsAddAttachment(noteId: $noteId, kind: $kind, mimeType: $mimeType) {
+        note {
+            ...NoteProps
+        }
+        file {
+            id
+        }
+    }
+}`;

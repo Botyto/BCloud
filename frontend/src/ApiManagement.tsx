@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { ApolloClient, InMemoryCache, ApolloProvider, HttpLink, split, ApolloLink, concat, NormalizedCacheObject } from '@apollo/client';
+import { ApolloClient, InMemoryCache, ApolloProvider, HttpLink, split, ApolloLink, concat, NormalizedCacheObject, FieldFunctionOptions } from '@apollo/client';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
-import { persistCache, LocalStorageWrapper  } from 'apollo3-cache-persist';
 import OfflineLink from 'apollo-link-offline';
 import Loading from './components/Loading';
+
+import { NOTES_FIELD_POLICY } from './views/notes/views/api';
 
 const SERVER_HOST: string = import.meta.env.VITE_BACKEND_URL;
 
@@ -14,7 +15,9 @@ function ApiManagement(props: any) {
 	
 	useEffect(() => {
 		const cache = new InMemoryCache({
-			typePolicies: {},
+			typePolicies: {
+				...NOTES_FIELD_POLICY,
+			},
 		});
 		
 		const httpLink = new HttpLink({
