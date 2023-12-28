@@ -3,8 +3,10 @@ import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import { VisibilityObserver } from 'reactjs-visibility';
 import { CollectionViewProps } from './types';
-import { useCreateNoteMutation, useNotesListQuery } from './api';
+import { useAttachFileMutation, useCreateNoteMutation, useNotesListQuery } from './api';
 import Loading from '../../../components/Loading';
+import fspath from '../../files/fspath';
+import { SERVER_HOST } from '../../../ApiManagement';
 
 interface EntryProps {
     note: any;
@@ -18,6 +20,14 @@ function Entry(props: EntryProps) {
         margin: "0.5rem",
         padding: "0.5rem",
     }}>
+        {
+            props.note.files
+                .filter((f: any) => f.kind === "ATTACHMENT")
+                .map((f: any) => {
+                    const contentUrl = fspath.pathToUrl(`${SERVER_HOST}/api/files/contents/:storageId/*`, f.file.abspath);
+                    return <img key={f.id} src={contentUrl} />
+                })
+        }
         {props.note.content}
         <div style={{fontSize: "0.5rem"}}><i>{props.note.createdAtUtc}</i></div>
     </div>
@@ -41,6 +51,7 @@ export default function ChatView(props: CollectionViewProps) {
     const [imagePreviewUrl, setImagePreviewUrl] = useState<string>("");
     const [imageUploadState, setImageUploadState] = useState<FileUploadState|null>(null);
     const [createNote, createNoteData] = useCreateNoteMutation();
+    const [attachNote, attachNoteData] = useAttachFileMutation();
     const container = useRef<HTMLDivElement>(null);
 
     if (container.current) {
@@ -64,22 +75,38 @@ export default function ChatView(props: CollectionViewProps) {
                 tags: [],
             },
             onCompleted: (!imagePreviewFile) ? undefined : (data) => {
-                const contentUrl = fspath.pathToUrl(`${SERVER_HOST}/api/files/contents/:storageId/*`, path);
-                setImageUploadState({
-                    ...imageUploadState!,
-                    status: UPLOADING,
-                });
-                axios.post(contentUrl, imagePreviewFile, {
-                    headers: {
-                        "Authorization": `Bearer ${localStorage.getItem('authentication-token')}`,
-                        "Content-Type": imagePreviewFile.type,
+                attachNote({
+                    variables: {
+                        noteId: data.notesNotesCreate.id,
+                        kind: "ATTACHMENT",
+                        mimeType: imagePreviewFile.type,
                     },
-                    onUploadProgress: (e) => { setImageUploadState(imagePreviewFile, e.loaded); },
-                }).then((r) => {
-                    if (r.status === 200) { setFileStatus(imagePreviewFile, COMPLETED); }
-                }).catch((e: object) => {
-                    setFileStatus(file, e.toString());
-                });
+                    onCompleted: (attachmentData) => {
+                        const filePath = attachmentData.notesNoteattachmentsAddAttachment.file.abspath;
+                        const contentUrl = fspath.pathToUrl(`${SERVER_HOST}/api/files/contents/:storageId/*`, filePath);
+                        setImageUploadState({
+                            ...imageUploadState!,
+                            status: UPLOADING,
+                        });
+                        axios.post(contentUrl, imagePreviewFile, {
+                            headers: {
+                                "Authorization": `Bearer ${localStorage.getItem('authentication-token')}`,
+                                "Content-Type": imagePreviewFile.type,
+                            },
+                            onUploadProgress: (e) => {
+                                setImageUploadState({...imageUploadState!, uploaded: e.loaded});
+                            },
+                        }).then((r) => {
+                            if (r.status === 200) {
+                                setImageUploadState({...imageUploadState!, status: COMPLETED});
+                                clearImagePreview();
+                                setNewNoteContent("");
+                            }
+                        }).catch((e: object) => {
+                            setImageUploadState({...imageUploadState!, status: e.toString()});
+                        });
+                    },
+                })
             },
         })
         setNewNoteContent("");

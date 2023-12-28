@@ -38,7 +38,7 @@ class FileKind(PyEnum):
 
 class NotesFile(Model):
     __tablename__ = "NotesFile"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True, default=uuid4)
     note_id: Mapped[PyUUID] = mapped_column(ForeignKey(NotesNote.id, onupdate="CASCADE", ondelete="CASCADE"))
     note: Mapped[NotesNote] = relationship(NotesNote, info={"owner": True}, back_populates="files")
     kind: Mapped[FileKind] = mapped_column(Enum(FileKind))

@@ -21,12 +21,23 @@ export const NOTES_FIELD_POLICY: TypePolicies = {
 };
 
 const NOTE_PROPS = gql`
+fragment NoteFileProps on NotesFile {
+    id
+    kind
+    file {
+        id
+        abspath
+    }
+}
 fragment NoteProps on NotesNote {
     id
     createdAtUtc
     sortKey
     title
     content
+    files {
+        ...NoteFileProps
+    }
 }
 `;
 
@@ -72,13 +83,20 @@ export function useCreateNoteMutation() {
 
 const ATTACH_FILE = gql`
 ${NOTE_PROPS}
-mutation AttachNoteFile($noteId: UUID!, $kind: InputFileKind!, $mimeType: String!) {
-    notesNoteAttachmentsAddAttachment(noteId: $noteId, kind: $kind, mimeType: $mimeType) {
+mutation AttachNoteFile($noteId: UUID!, $kind: InputEnumFileKind!, $mimeType: String!) {
+    notesNoteattachmentsAddAttachment(noteId: $noteId, kind: $kind, mimeType: $mimeType) {
         note {
             ...NoteProps
         }
         file {
             id
+            abspath
         }
     }
 }`;
+
+export function useAttachFileMutation() {
+    return useMutation(ATTACH_FILE, {
+        refetchQueries: [NOTES_LIST],
+    });
+}
