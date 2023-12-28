@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from sqlalchemy import select
-from sqlalchemy.orm import class_mapper, object_session, InstrumentedAttribute
+from sqlalchemy.orm import class_mapper, object_session, InstrumentedAttribute, Session
 from typing import Callable, Dict, List, Tuple, Type
 
 from .data import User
@@ -63,7 +63,7 @@ def resolve_owner_chain(entity_type: Type[Model], entity_owner_info: OwnerInfo):
             assert current_cls is not owner_class, f"Class `{current_cls}` cannot be its own owner"
             chain.append(OwnerChainEntry(member, owner_info))
             current_cls = owner_class
-            owner_info = TYPE_OWNER_INFO.get(owner_class)
+            owner_info = resolve_owner_info(owner_class)
         TYPE_OWNER_CHAIN[entity_type] = chain
     return chain
 
@@ -73,30 +73,31 @@ def traverse_chain(
 ) -> Tuple[User|None, OwnerInfo|None]:
     session = object_session(entity)
     assert session is not None, "Entity must be attached to a session"
-    entity_type = type(entity)
-    owner_info = resolve_owner_info(entity_type)
-    if owner_info is NO_INFO:
-        return None, None
-    chain = resolve_owner_chain(entity_type, owner_info)
-    statement = select(entity_type)
-    for entry in chain:
-        statement = statement \
-            .join(entry.member) \
-            .add_columns(entry.member.prop.mapper.class_)
-    for key in entity_type.__mapper__.primary_key:
-        primary_key_attr = getattr(entity_type, key.name)
-        primary_key_value = getattr(entity, key.name)
-        statement = statement.where(primary_key_attr == primary_key_value)
-    entity2 = session.scalars(statement).one()
-    assert entity is entity2
-    owner = entity
-    info = None
-    for entry in chain:
-        info = entry.info
-        if fn is not None:
-            fn(owner)
-        owner = getattr(owner, entry.member.key)
-        if owner is None:
-            break
-    assert owner is None or isinstance(owner, User)
-    return owner, info
+    with session.no_autoflush:
+        entity_type = type(entity)
+        owner_info = resolve_owner_info(entity_type)
+        if owner_info is NO_INFO:
+            return None, None
+        chain = resolve_owner_chain(entity_type, owner_info)
+        statement = select(entity_type)
+        for entry in chain:
+            statement = statement \
+                .join(entry.member) \
+                .add_columns(entry.member.prop.mapper.class_)
+        for key in entity_type.__mapper__.primary_key:
+            primary_key_attr = getattr(entity_type, key.name)
+            primary_key_value = getattr(entity, key.name)
+            statement = statement.where(primary_key_attr == primary_key_value)
+        entity2 = session.scalars(statement).one()
+        assert entity is entity2
+        owner = entity
+        info = None
+        for entry in chain:
+            info = entry.info
+            if fn is not None:
+                fn(owner)
+            owner = getattr(owner, entry.member.key)
+            if owner is None:
+                break
+        assert owner is None or isinstance(owner, User)
+        return owner, info
