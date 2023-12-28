@@ -82,11 +82,11 @@ class FileMetadata(Model):
     
     @property
     def abspath(self) -> str:
-        parts = [self.name]
+        parts = []
         file = self
-        while file.parent:
-            file = file.parent
+        while file and not file.isroot:
             parts.append(file.name)
+            file = file.parent
         parts.reverse()
         storage_id = self.storage.id
         return fspath.join(storage_id, *parts)
