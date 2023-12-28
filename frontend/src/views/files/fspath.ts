@@ -110,7 +110,12 @@ function pathToUrl(route: string, path: string) {
     if (filePath.startsWith(sep)) {
         filePath = filePath.slice(1);
     }
-    return generatePath(route, {
+    var prefix = "";
+    if (route.startsWith("http://") || route.startsWith("https://")) {
+        prefix = route.slice(0, route.indexOf("://") + 3);
+        route = route.slice(prefix.length);
+    }
+    return prefix + generatePath(route, {
         storageId: storageId,
         "*": filePath,
     });
