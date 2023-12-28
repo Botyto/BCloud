@@ -46,7 +46,7 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('NotesFile',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('note_id', sa.UUID(), nullable=False),
     sa.Column('kind', sa.Enum('ATTACHMENT', 'PREVIEW', 'CACHE', name='filekind'), nullable=False),
     sa.Column('file_id', sa.UUID(), nullable=False),
