@@ -74,8 +74,8 @@ def build_app():
     database = Database(context)
     msg = Messages()
     cron = Scheduler(asyncio.get_event_loop())
-    files = blob_settings.build_manager()
-    context = AsyncJobContext(context, database, files, msg, cron)
+    blobs = blob_settings.build()
+    context = AsyncJobContext(context, database, blobs, msg, cron)
 
     asyncjobs = AsyncJobs(context)
     context = MiniappContext(context, asyncjobs)

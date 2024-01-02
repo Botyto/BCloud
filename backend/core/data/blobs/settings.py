@@ -10,7 +10,7 @@ class BlobSettings:
     fs_root: str|None = None
     sql_conn_str: str|None = None
 
-    def build_manager(self) -> Blobs:
+    def build(self) -> Blobs:
         if self.fs_root is not None:
             return FsBlobs(self.fs_root)
         elif self.sql_conn_str is not None:

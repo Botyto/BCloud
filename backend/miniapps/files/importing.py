@@ -164,7 +164,7 @@ class GoogleDriveImporter(GoogleImporter):
         logger.debug("Downloading %d files", len(gfiles))
         with context.database.make_session() as session:
             storage = self.__get_gdrive_storage(context, session)
-            files = FileManager(context.files, context.user_id, session)
+            files = FileManager(context.blobs, context.user_id, session)
             for i, gfile in enumerate(gfiles):
                 path = fspath.join(storage.id, gfile.path)
                 gfile_context = DriveFileContext(context, i, len(gfiles), files, session, path, gfile)
@@ -187,15 +187,15 @@ class GoogleDriveImporter(GoogleImporter):
     async def run(self, context: GoogleImportingContext):
         files: List[DriveFile] = []
         cache_addr = context.temp_file_addr("gdrive_import", f"files.pickle")
-        if context.files.exists(cache_addr):
+        if context.blobs.exists(cache_addr):
             logger.debug("Loading cached files")
-            with context.files.open(cache_addr, OpenMode.READ) as fh:
+            with context.blobs.open(cache_addr, OpenMode.READ) as fh:
                 files = pickle.load(fh)
         else:
             logger.debug("Gethering files")
             self.__gather_files(files, context)
             files.sort(key=lambda f: f.path)
-            with context.files.open(cache_addr, OpenMode.WRITE) as fh:
+            with context.blobs.open(cache_addr, OpenMode.WRITE) as fh:
                 pickle.dump(files, fh)
         self.__download_files(files, context)
         logger.debug("Finished importing")

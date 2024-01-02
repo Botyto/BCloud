@@ -34,6 +34,6 @@ class CacheHandler(AsyncJobHandler):
         if not cache:
             return
         with self.context.database.make_session() as session:
-            files = FileManager.for_service(self.context.files, session)
+            files = FileManager.for_service(self.context.blobs, session)
             storage = files.storage.get_or_create(StorageManager.SERVICE_PREFIX + "notes")
             files.makefile()

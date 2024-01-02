@@ -11,14 +11,14 @@ from .state import State
 
 class AsyncJobContext(DataContext):
     database: Database
-    files: Blobs
+    blobs: Blobs
     msg: Messages
     cron: Scheduler
 
-    def __init__(self, base: DataContext, database: Database, files: Blobs, msg: Messages, cron: Scheduler):
+    def __init__(self, base: DataContext, database: Database, blobs: Blobs, msg: Messages, cron: Scheduler):
         self._extend(base)
         self.database = database
-        self.files = files
+        self.blobs = blobs
         self.msg = msg
         self.cron = cron
 

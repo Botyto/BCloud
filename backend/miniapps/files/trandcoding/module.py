@@ -76,7 +76,7 @@ class TranscodeModule(GqlMiniappModule):
         transcoder = Transcoder.find(src_format, dst_format)
         if transcoder is None:
             raise ValueError(f"Conversion from '{src_ext}' to '{ext}' is not supported")
-        manager = FileManager(self.context.files, self.user_id, self.session)
+        manager = FileManager(self.context.blobs, self.user_id, self.session)
         file = manager.by_path(path)
         if file is None:
             raise FileNotFoundError(path)
@@ -132,12 +132,12 @@ class TranscodingHandler(AsyncJobHandler):
         dst_format = Format.by_ext(dst_ext)
         transcoder = Transcoder.find(src_format, dst_format)
         with self.context.database.make_session() as session:
-            files = FileManager.for_service(self.context.files, session)
+            files = FileManager.for_service(self.context.blobs, session)
             file_id = UUID(self.context.get_payload("file_id"))
             src_file = files.by_id(file_id)
             user_id = src_file.user_id
             dst_path = self.__make_dst_path(src_file.abspath, dst_ext, files)
-            contents = FileContents(self.context.files, NAMESPACE_CONTENT)
+            contents = FileContents(self.context.blobs, NAMESPACE_CONTENT)
             src_data = contents.read(src_file)
             del contents, src_file, file_id, files
         context = TranscodeContext(self.context, src_data, params)
@@ -145,9 +145,9 @@ class TranscodingHandler(AsyncJobHandler):
         dst_data = transcoder.run(context)
         del src_data
         with self.context.database.make_session() as session:
-            files = FileManager(self.context.files, user_id, session)
+            files = FileManager(self.context.blobs, user_id, session)
             dst_file = files.makefile(dst_path, dst_format.mime)
-            contents = FileContents(self.context.files, NAMESPACE_CONTENT)
+            contents = FileContents(self.context.blobs, NAMESPACE_CONTENT)
             contents.write(dst_file, dst_data)
             del contents, dst_file, files, dst_data, dst_path
         duration = datetime.now() - start_time

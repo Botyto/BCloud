@@ -22,7 +22,7 @@ class NoteAttachmentsModule(GqlMiniappModule):
             note=note,
             kind=kind,
         )
-        files = FileManager(self.context.files, note.collection.user_id, self.session, service=True)
+        files = FileManager(self.context.blobs, note.collection.user_id, self.session, service=True)
         storage = files.storage.get_or_create(self.STORAGE_NAME)
         files.makedirs(f"{storage.id}:/{note_id}")
         self.session.commit()

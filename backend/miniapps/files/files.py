@@ -17,7 +17,7 @@ class FilesModule(GqlMiniappModule):
     @property
     def manager(self):
         if self._manager is None:
-            self._manager = FileManager(self.context.files, self.user_id, self.session)
+            self._manager = FileManager(self.context.blobs, self.user_id, self.session)
         return self._manager
     
     @query()
@@ -87,5 +87,5 @@ class DeleteFileEvent(MiniappSqlEvent):
             if not isinstance(entity, FileMetadata):
                 continue
             if manager is None:
-                manager = FileManager.for_service(self.context.files, session)
+                manager = FileManager.for_service(self.context.blobs, session)
             manager.contents.delete(entity)

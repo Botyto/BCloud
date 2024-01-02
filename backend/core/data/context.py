@@ -9,14 +9,14 @@ from ..graphql.schema.methods import MethodCollection
 
 
 class DataContext(BaseContext):
-    sql: SqlSettings
-    blobs: BlobSettings
+    sql_settings: SqlSettings
+    blob_settings: BlobSettings
     graphql_methods: MethodCollection
     urlspecs: List[URLSpec]
 
     def __init__(self, base: BaseContext, sql: SqlSettings, blobs: BlobSettings):
         self._extend(base)
-        self.sql = sql
-        self.blobs = blobs
+        self.sql_settings = sql
+        self.blob_settings = blobs
         self.graphql_methods = MethodCollection()
         self.urlspecs = []

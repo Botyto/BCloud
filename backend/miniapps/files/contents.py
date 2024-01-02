@@ -10,7 +10,7 @@ class ContentsModule(RestMiniappModule):
     @property
     def manager(self):
         if self._manager is None:
-            self._manager = FileManager(self.context.files, self.user_id, self.session)
+            self._manager = FileManager(self.context.blobs, self.user_id, self.session)
         return self._manager
 
     @property

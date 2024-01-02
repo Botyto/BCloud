@@ -26,13 +26,13 @@ class NoteFileManager:
     @property
     def files(self):
         if self._files is None:
-            self._files = FileManager.for_service(self.context.files, self.session)
+            self._files = FileManager.for_service(self.context.blobs, self.session)
         return self._files
     
     @property
     def contents(self):
         if self._contents is None:
-            self._contents = FileContents(self.context.files, NAMESPACE_CONTENT)
+            self._contents = FileContents(self.context.blobs, NAMESPACE_CONTENT)
         return self._contents
     
     @property

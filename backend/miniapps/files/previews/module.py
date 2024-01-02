@@ -15,7 +15,7 @@ class PreviewModule(GqlMiniappModule, ArchivePreviews):
         if self._manager is None:
             if self.user_id is None:
                 raise AuthError()
-            self._manager = FileManager(self.context.files, self.user_id, self.session)
+            self._manager = FileManager(self.context.blobs, self.user_id, self.session)
         return self._manager
 
     @query()

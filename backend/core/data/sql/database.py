@@ -25,13 +25,13 @@ class Database:
         self.engine = create_engine(self.connection_string, pool_recycle=1800)
         self._sessionmaker = sessionmaker(bind=self.engine)
         if wipe_settings:
-            self.context.sql.wipe()
+            self.context.sql_settings.wipe()
         if self.context.env.debug:
             self._activate_debug()
 
     @property
     def connection_string(self):
-        return self.context.sql.connection_string
+        return self.context.sql_settings.connection_string
 
     def make_session(self, info: dict|None = None) -> Session:
         return self._sessionmaker(info=info)
