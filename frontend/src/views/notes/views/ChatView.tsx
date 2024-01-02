@@ -74,7 +74,9 @@ export default function ChatView(props: CollectionViewProps) {
                 content: newNoteContent,
                 tags: [],
             },
-            onCompleted: (!imagePreviewFile) ? undefined : (data) => {
+            onCompleted: (!imagePreviewFile) ? (data) => {
+                setNewNoteContent("");
+            } : (data) => {
                 attachNote({
                     variables: {
                         noteId: data.notesNotesCreate.id,
@@ -109,7 +111,6 @@ export default function ChatView(props: CollectionViewProps) {
                 })
             },
         })
-        setNewNoteContent("");
     }
 
     function clearImagePreview() {
@@ -171,6 +172,13 @@ export default function ChatView(props: CollectionViewProps) {
                         src={imagePreviewUrl}
                         style={{width: "100%", height: "100%"}}
                     />
+                    {
+                        imageUploadState && 
+                        <>
+                            <span style={{display: "inline-block", minWidth: "5rem"}}>{imageUploadState.status}</span>
+                            <span style={{display: "inline-block", minWidth: "5rem"}}>{imageUploadState.uploaded}/{imageUploadState.total}</span>
+                        </>
+                    }
                     <button
                         onClick={() => clearImagePreview()}
                         style={{position: "absolute", top: "0", right: "0"}}
