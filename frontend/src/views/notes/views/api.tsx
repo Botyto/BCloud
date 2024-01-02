@@ -27,6 +27,7 @@ fragment NoteFileProps on NotesFile {
     file {
         id
         abspath
+        mimeType
     }
 }
 fragment NoteProps on NotesNote {

@@ -22,10 +22,14 @@ function Entry(props: EntryProps) {
     }}>
         {
             props.note.files
-                .filter((f: any) => f.kind === "ATTACHMENT")
+                .filter((f: any) => (f.kind === "ATTACHMENT" && f.file.mimeType.startsWith("image/")) || f.kind == "PREVIEW")
                 .map((f: any) => {
                     const contentUrl = fspath.pathToUrl(`${SERVER_HOST}/api/files/contents/:storageId/*`, f.file.abspath);
-                    return <img key={f.id} src={contentUrl} />
+                    return (
+                        <div key={f.id}>
+                            <img src={contentUrl}/>
+                        </div>
+                    );
                 })
         }
         {props.note.content}
