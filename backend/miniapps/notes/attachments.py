@@ -1,38 +1,27 @@
-from sqlalchemy import select
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from core.api.modules.gql import GqlMiniappModule, mutation
 
 from .data import NotesNote, FileKind, NotesFile
 
-from miniapps.files.tools.storage import StorageManager
-from miniapps.files.tools.files import FileManager
+from .tools.files import NoteFileManager
 
 
 class NoteAttachmentsModule(GqlMiniappModule):
-    STORAGE_NAME = StorageManager.SERVICE_PREFIX + "notes"
-    
-    @mutation()
-    def add_attachment(self, note_id: UUID, kind: FileKind, mime_type: str) -> NotesFile:
-        statement = select(NotesNote).where(NotesNote.id == note_id)
-        note = self.session.scalars(statement).one()
-        note_file = NotesFile(
-            id=uuid4(),
-            note_id=note_id,
-            note=note,
-            kind=kind,
-        )
-        files = FileManager(self.context.blobs, note.collection.user_id, self.session, service=True)
-        storage = files.storage.get_or_create(self.STORAGE_NAME)
-        files.makedirs(f"{storage.id}:/{note_id}")
-        self.session.commit()
-        file = files.makefile(f"{storage.id}:/{note_id}/{note_file.id}", mime_type)
-        note_file.file_id = file.id
-        note_file.file = file
-        self.session.add(note_file)
-        self.session.commit()
-        return note_file
+    _files: NoteFileManager|None = None
+
+    @property
+    def files(self):
+        if self._files is None:
+            self._files = NoteFileManager(None, self.context.user_id, self.context, self.session)
+        return self._files
 
     @mutation()
-    def remove_attachment(self, note_id: UUID, attachment_id: int) -> NotesNote:
-        raise NotImplementedError()
+    def add_attachment(self, note_id: UUID, kind: FileKind, mime_type: str) -> NotesFile:
+        return self.files.default_write(note_id, None, mime_type, kind)
+
+    @mutation()
+    def remove_attachment(self, note_id: UUID, attachment_id: UUID) -> NotesNote|None:
+        note_file = self.files.delete(attachment_id)
+        if note_file is not None:
+            return note_file.note
