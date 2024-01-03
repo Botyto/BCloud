@@ -101,3 +101,30 @@ export function useAttachFileMutation() {
         refetchQueries: [NOTES_LIST],
     });
 }
+
+const NOTE_SET_ARCHIVED = gql`
+${NOTE_PROPS}
+mutation ArchiveNoteMutation($id: UUID!, $archived: Boolean!) {
+    notesNotesSetArchived(id: $id, archived: $archived) {
+        ...NoteProps
+    }
+}`;
+
+export function useArchiveNoteMutation() {
+    return useMutation(NOTE_SET_ARCHIVED, {
+        refetchQueries: [NOTES_LIST],
+    });
+}
+
+const DELETE_NOTE = gql`
+mutation DeleteNoteMutation($id: UUID!) {
+    notesNotesDelete(id: $id) {
+        success
+    }
+}`;
+
+export function useDeleteNoteMutation() {
+    return useMutation(DELETE_NOTE, {
+        refetchQueries: [NOTES_LIST],
+    });
+}

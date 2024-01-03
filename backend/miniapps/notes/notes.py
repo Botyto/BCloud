@@ -7,8 +7,9 @@ from core.api.pages import PagesInput, PagesResult
 from core.data.sql.columns import ensure_str_fit
 from core.graphql.result import SuccessResult
 
-from .data import NotesCollection, NotesNote, NotesTag
 from .collections import ArchivedFilter
+from .data import NotesCollection, NotesNote, NotesTag
+from .tools.files import NoteFileManager
 
 
 class NotesModule(GqlMiniappModule):
@@ -42,11 +43,10 @@ class NotesModule(GqlMiniappModule):
 
     @mutation()
     def delete(self, id: UUID) -> SuccessResult:
-        statement = delete(NotesNote) \
-            .where(NotesNote.id == id) \
-            .returning(NotesNote.title)
-        result = self.session.execute(statement)
-        title = result.scalar_one()
+        files = NoteFileManager(None, self.user_id, self.context, self.session)
+        note = files.delete_all(id)
+        title = note.title
+        self.session.delete(note)
         self.log_activity("collection.delete", {"id": str(id), "title": title})
         return SuccessResult()
 

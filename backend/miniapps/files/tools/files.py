@@ -91,7 +91,7 @@ class FileManager:
                 return new_path
             i += 1
     
-    def makefile(self, path: str, mime_type: str|None = None):
+    def makefile(self, path: str, mime_type: str|None = None, make_dirs: bool = False):
         if mime_type is not None:
             ensure_str_fit("MIME-Type", mime_type, FileMetadata.mime_type)
         basename = fspath.basename(path)
@@ -99,7 +99,10 @@ class FileManager:
             raise ValueError("File name cannot be empty")
         ensure_str_fit("File name", basename, FileMetadata.name)
         dir_path = fspath.normpath(fspath.dirname(path))
-        dir = self.by_path(dir_path)
+        if make_dirs:
+            dir = self.makedirs(dir_path)
+        else:
+            dir = self.by_path(dir_path)
         if dir is None:
             raise DirectoryNotFound(path)
         old_file = dir.get_child(basename)
@@ -178,10 +181,8 @@ class FileManager:
             raise FileNotFoundError(path)
         if metadata.isroot:
             raise ValueError("Cannot delete root directory")
-        if metadata.isfile:
+        if metadata.isfile or metadata.isdir:
             self.contents.delete(metadata)
-        elif metadata.isdir:
-            pass
         self.session.delete(metadata)
         # TODO delete links to this file
 

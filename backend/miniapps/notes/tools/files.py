@@ -56,43 +56,49 @@ class NoteFileManager:
     def for_service(cls, kind: FileKind|None, user_id: UUID|None, context: AsyncJobContext, session: Session):
         return cls(kind, user_id, context, session, service=True)
     
+    def _folder_path(self, storage: FileStorage, note: NotesNote):
+        return fspath.join(storage.id, str(note.id))
+
     def _file_path(self, storage: FileStorage, note: NotesNote, note_file: NotesFile) -> str:
         return fspath.join(storage.id, str(note.id), str(note_file.id))
     
-    def _get_note(self, note_id: UUID) -> NotesNote|None:
-        statement = select(NotesNote) \
-            .filter(NotesNote.id == note_id)
-        if self.user_id is not None:
-            statement = statement.filter(NotesNote.collection.has(NotesCollection.user_id == self.user_id))
-        return self.session.scalars(statement).one_or_none()
+    def _get_note(self, note: UUID|NotesNote) -> NotesNote|None:
+        if isinstance(note, UUID):
+            statement = select(NotesNote) \
+                .filter(NotesNote.id == note)
+            if self.user_id is not None:
+                statement = statement.filter(NotesNote.collection.has(NotesCollection.user_id == self.user_id))
+            return self.session.scalars(statement).one_or_none()
+        return note
 
-    def default_get(self, note_id: UUID, kind: FileKind|None = None) -> NotesFile|None:
+    def default_get(self, note: UUID|NotesNote, kind: FileKind|None = None) -> NotesFile|None:
         if kind is None:
             kind = self.kind
         assert kind is not None, "Kind is not set"
+        note_id = note if isinstance(note, UUID) else note.id
         statement = select(NotesFile) \
             .filter(NotesFile.note_id == note_id, NotesFile.kind == self.kind) \
             .join(NotesFile.file)
-        return self.session.scalars(statement).one_or_none()
+        return self.session.scalars(statement).first()
     
-    def default_write(self, note_id: UUID, content: bytes|None, mime_type: str, kind: FileKind|None = None) -> NotesFile:
+    def default_write(self, note: UUID|NotesNote, content: bytes|None, mime_type: str, kind: FileKind|None = None) -> NotesFile:
         if kind is None:
             kind = self.kind
         assert kind is not None, "Kind is not set"
-        note = self._get_note(note_id)
-        if note is None:
+        note_obj = self._get_note(note)
+        if note_obj is None:
             raise ValueError("Note not found")
-        note_file = self.default_get(note_id)
+        note_file = self.default_get(note_obj.id, kind)
         if note_file is None:
             note_file = NotesFile(
-                note_id=note_id,
+                note_id=note_obj.id,
                 kind=kind,
             )
             storage = self.files.storage.get_or_create(self.STORAGE_NAME)
             if self.session.is_modified(storage):
                 self.session.commit()
-            path = self._file_path(storage, note, note_file)
-            file = self.files.makefile(path, mime_type)
+            path = self._file_path(storage, note_obj, note_file)
+            file = self.files.makefile(path, mime_type, make_dirs=True)
             note_file.file = file
             self.session.add(note_file)
             self.session.add(file)
@@ -102,17 +108,52 @@ class NoteFileManager:
         self.contents.write(file, content)
         return note_file
     
-    def default_delete(self, note_id: UUID) -> NotesFile|None:
-        note_file = self.default_get(note_id)
+    def default_delete(self, note: UUID|NotesNote, kind: FileKind|None) -> NotesFile|None:
+        note_file = self.default_get(note, kind)
         return self.delete(note_file)
     
-    def delete(self, note_file: UUID|NotesFile|None) -> NotesFile|None:
+    def __delete_nocommit(self, note_file: UUID|NotesFile|None) -> NotesFile|None:
+        note_file_obj: NotesFile|None
         if isinstance(note_file, UUID):
-            note_file = self.session.get(NotesFile, note_file)
-        if note_file is None:
+            note_file_obj = self.session.get(NotesFile, note_file)
+        else:
+            note_file_obj = note_file
+        if note_file_obj is None:
             return
-        self.contents.delete(note_file.file)
-        self.session.delete(note_file.file)
-        self.session.delete(note_file)
+        self.contents.delete(note_file_obj.file)
+        self.session.delete(note_file_obj.file)
+        self.session.delete(note_file_obj)
+        return note_file_obj
+    
+    def __delete_empty_folder(self, note: NotesNote, autocommit: bool = True):
+        if note.files:
+            return
+        storage = self.files.storage.by_name(self.STORAGE_NAME)
+        if storage is None:
+            return
+        path = self._folder_path(storage, note)
+        self.files.delete(path)
+        if autocommit:
+            self.session.commit()
+
+    def delete(self, note_file: UUID|NotesFile|None) -> NotesFile|None:
+        note_file_obj = self.__delete_nocommit(note_file)
+        if note_file_obj is not None:
+            note_obj = note_file_obj.note
+            self.__delete_empty_folder(note_obj, autocommit=False)
+            self.session.commit()
+        return note_file_obj
+    
+    def delete_all(self, note: UUID|NotesNote) -> NotesNote:
+        if isinstance(note, NotesNote):
+            note_obj = note
+        else:
+            statement = select(NotesNote) \
+                .filter(NotesNote.id == note) \
+                .join(NotesNote.files)
+            note_obj = self.session.scalars(statement).one()
+        for file in note_obj.files:
+            self.__delete_nocommit(file)
         self.session.commit()
-        return note_file
+        self.__delete_empty_folder(note_obj)
+        return note_obj

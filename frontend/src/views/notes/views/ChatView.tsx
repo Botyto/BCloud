@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import { VisibilityObserver } from 'reactjs-visibility';
 import { CollectionViewProps } from './types';
-import { useAttachFileMutation, useCreateNoteMutation, useNotesListQuery } from './api';
+import { useAttachFileMutation, useCreateNoteMutation, useNotesListQuery, useDeleteNoteMutation } from './api';
 import Loading from '../../../components/Loading';
 import fspath from '../../files/fspath';
 import { SERVER_HOST } from '../../../ApiManagement';
@@ -13,6 +13,17 @@ interface EntryProps {
 }
 
 function Entry(props: EntryProps) {
+    const [deleteNote, deleteNoteData] = useDeleteNoteMutation();
+
+    function onDeleteNote(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) {
+        e.preventDefault();
+        deleteNote({
+            variables: {
+                id: props.note.id
+            },
+        });
+    }
+
     return <div style={{
         border: "1px solid black",
         borderRadius: "0.5rem",
@@ -33,7 +44,10 @@ function Entry(props: EntryProps) {
                 })
         }
         {props.note.content}
-        <div style={{fontSize: "0.5rem"}}><i>{props.note.createdAtUtc}</i></div>
+        <div style={{fontSize: "0.5rem"}}>
+            <i>{props.note.createdAtUtc}</i>
+            <a href="#" onClick={onDeleteNote} style={{marginLeft: "0.5rem"}}>🗑️</a>
+        </div>
     </div>
 }
 
