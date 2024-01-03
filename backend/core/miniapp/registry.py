@@ -11,6 +11,15 @@ if TYPE_CHECKING:
 class MiniappRegistry:
     def start(self, miniapp: "Miniapp", context: MiniappContext):
         raise NotImplementedError()
+    
+
+class ClassRegistry(MiniappRegistry):
+    def __init__(self, cls: type):
+        pass
+
+    def start(self, miniapp: "Miniapp", context: MiniappContext):
+        pass
+
 
 
 class MsgRegistry(MiniappRegistry):

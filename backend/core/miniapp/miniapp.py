@@ -4,7 +4,7 @@ from .context import MiniappContext
 from .data import MiniappVersion
 from .registry import MiniappRegistry
 
-from .registry import AsyncjobRegistry, MsgRegistry
+from .registry import AsyncjobRegistry, ClassRegistry, MsgRegistry
 from .sql import MiniappSqlEvent, SqlEventRegistry
 from .module import MiniappModule, ModuleRegistry
 

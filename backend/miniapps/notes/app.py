@@ -1,8 +1,10 @@
-from core.miniapp.miniapp import Miniapp, ModuleRegistry
+from core.miniapp.miniapp import AsyncjobRegistry, ClassRegistry, Miniapp, ModuleRegistry
 
 from .collections import CollectionsModule
 from .notes import NotesModule
 from .attachments import NoteAttachmentsModule
+from .background import PostprocessHandler
+from .cache import HtmlCachePostprocessor
 
 
 class NotesMiniapp(Miniapp):
@@ -11,5 +13,7 @@ class NotesMiniapp(Miniapp):
             ModuleRegistry(CollectionsModule),
             ModuleRegistry(NotesModule),
             ModuleRegistry(NoteAttachmentsModule),
+            AsyncjobRegistry(PostprocessHandler),
+            ClassRegistry(HtmlCachePostprocessor),
             dependencies=["profile", "files"],
         )
