@@ -9,7 +9,7 @@ import NoteView from './NoteView';
 export default function NotesBrowser() {
     const { t } = useTranslation("common");
     const routeParams = useParams();
-    const collectionId = routeParams.collection;
+    const collectionSlug = routeParams.collection;
     const noteId = routeParams.note;
 
     return <div>
@@ -24,8 +24,8 @@ export default function NotesBrowser() {
                 {
                     (noteId) ? (
                         <NoteView noteId={noteId}/>
-                    ) : (collectionId) ? (
-                        <CollectionView collectionId={parseInt(collectionId)}/>
+                    ) : (collectionSlug) ? (
+                        <CollectionView collectionSlug={collectionSlug}/>
                     ) : (
                         <></>
                     )

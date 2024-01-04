@@ -4,6 +4,7 @@ const COLLECTION_PROPS = gql`
 fragment CollectionProps on NotesCollection {
     id
     name
+    slug
     view
     archived
     access
@@ -51,16 +52,16 @@ export function useCollectionsNewMutation() {
 
 const COLLECTIONS_GET = gql`
 ${COLLECTION_PROPS}
-query CollectionsGet($id: Int!) {
-    notesCollectionsGet(id: $id) {
+query CollectionsGet($slug: String!) {
+    notesCollectionsGet(idOrSlug: $slug) {
         ...CollectionProps
     }
 }`;
 
-export function useCollectionsGetQuery(id: number) {
+export function useCollectionsGetQuery(slug: string) {
     return useQuery(COLLECTIONS_GET, {
         variables: {
-            id: id,
+            slug: slug,
         },
     });
 }

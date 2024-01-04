@@ -7,12 +7,12 @@ import BookmarksView from './views/BookmarksView';
 import ChatView from './views/ChatView';
 
 interface CollectionViewProps {
-    collectionId: number;
+    collectionSlug: string;
 }
 
 export default function CollectionView(props: CollectionViewProps) {
     const { t } = useTranslation("common");
-    const collectionData = useCollectionsGetQuery(props.collectionId);
+    const collectionData = useCollectionsGetQuery(props.collectionSlug);
 
     if (collectionData.loading) {
         return <Loading/>;
