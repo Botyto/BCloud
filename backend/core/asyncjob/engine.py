@@ -3,7 +3,7 @@ import logging
 from sqlalchemy import not_, select
 from sqlalchemy.orm import object_session
 from threading import current_thread, Thread
-from typing import Dict, Type
+from typing import Any, Dict, Type
 
 from .action import Action
 from .context import AsyncJobContext, AsyncJobRuntimeContext
@@ -35,9 +35,16 @@ class AsyncJobs:
         self.__resume_jobs()
 
     # TODO limit number of jobs running at once
-    def schedule(self, issuer: str, type: str, payload: dict, valid_for: timedelta|None = None) -> int:
+    def schedule(self, issuer: str, type: str, payload: dict|Any|None, valid_for: timedelta|None = None) -> int:
         assert ensure_str_fit("issuer", issuer, JobPromise.issuer, should_raise=False)
         ensure_str_fit("type", type, JobPromise.type)
+        if payload is None:
+            payload = {}
+        elif not isinstance(payload, dict):
+            payload = {k: getattr(payload, k) for k in payload.__annotations__}
+            handler = self.__resolve_handler_type(issuer, type)
+            if handler is not None:
+                handler.verify_payload(payload)
         if valid_for is None:
             valid_for = timedelta()
         with self.context.database.make_session() as session:

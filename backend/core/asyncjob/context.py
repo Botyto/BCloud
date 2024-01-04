@@ -26,15 +26,13 @@ class AsyncJobContext(DataContext):
 class AsyncJobRuntimeContext(AsyncJobContext):
     state: State|None
     job_id: int
-    payload: dict|None
+    payload: dict
 
-    def __init__(self, base: AsyncJobContext, state: State|None, job_id: int, payload: dict|None):
+    def __init__(self, base: AsyncJobContext, state: State|None, job_id: int, payload: dict):
         self._extend(base)
         self.state = state
         self.job_id = job_id
         self.payload = payload
 
     def get_payload(self, key: str, default: Any = None):
-        if self.payload is None:
-            return default
         return self.payload.get(key, default)

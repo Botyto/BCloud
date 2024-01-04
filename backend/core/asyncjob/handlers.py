@@ -1,18 +1,41 @@
-from typing import Dict, Type
+from typing import Dict, List, Type
+
+import typeguard
 
 from .action import Action
 from .context import AsyncJobRuntimeContext
 
 from ..data.blobs.address import Address
 
+MISSING_VALUE = object()
+
 
 class AsyncJobHandler:
     TYPE: str
+    PAYLOAD_SCHEMA: List[str]|Type|None = None
     context: AsyncJobRuntimeContext
 
     def __init__(self, context: AsyncJobRuntimeContext):
         self.context = context
+        self.verify_payload(context.payload)
 
+    @classmethod
+    def verify_payload(cls, payload: dict):
+        if cls.PAYLOAD_SCHEMA is None:
+            return
+        if isinstance(cls.PAYLOAD_SCHEMA, list):
+            for key in cls.PAYLOAD_SCHEMA:
+                if key not in payload:
+                    raise ValueError(f"Missing payload key {key}")
+        elif isinstance(cls.PAYLOAD_SCHEMA, type):
+            for key, expected_type_hint in cls.PAYLOAD_SCHEMA.__annotations__.items():
+                value = payload.get(key, MISSING_VALUE)
+                if value is MISSING_VALUE:
+                    raise ValueError(f"Missing payload key {key}")
+                typeguard.check_type(value, expected_type_hint)
+        else:
+            raise ValueError("Invalid PAYLOAD_TYPE")
+    
     def set_progress(self, progress: float):
         assert self.context.state is not None
         self.context.state.set_progress(progress)
