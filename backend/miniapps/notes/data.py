@@ -17,7 +17,7 @@ from miniapps.files.data import FileMetadata
 class NotesNote(Model):
     __tablename__ = "NotesNote"
     id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True, default=uuid4)
-    collection_id: Mapped[int] = mapped_column(ForeignKey("NotesCollection.id", onupdate="CASCADE", ondelete="CASCADE"))
+    collection_id: Mapped[PyUUID] = mapped_column(ForeignKey("NotesCollection.id", onupdate="CASCADE", ondelete="CASCADE"))
     collection: Mapped["NotesCollection"] = relationship("NotesCollection", info={"owner": True}, back_populates="notes")
     created_at_utc: Mapped[datetime] = mapped_column(DateTime, default=utcnow_tz)
     slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info={"slug": True})
@@ -62,11 +62,11 @@ class CollectionView(PyEnum):
 
 class NotesCollection(Model):
     __tablename__ = "NotesCollection"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True, default=uuid4)
     user_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id", onupdate="CASCADE", ondelete="CASCADE"))
     user: Mapped[User] = relationship(User, info={"owner": True})
     created_at_utc: Mapped[datetime] = mapped_column(DateTime, default=utcnow_tz)
-    parent_id: Mapped[int|None] = mapped_column(Integer, ForeignKey("NotesCollection.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=True, default=None)
+    parent_id: Mapped[PyUUID|None] = mapped_column(UUID, ForeignKey("NotesCollection.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=True, default=None)
     parent: Mapped[Optional["NotesCollection"]] = relationship("NotesCollection", remote_side=[id])
     children: Mapped[List["NotesCollection"]] = relationship("NotesCollection", uselist=True, back_populates="parent")
     slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info={"slug": True})
