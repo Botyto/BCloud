@@ -61,6 +61,8 @@ class HtmlCachePostprocessor(NotePostprocessor):
         cache = cacher.cache(self._url)  # type: ignore
         if cache is None:
             return
+        if cache.mime_type == "text/html":
+            pass  # TODO embed images / pre-render
         with self.context.database.make_session() as session:
             files = NoteFileManager(FileKind.CACHE, self._user_id, self.context, session)
             files.default_write(self._note_id, cache.content, cache.mime_type)  # type: ignore
