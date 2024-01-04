@@ -14,23 +14,31 @@ from .tools.files import NoteFileManager
 
 class NotesModule(GqlMiniappModule):
     @query()
-    def list(self, collection_id: int, archived: ArchivedFilter, tag: str|None, pages: PagesInput) -> PagesResult[NotesNote]:
-        statement = select(NotesNote).where(NotesNote.collection_id == collection_id)
+    def list(self, collection_id_or_slug: UUID|str, archived: ArchivedFilter, tag: str|None, pages: PagesInput) -> PagesResult[NotesNote]:
+        statement = select(NotesNote)
+        if isinstance(collection_id_or_slug, str):
+            statement = statement.join(NotesCollection).where(NotesCollection.slug == collection_id_or_slug)
+        else:
+            statement = statement.where(NotesNote.collection_id == collection_id_or_slug)
         if tag is not None:
             statement = statement.where(NotesNote.tags.any(NotesTag.tag == tag))
         statement = archived.filter(statement)
         return pages.of(self.session, statement)
 
     @mutation()
-    def create(self, collection_id: int, title: str, content: str, tags: List[str]) -> NotesNote:
+    def create(self, collection_id_or_slug: UUID|str, title: str, content: str, tags: List[str]) -> NotesNote:
         ensure_str_fit("title", title, NotesNote.title)
         ensure_str_fit("content", content, NotesNote.content)
         for tag in tags:
             ensure_str_fit("tag", tag, NotesTag.tag)
-        statement = select(NotesCollection).where(NotesCollection.id == collection_id)
+        statement = select(NotesCollection)
+        if isinstance(collection_id_or_slug, str):
+            statement = statement.where(NotesCollection.slug == collection_id_or_slug)
+        else:
+            statement = statement.where(NotesCollection.id == collection_id_or_slug)
         collection = self.session.scalars(statement).one()
         note = NotesNote(
-            collection_id=collection_id,
+            collection_id=collection.id,
             collection=collection,
             title=title,
             content=content,
@@ -38,7 +46,7 @@ class NotesModule(GqlMiniappModule):
         )
         self.session.add(note)
         self.session.commit()
-        self.log_activity("note.create", {"id": str(note.id), "title": title, "collection_id": collection_id})
+        self.log_activity("note.create", {"id": str(note.id), "title": title, "collection_id": collection.id})
         return note
 
     @mutation()
@@ -47,7 +55,7 @@ class NotesModule(GqlMiniappModule):
         note = files.delete_all(id)
         title = note.title
         self.session.delete(note)
-        self.log_activity("collection.delete", {"id": str(id), "title": title})
+        self.log_activity("note.delete", {"id": str(id), "title": title})
         return SuccessResult()
 
     @mutation()
@@ -109,4 +117,5 @@ class NotesModule(GqlMiniappModule):
         statement = select(NotesNote).where(NotesNote.id == id)
         note = self.session.scalars(statement).one()
         note.sort_key = sort_key
+        # self.log_activity("note.set_sort_key", {"id": str(id), "sort_key": note.sort_key})
         return note
