@@ -52,7 +52,7 @@ class NotesModule(GqlMiniappModule):
         )
         self.session.add(note)
         self.session.commit()
-        self.log_activity("note.create", {"id": str(note.id), "title": title, "collection_id": collection.id})
+        self.log_activity("note.create", {"id": str(note.id), "title": title, "collection_id": str(collection.id)})
         return note
     
     @mutation()

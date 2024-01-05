@@ -33,7 +33,7 @@ function Note(props: NoteProps) {
 export default function NotesView(props: CollectionViewProps) {
     const { t } = useTranslation("common");
     const editorDlg = useDialogState();
-    const notesData = useNotesListQuery(props.collection.id, 0);
+    const notesData = useNotesListQuery(props.collection.slug, 0);
     const [createNote, createNoteData] = useCreateNoteMutation();
     const [editedNote, setEditedNote] = React.useState<any>(null);
     
@@ -56,7 +56,7 @@ export default function NotesView(props: CollectionViewProps) {
         } else {
             createNote({
                 variables: {
-                    collectionId: props.collection.id,
+                    collectionSlug: props.collection.slug,
                     title: editedNote.title,
                     content: editedNote.content,
                     tags: [],
@@ -75,12 +75,12 @@ export default function NotesView(props: CollectionViewProps) {
                     <span style={{color: "red"}}>
                         {t("notes.collection.error", {error: notesData.error.message})}
                     </span>
-                ) : (notesData.data.notesNotesList.items.length == 0) ? (
+                ) : (notesData.data.notesNotesListBySlug.items.length == 0) ? (
                     <span>
                         {t("notes.view.notes.empty")}
                     </span>
                 ) : (
-                    notesData.data.notesNotesList.items.map((note: any) => {
+                    notesData.data.notesNotesListBySlug.items.map((note: any) => {
                         return <Note
                             key={note.id}
                             note={note}

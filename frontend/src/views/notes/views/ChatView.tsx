@@ -63,7 +63,7 @@ interface FileUploadState {
 
 export default function ChatView(props: CollectionViewProps) {
     const { t } = useTranslation("common");
-    const notesData = useNotesListQuery(props.collection.id, 0);
+    const notesData = useNotesListQuery(props.collection.slug, 0);
     const [newNoteContent, setNewNoteContent] = useState<string>("");
     const [imagePreviewFile, setImagePreviewFile] = useState<File|null>(null);
     const [imagePreviewUrl, setImagePreviewUrl] = useState<string>("");
@@ -87,7 +87,7 @@ export default function ChatView(props: CollectionViewProps) {
         }
         createNote({
             variables: {
-                collectionId: props.collection.id,
+                collectionSlug: props.collection.slug,
                 title: "",
                 content: newNoteContent,
                 tags: [],
@@ -97,7 +97,7 @@ export default function ChatView(props: CollectionViewProps) {
             } : (data) => {
                 attachNote({
                     variables: {
-                        noteId: data.notesNotesCreate.id,
+                        noteId: data.notesNotesCreateWithSlug.id,
                         kind: "ATTACHMENT",
                         mimeType: imagePreviewFile.type,
                     },
@@ -136,18 +136,18 @@ export default function ChatView(props: CollectionViewProps) {
         setImagePreviewUrl("");
     }
 
-    var chatEntries: any[] = notesData.data?.notesNotesList?.items?.toReversed();
+    var chatEntries: any[] = notesData.data?.notesNotesListBySlug?.items?.toReversed();
 
     function handleChangeVisibility(visible: boolean) {
         if (!visible) { return; }
         if (notesData.loading || notesData.error) { return; }
-        if (notesData.data.notesNotesList.page >= notesData.data.notesNotesList.maxPage) { return; }
+        if (notesData.data.notesNotesListBySlug.page >= notesData.data.notesNotesListBySlug.maxPage) { return; }
         notesData.fetchMore({
             variables: {
                 collectionId: props.collection.id,
                 archived: "ALL",
                 pages: {
-                    page: notesData.data.notesNotesList.page + 1,
+                    page: notesData.data.notesNotesListBySlug.page + 1,
                     sort: ["-created_at_utc"]
                 }
             },

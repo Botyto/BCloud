@@ -44,8 +44,8 @@ fragment NoteProps on NotesNote {
 
 const NOTES_LIST = gql`
 ${NOTE_PROPS}
-query NotesList($collectionId: Int!, $archived: InputEnumArchivedFilter!, $pages: InputPagesInput!) {
-    notesNotesList(collectionId: $collectionId, archived: $archived, pages: $pages) {
+query NotesList($collectionSlug: String!, $archived: InputEnumArchivedFilter!, $pages: InputPagesInput!) {
+    notesNotesListBySlug(collectionSlug: $collectionSlug, archived: $archived, pages: $pages) {
         total
         page
         maxPage
@@ -55,10 +55,10 @@ query NotesList($collectionId: Int!, $archived: InputEnumArchivedFilter!, $pages
     }
 }`;
 
-export function useNotesListQuery(collectionId: number, page: number) {
+export function useNotesListQuery(collectionSlug: string, page: number) {
     return useQuery(NOTES_LIST, {
         variables: {
-            collectionId: collectionId,
+            collectionSlug: collectionSlug,
             archived: "ALL",
             pages: {
                 page: page,
@@ -70,8 +70,8 @@ export function useNotesListQuery(collectionId: number, page: number) {
 
 const CREATE_NOTE = gql`
 ${NOTE_PROPS}
-mutation CreateNote($collectionId: Int!, $title: String!, $content: String!, $tags: [String!]!) {
-    notesNotesCreate(collectionId: $collectionId, title: $title, content: $content, tags: $tags) {
+mutation CreateNote($collectionSlug: String!, $title: String!, $content: String!, $tags: [String!]!) {
+    notesNotesCreateWithSlug(collectionSlug: $collectionSlug, title: $title, content: $content, tags: $tags) {
         ...NoteProps
     }
 }`;

@@ -21,7 +21,7 @@ export default function CollectionView(props: CollectionViewProps) {
             {t("notes.collection.error", { error: collectionData.error.message })}
         </span>;
     } else {
-        const collection = collectionData.data.notesCollectionsGet;
+        const collection = collectionData.data.notesCollectionsGetBySlug;
         return <div>
             <span>{t("notes.collection.title", { name: collection.name })}</span>
             {

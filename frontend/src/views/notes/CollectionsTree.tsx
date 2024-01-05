@@ -26,7 +26,7 @@ export default function CollectionsTree() {
     } else if (treeData.error) {
         return <span style={{color: "red"}}>{treeData.error.message}</span>;
     } else {
-        const pagesResult = treeData.data.notesCollectionsList;
+        const pagesResult = treeData.data.notesCollectionsListBySlug;
         const items = pagesResult.items;
         if (items.length === 0) {
             return <div>{t("notes.collections.empty")}</div>;

@@ -16,7 +16,7 @@ function Bookmark(props: BookmarkProps) {
 
 export default function BookmarksView(props: CollectionViewProps) {
     const { t } = useTranslation("common");
-    const notesData = useNotesListQuery(props.collection.id, 0);
+    const notesData = useNotesListQuery(props.collection.slug, 0);
     
     return <div>
         <div>
@@ -27,12 +27,12 @@ export default function BookmarksView(props: CollectionViewProps) {
                     <span style={{color: "red"}}>
                         {t("notes.collection.error", {error: notesData.error.message})}
                     </span>
-                ) : (notesData.data.notesNotesList.items.length == 0) ? (
+                ) : (notesData.data.notesNotesListBySlug.items.length == 0) ? (
                     <span>
                         {t("notes.view.bookmarks.empty")}
                     </span>
                 ) : (
-                    notesData.data.notesNotesList.items.map((note: any) => {
+                    notesData.data.notesNotesListBySlug.items.map((note: any) => {
                         return <Bookmark note={note}/>
                     })
                 )
