@@ -1,10 +1,6 @@
 from dataclasses import dataclass
 import re
 import requests
-from uuid import UUID
-
-from sqlalchemy import select
-from sqlalchemy.orm import joinedload
 
 from .background import NotePostprocessor
 from .data import NotesNote
@@ -32,7 +28,6 @@ class HtmlCachePostprocessor(NotePostprocessor):
 
     _precached: bool = False
     _url: str|None = None
-    _user_id: UUID|None = None
 
     def precache(self):
         if self._precached:
