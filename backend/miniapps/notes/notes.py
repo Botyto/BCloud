@@ -18,8 +18,8 @@ class NotesModule(GqlMiniappModule):
         statement = select(NotesNote)
         if isinstance(collection_id_or_slug, str):
             statement = statement \
-                .options(joinedload(NotesNote.collection)) \
-                .where(NotesCollection.slug == collection_id_or_slug)
+                .where(NotesNote.collection.has(NotesCollection.slug == collection_id_or_slug)) \
+                .options(joinedload(NotesNote.collection))
         else:
             statement = statement.where(NotesNote.collection_id == collection_id_or_slug)
         if tag is not None:
