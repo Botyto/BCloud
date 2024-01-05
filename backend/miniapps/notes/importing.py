@@ -90,7 +90,7 @@ class GoogleKeepImporter(GoogleImporter):
         while True:
             results = context.service.notes().list(filter="", pageSize=100, pageToken=next_page_token).execute()
             next_page_token = results.get("nextPageToken", None)
-            items = results.get("files", [])
+            items = results.get("notes", [])
             for item in items:
                 attachments = [
                     GNoteAttachment(
@@ -169,13 +169,13 @@ class GoogleKeepImporter(GoogleImporter):
 
     async def run(self, context: GoogleImportingContext):
         notes: List[GNote] = []
-        cache_addr = context.temp_file_addr("gdrive_import", f"files.pickle")
+        cache_addr = context.temp_file_addr("gkeep_import", f"notes.pickle")
         if context.blobs.exists(cache_addr):
-            logger.debug("Loading cached files")
+            logger.debug("Loading cached notes")
             with context.blobs.open(cache_addr, OpenMode.READ) as fh:
                 notes = pickle.load(fh)
         else:
-            logger.debug("Gethering files")
+            logger.debug("Gethering notes")
             self.__gather_notes(notes, context)
             notes.sort(key=lambda f: f.name)
             with context.blobs.open(cache_addr, OpenMode.WRITE) as fh:
