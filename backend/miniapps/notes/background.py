@@ -13,6 +13,8 @@ class NotePostprocessor:
 
 
 class PostprocessHandler(AsyncJobHandler):
+    TYPE = "postprocess"
+
     def select_preprocessor(self):
         postprocessor_classes = NotePostprocessor.__subclasses__()
         for cls in postprocessor_classes:

@@ -32,7 +32,6 @@ class NotesModule(GqlMiniappModule):
     def list_by_slug(self, collection_slug: str, archived: ArchivedFilter, tag: str|None, pages: PagesInput) -> PagesResult[NotesNote]:
         return self._list(collection_slug, archived, tag, pages)
 
-    @mutation()
     def _create(self, collection_id_or_slug: UUID|str, title: str, content: str, tags: List[str]) -> NotesNote:
         ensure_str_fit("title", title, NotesNote.title)
         ensure_str_fit("content", content, NotesNote.content)
