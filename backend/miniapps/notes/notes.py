@@ -13,8 +13,7 @@ from .tools.files import NoteFileManager
 
 
 class NotesModule(GqlMiniappModule):
-    @query()
-    def list(self, collection_id_or_slug: UUID|str, archived: ArchivedFilter, tag: str|None, pages: PagesInput) -> PagesResult[NotesNote]:
+    def _list(self, collection_id_or_slug: UUID|str, archived: ArchivedFilter, tag: str|None, pages: PagesInput) -> PagesResult[NotesNote]:
         statement = select(NotesNote)
         if isinstance(collection_id_or_slug, str):
             statement = statement.join(NotesCollection).where(NotesCollection.slug == collection_id_or_slug)
@@ -25,8 +24,16 @@ class NotesModule(GqlMiniappModule):
         statement = archived.filter(statement)
         return pages.of(self.session, statement)
 
+    @query()
+    def list_by_id(self, collection_id: UUID, archived: ArchivedFilter, tag: str|None, pages: PagesInput) -> PagesResult[NotesNote]:
+        return self._list(collection_id, archived, tag, pages)
+    
+    @query()
+    def list_by_slug(self, collection_slug: str, archived: ArchivedFilter, tag: str|None, pages: PagesInput) -> PagesResult[NotesNote]:
+        return self._list(collection_slug, archived, tag, pages)
+
     @mutation()
-    def create(self, collection_id_or_slug: UUID|str, title: str, content: str, tags: List[str]) -> NotesNote:
+    def _create(self, collection_id_or_slug: UUID|str, title: str, content: str, tags: List[str]) -> NotesNote:
         ensure_str_fit("title", title, NotesNote.title)
         ensure_str_fit("content", content, NotesNote.content)
         for tag in tags:
@@ -48,6 +55,14 @@ class NotesModule(GqlMiniappModule):
         self.session.commit()
         self.log_activity("note.create", {"id": str(note.id), "title": title, "collection_id": collection.id})
         return note
+    
+    @mutation()
+    def create_with_id(self, collection_id: UUID, title: str, content: str, tags: List[str]) -> NotesNote:
+        return self._create(collection_id, title, content, tags)
+
+    @mutation()
+    def create_with_slug(self, collection_slug: str, title: str, content: str, tags: List[str]) -> NotesNote:
+        return self._create(collection_slug, title, content, tags)
 
     @mutation()
     def delete(self, id: UUID) -> SuccessResult:
