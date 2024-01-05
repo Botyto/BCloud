@@ -6,9 +6,9 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
+from .background import NotePostprocessor
 from .data import NotesNote
 from .tools.files import NoteFileManager, FileKind
-from .background import NotePostprocessor
 
 
 @dataclass
@@ -30,23 +30,15 @@ class HtmlCachePostprocessor(NotePostprocessor):
     URL_PATTERN = re.compile(r"https?://[^\s]+")
     URL_PATTERN_FULL = re.compile(r"^https?://[^\s]+$")
 
-    _note_id: UUID|None = None
+    _precached: bool = False
     _url: str|None = None
     _user_id: UUID|None = None
 
     def precache(self):
-        if self._note_id is not None:
+        if self._precached:
             return
-        with self.context.database.make_session() as session:
-            self._note_id = self.context.get_payload("note_id")
-            statement = select(NotesNote) \
-                .filter(NotesNote.id == self._note_id) \
-                .options(joinedload(NotesNote.collection))
-            note = session.scalars(statement).first()
-            if note is None:
-                return
-            self._user_id = note.collection.user_id
-            self._url = self.extract_url(note)
+        self._precached = True
+        self._url = self.extract_url(self.note)
 
     def extract_url(self, note: NotesNote) -> str|None:
         if self.URL_PATTERN_FULL.match(note.content):
@@ -56,18 +48,18 @@ class HtmlCachePostprocessor(NotePostprocessor):
         self.precache()
         return bool(self._url)
     
-    def _prerender(self, cache: HtmlCache):
+    def prerender(self, cache: HtmlCache):
         return cache  # TODO implement
 
     def run(self):
-        assert self._note_id is not None, "precache() should be called before run()"
-        assert self._url is not None and self._user_id is not None
+        assert self._precached, "precache() should be called before run()"
+        assert self._url is not None
         cacher = HtmlChacher()
         cache = cacher.cache(self._url)
         if cache is None:
             return
         if cache.mime_type == "text/html":
-            cache = self._prerender(cache)
-        with self.context.database.make_session() as session:
-            files = NoteFileManager(FileKind.CACHE, self._user_id, self.context, session)
-            files.default_write(self._note_id, cache.content, cache.mime_type)
+            cache = self.prerender(cache)
+        user_id = self.note.collection.user_id
+        files = NoteFileManager(FileKind.CACHE, user_id, self.context, self.session)
+        files.default_write(self.note_id, cache.content, cache.mime_type)
