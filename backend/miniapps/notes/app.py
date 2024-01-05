@@ -5,6 +5,7 @@ from .notes import NotesModule
 from .attachments import NoteAttachmentsModule
 from .background import PostprocessHandler
 from .cache import HtmlCachePostprocessor
+from .tags import AutoTagPostprocessor
 
 
 class NotesMiniapp(Miniapp):
@@ -15,5 +16,6 @@ class NotesMiniapp(Miniapp):
             ModuleRegistry(NoteAttachmentsModule),
             AsyncjobRegistry(PostprocessHandler),
             ClassRegistry(HtmlCachePostprocessor),
+            ClassRegistry(AutoTagPostprocessor),
             dependencies=["profile", "files"],
         )
