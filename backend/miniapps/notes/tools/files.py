@@ -1,4 +1,5 @@
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 from uuid import UUID
 
 from core.asyncjob.context import AsyncJobContext
@@ -78,7 +79,7 @@ class NoteFileManager:
         note_id = note if isinstance(note, UUID) else note.id
         statement = select(NotesFile) \
             .filter(NotesFile.note_id == note_id, NotesFile.kind == self.kind) \
-            .join(NotesFile.file)
+            .options(joinedload(NotesFile.file))
         return self.session.scalars(statement).first()
     
     def default_write(self, note: UUID|NotesNote, content: bytes|None, mime_type: str, kind: FileKind|None = None) -> NotesFile:
@@ -150,8 +151,8 @@ class NoteFileManager:
         else:
             statement = select(NotesNote) \
                 .filter(NotesNote.id == note) \
-                .join(NotesNote.files)
-            note_obj = self.session.scalars(statement).one()
+                .options(joinedload(NotesNote.files))
+            note_obj = self.session.scalars(statement).unique().one()
         for file in note_obj.files:
             self.__delete_nocommit(file)
         self.session.commit()

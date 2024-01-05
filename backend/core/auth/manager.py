@@ -1,6 +1,6 @@
 import logging
 from sqlalchemy import select, delete
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from tornado.httputil import HTTPServerRequest
 from uuid import UUID
 
@@ -88,7 +88,8 @@ class UserManager(BaseManager):
         assert self.session is not None, "Session not initialized"
         statement = select(Login, User) \
             .where(Login.id == login_id) \
-            .join(Login.user).add_columns(User)
+            .options(joinedload(Login.user)) \
+            .add_columns(User)
         login: Login|None = self.session.scalars(statement).one_or_none()
         if login is None:
             if self.sensitive_authentication_errors:

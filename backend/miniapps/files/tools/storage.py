@@ -1,5 +1,5 @@
 from sqlalchemy import delete, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from uuid import UUID, uuid4
 
 from ..data import FileMetadata, FileStorage, DIRECTORY_MIME
@@ -61,7 +61,8 @@ class StorageManager:
         return self.create(name)
 
     def root(self, id_or_slug: UUID|str):
-        statement = self._get_statement(id_or_slug).join(FileStorage.root_dir)
+        statement = self._get_statement(id_or_slug) \
+            .options(joinedload(FileStorage.root_dir))
         storage = self.session.scalars(statement).one()
         return storage.root_dir
     

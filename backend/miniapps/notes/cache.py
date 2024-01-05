@@ -4,6 +4,7 @@ import requests
 from uuid import UUID
 
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 
 from .data import NotesNote
 from .tools.files import NoteFileManager, FileKind
@@ -40,7 +41,7 @@ class HtmlCachePostprocessor(NotePostprocessor):
             self._note_id = self.context.get_payload("note_id")
             statement = select(NotesNote) \
                 .filter(NotesNote.id == self._note_id) \
-                .join(NotesNote.collection)
+                .options(joinedload(NotesNote.collection))
             note = session.scalars(statement).first()
             if note is None:
                 return

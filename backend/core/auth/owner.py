@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from sqlalchemy import select
-from sqlalchemy.orm import class_mapper, object_session, InstrumentedAttribute, Session
+from sqlalchemy.orm import class_mapper, object_session, InstrumentedAttribute, joinedload
 from typing import Callable, Dict, List, Tuple, Type
 
 from .data import User
@@ -82,7 +82,7 @@ def traverse_chain(
         statement = select(entity_type)
         for entry in chain:
             statement = statement \
-                .join(entry.member) \
+                .options(joinedload(entry.member)) \
                 .add_columns(entry.member.prop.mapper.class_)
         for key in entity_type.__mapper__.primary_key:
             primary_key_attr = getattr(entity_type, key.name)

@@ -1,4 +1,5 @@
-from sqlalchemy import delete, select
+from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 from typing import List
 from uuid import UUID
 
@@ -16,7 +17,9 @@ class NotesModule(GqlMiniappModule):
     def _list(self, collection_id_or_slug: UUID|str, archived: ArchivedFilter, tag: str|None, pages: PagesInput) -> PagesResult[NotesNote]:
         statement = select(NotesNote)
         if isinstance(collection_id_or_slug, str):
-            statement = statement.join(NotesCollection).where(NotesCollection.slug == collection_id_or_slug)
+            statement = statement \
+                .options(joinedload(NotesNote.collection)) \
+                .where(NotesCollection.slug == collection_id_or_slug)
         else:
             statement = statement.where(NotesNote.collection_id == collection_id_or_slug)
         if tag is not None:
