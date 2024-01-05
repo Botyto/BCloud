@@ -99,12 +99,13 @@ class GoogleDriveImporter(GoogleImporter):
                 else:
                     output.append(DriveFile(target_id, item_path, target_mime))
 
+    STORAGE_NAME = "Google Drive"
     def __get_gdrive_storage(self, context: GoogleImportingContext, session: Session):
         storages = StorageManager(context.user_id, session)
-        gdrive_storages = storages.by_name("Google Drive")
+        gdrive_storages = storages.by_name(self.STORAGE_NAME)
         if gdrive_storages:
             return gdrive_storages[0]  # type: ignore
-        return storages.create("Google Drive")
+        return storages.create(self.STORAGE_NAME)
     
     OD_SPREADSHEET_EXP = DriveExport("application/x-vnd.oasis.opendocument.spreadsheet", ".ods")
     OD_TEXT_EXP = DriveExport("application/vnd.oasis.opendocument.text", ".odt")
