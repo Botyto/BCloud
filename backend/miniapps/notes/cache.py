@@ -55,15 +55,19 @@ class HtmlCachePostprocessor(NotePostprocessor):
     def should_run(self):
         self.precache()
         return bool(self._url)
+    
+    def _prerender(self, cache: HtmlCache):
+        return cache  # TODO implement
 
     def run(self):
         assert self._note_id is not None, "precache() should be called before run()"
+        assert self._url is not None and self._user_id is not None
         cacher = HtmlChacher()
-        cache = cacher.cache(self._url)  # type: ignore
+        cache = cacher.cache(self._url)
         if cache is None:
             return
         if cache.mime_type == "text/html":
-            pass  # TODO embed images / pre-render
+            cache = self._prerender(cache)
         with self.context.database.make_session() as session:
             files = NoteFileManager(FileKind.CACHE, self._user_id, self.context, session)
-            files.default_write(self._note_id, cache.content, cache.mime_type)  # type: ignore
+            files.default_write(self._note_id, cache.content, cache.mime_type)
