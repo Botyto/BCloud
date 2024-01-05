@@ -79,11 +79,13 @@ def traverse_chain(
         if owner_info is NO_INFO:
             return None, None
         chain = resolve_owner_chain(entity_type, owner_info)
-        statement = select(entity_type)
+        joins = None
         for entry in chain:
-            statement = statement \
-                .options(joinedload(entry.member)) \
-                .add_columns(entry.member.prop.mapper.class_)
+            if joins is None:
+                joins = joinedload(entry.member)
+            else:
+                joins = joins.joinedload(entry.member)
+        statement = select(entity_type).options(joins)  # type: ignore
         for key in entity_type.__mapper__.primary_key:
             primary_key_attr = getattr(entity_type, key.name)
             primary_key_value = getattr(entity, key.name)
