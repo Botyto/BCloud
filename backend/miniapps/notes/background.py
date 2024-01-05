@@ -67,7 +67,7 @@ class NotePostprocessor:
 class PostprocessHandler(AsyncJobHandler):
     TYPE = "postprocess"
 
-    def select_preprocessor(self, context: NotePostprocessorContext):
+    def select_postprocessor(self, context: NotePostprocessorContext):
         postprocessor_classes = NotePostprocessor.__subclasses__()
         for cls in postprocessor_classes:
             postprocessor = cls(context)
@@ -77,7 +77,7 @@ class PostprocessHandler(AsyncJobHandler):
     def run(self):
         with self.context.database.make_session() as session:
             context = NotePostprocessorContext(self.context, session)
-            postprocessor = self.select_preprocessor(context)
+            postprocessor = self.select_postprocessor(context)
             if postprocessor is not None:
                 assert not context.is_note_dirty, "NotePostprocessor.should_run() shouldn't modify the note"
                 return postprocessor.run()
