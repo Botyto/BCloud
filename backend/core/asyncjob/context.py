@@ -37,7 +37,7 @@ class AsyncJobRuntimeContext(AsyncJobContext):
     def get_payload(self, *keys: str, default: Any = None):
         result = self.payload
         for key in keys:
-            result = result.get(key, None)
+            result = result.get(key)
             if result is None:
                 return default
         return result
