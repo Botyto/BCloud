@@ -71,9 +71,16 @@ class KeepNoteContext(GoogleImportingContext):
         return f"{self.i + 1}/{self.n}"
 
 
+# As of writing this, the Google Keep API is intended only for enterprise users.
+# This question mentions a link to a ticket addressing this:
+# https://stackoverflow.com/questions/70312083/google-keep-api-responds-with-invalid-scope-when-using-documented-scopes
 class GoogleKeepImporter(GoogleImporter):
+    NAME = "keep"
     SERVICE = "keep"
-    SCOPES = set()
+    VERSION = "v1"
+    SCOPES = {
+        "https://www.googleapis.com/auth/keep.readonly",
+    }
 
     def __parse_list_item(self, item: Any) -> GNoteListItem:
         children = []
@@ -169,7 +176,7 @@ class GoogleKeepImporter(GoogleImporter):
 
     async def run(self, context: GoogleImportingContext):
         notes: List[GNote] = []
-        cache_addr = context.temp_file_addr("gkeep_import", f"notes.pickle")
+        cache_addr = context.temp_file_addr("gkeep_import", "notes.pickle")
         if context.blobs.exists(cache_addr):
             logger.debug("Loading cached notes")
             with context.blobs.open(cache_addr, OpenMode.READ) as fh:

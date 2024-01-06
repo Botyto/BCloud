@@ -27,7 +27,9 @@ class GoogleImportingContext(ImportingContext):
 
 
 class GoogleImporter:
+    NAME: str
     SERVICE: str
+    VERSION: str
     SCOPES: Set[str]
 
     async def run(self, context: GoogleImportingContext):
@@ -62,8 +64,8 @@ class BaseGoogleImporting:
         return [i() for i in cls._google_all_importers()]
 
     @classmethod
-    def _google_make_service(cls, service: str, creds: Credentials|ExternalCredentials) -> Resource:
-        return build(service, "v3", credentials=creds)
+    def _google_make_service(cls, service: str, version: str, creds: Credentials|ExternalCredentials) -> Resource:
+        return build(service, version, credentials=creds)
 
     @classmethod
     def _google_make_flow(cls, client_secrets: str, scopes: Set[str]|None = None):
@@ -149,15 +151,16 @@ class GoogleImportingJob(AsyncJobHandler, BaseGoogleImporting):
         self.dprogress = 1.0 / len(all_importers)
 
         tasks: List[Coroutine] = []
-        options = self.context.payload.get("options")
+        options = self.context.get_payload("state", "options")
         if options is not None:
-            all_importers = [i for i in all_importers if i.SERVICE in options]
-        for service_name, importers in itertools.groupby(all_importers, lambda i: i.SERVICE):
-            service = self._google_make_service(service_name, credentials)
-            google_context = GoogleImportingContext(importing_context, service)
-            for importer in importers:
-                subtask = self.__run_and_progress(importer, google_context)
-                tasks.append(subtask)
+            all_importers = [i for i in all_importers if i.NAME in options]
+        for service_name, importers_by_service in itertools.groupby(all_importers, lambda i: i.SERVICE):
+            for version, importers_by_version in itertools.groupby(importers_by_service, lambda i: i.VERSION):
+                service = self._google_make_service(service_name, version, credentials)
+                google_context = GoogleImportingContext(importing_context, service)
+                for importer in importers_by_version:
+                    subtask = self.__run_and_progress(importer, google_context)
+                    tasks.append(subtask)
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         import_task = asyncio.gather(*tasks, return_exceptions=True)

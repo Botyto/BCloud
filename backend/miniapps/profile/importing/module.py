@@ -32,7 +32,7 @@ class ImportingModule(GqlMiniappModule, GqlGoogleImporting):
 
     @query()
     def google_options(self) -> ImportingOptions:
-        return ImportingOptions([importer.SERVICE for importer in self._google_all_importers()])
+        return ImportingOptions([importer.NAME for importer in self._google_all_importers()])
 
     @mutation()
     def google_init(self, options: List[str]) -> GoogleAuthUrl:

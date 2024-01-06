@@ -71,7 +71,9 @@ class DriveFileContext(GoogleImportingContext):
 
 
 class GoogleDriveImporter(GoogleImporter):
+    NAME = "drive"
     SERVICE = "drive"
+    VERSION = "v3"
     SCOPES = {
         "https://www.googleapis.com/auth/drive.metadata.readonly",
         "https://www.googleapis.com/auth/drive.readonly",

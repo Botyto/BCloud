@@ -22,7 +22,8 @@ export default {
             name: "Google",
             description: "Import your Google data:",
             opts: {
-                drive: "Google drive",
+                drive: "Google Drive",
+                keep: "Google Keep",
             },
         },
     },

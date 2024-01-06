@@ -6,7 +6,6 @@ from .attachments import NoteAttachmentsModule
 from .background import PostprocessHandler
 from .cache import HtmlCachePostprocessor
 from .tags import AutoTagPostprocessor
-from .importing import GoogleKeepImporter
 
 
 class NotesMiniapp(Miniapp):
@@ -18,6 +17,5 @@ class NotesMiniapp(Miniapp):
             AsyncjobRegistry(PostprocessHandler),
             ClassRegistry(HtmlCachePostprocessor),
             ClassRegistry(AutoTagPostprocessor),
-            ClassRegistry(GoogleKeepImporter),
             dependencies=["profile", "files"],
         )
