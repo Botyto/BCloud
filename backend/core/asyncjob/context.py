@@ -34,5 +34,10 @@ class AsyncJobRuntimeContext(AsyncJobContext):
         self.job_id = job_id
         self.payload = payload
 
-    def get_payload(self, key: str, default: Any = None):
-        return self.payload.get(key, default)
+    def get_payload(self, *keys: str, default: Any = None):
+        result = self.payload
+        for key in keys:
+            result = result.get(key, None)
+            if result is None:
+                return default
+        return result
