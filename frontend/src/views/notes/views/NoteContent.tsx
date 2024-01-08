@@ -35,7 +35,9 @@ export default function NoteContent(props: NoteContentProps) {
         });
     } else {
         return <div>
-            {props.note.content}
+            {props.note.content.split("\n").map((line: string, index: number) => (
+                <div key={index}>{line}</div>
+            ))}
         </div>
     }
 };
