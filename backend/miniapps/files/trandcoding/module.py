@@ -125,15 +125,21 @@ class TranscodingHandler(AsyncJobHandler):
         return files.unique_name(src_no_ext + dst_ext)
 
     def run(self):
-        params: Dict[str, Any] = self.context.get_payload("params")
-        src_ext: str = self.context.get_payload("src_ext")
+        params = self.context.get_payload("params", expected_type=Dict[str, Any])
+        if params is None:
+            raise ValueError("Missing parameters")
+        src_ext = self.context.get_payload("src_ext", expected_type=str)
+        if src_ext is None:
+            raise ValueError("Missing source extension")
         src_format = Format.by_ext(src_ext)
-        dst_ext: str = self.context.get_payload("dst_ext")
+        dst_ext = self.context.get_payload("dst_ext", expected_type=str)
+        if dst_ext is None:
+            raise ValueError("Missing destination extension")
         dst_format = Format.by_ext(dst_ext)
         transcoder = Transcoder.find(src_format, dst_format)
         with self.context.database.make_session() as session:
             files = FileManager.for_service(self.context.blobs, session)
-            file_id = UUID(self.context.get_payload("file_id"))
+            file_id = UUID(self.context.get_payload("file_id", expected_type=str))
             src_file = files.by_id(file_id)
             user_id = src_file.user_id
             dst_path = self.__make_dst_path(src_file.abspath, dst_ext, files)

@@ -151,7 +151,7 @@ class GoogleImportingJob(AsyncJobHandler, BaseGoogleImporting):
         self.dprogress = 1.0 / len(all_importers)
 
         tasks: List[Coroutine] = []
-        options = self.context.get_payload("state", "options")
+        options = self.context.get_payload("state", "options", expected_type=List[str])
         if options is not None:
             all_importers = [i for i in all_importers if i.NAME in options]
         for service_name, importers_by_service in itertools.groupby(all_importers, lambda i: i.SERVICE):

@@ -18,7 +18,7 @@ class NotePostprocessorContext(AsyncJobRuntimeContext):
     @property
     def note_id(self) -> UUID:
         if self._note_id is None:
-            self._note_id = UUID(self.get_payload("note_id"))
+            self._note_id = UUID(self.get_payload("note_id", expected_type=str))
         return self._note_id
 
     @property

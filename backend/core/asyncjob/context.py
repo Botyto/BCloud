@@ -1,4 +1,5 @@
-from typing import Any
+import typeguard
+from typing import Any, Type, TypeVar
 
 from ..cronjob.engine import Scheduler
 from ..data.blobs.base import Blobs
@@ -22,11 +23,13 @@ class AsyncJobContext(DataContext):
         self.msg = msg
         self.cron = cron
 
+T = TypeVar("T")
+
 
 class AsyncJobRuntimeContext(AsyncJobContext):
     state: State|None
     job_id: int
-    payload: dict
+    payload: dict[str, Any]
 
     def __init__(self, base: AsyncJobContext, state: State|None, job_id: int, payload: dict):
         self._extend(base)
@@ -34,10 +37,11 @@ class AsyncJobRuntimeContext(AsyncJobContext):
         self.job_id = job_id
         self.payload = payload
 
-    def get_payload(self, *keys: str, default: Any = None):
+    def get_payload(self, *keys: str, default: T = None, expected_type: Type[T] = Any) -> T:
         result = self.payload
         for key in keys:
             result = result.get(key)
             if result is None:
                 return default
-        return result
+        return typeguard.check_type(result, expected_type)
+    
