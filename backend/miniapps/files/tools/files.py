@@ -187,8 +187,8 @@ class FileManager:
         # TODO delete links to this file
 
     def rename(self, src: str, dst: str):
-        src_storage, _ = fspath.strip_storage(src)
-        dst_storage, _ = fspath.strip_storage(dst)
+        src_storage, src_path = fspath.strip_storage(src)
+        dst_storage, dst_path = fspath.strip_storage(dst)
         if src_storage != dst_storage:
             raise Exception("Cannot rename across storages")
         src_meta = self.by_path(src)
@@ -196,6 +196,10 @@ class FileManager:
             raise FileNotFoundError(src)
         if src_meta.isroot:
             raise ValueError("Cannot rename root directory")
+        if not isinstance(src_storage, UUID):
+            src = fspath.join(src_meta.storage_id, src_path)
+        if not isinstance(dst_storage, UUID):
+            dst = fspath.join(src_meta.storage_id, dst_path)
         dst_dir = fspath.normpath(fspath.dirname(dst))
         dst_dir_meta = self.by_path(dst_dir)
         if dst_dir_meta is None or not dst_dir_meta.isdir:
@@ -207,6 +211,7 @@ class FileManager:
         dst_meta = dst_dir_meta.get_child(dst_basename)
         if dst_meta is not None:
             raise FileAlreadyExists(dst)
+        self.contents.rename(src_meta, dst)
         src_meta.parent = dst_dir_meta
         src_meta.name = dst_basename
         src_meta.modified()
