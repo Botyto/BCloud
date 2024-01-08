@@ -69,39 +69,41 @@ export default function Picker(props: PickerProps) {
 
     return <div style={{background: "white", border: "1px solid black", padding: "0.3rem"}}>
         <div>{props.title}</div>
-        <div>{path}</div>
-        <div>
-            {
-                (fspath.stripStorage(path)[1] !== "/") ? (
-                    <PickerEntry
-                        file={{name: ".."}}
-                        path={fspath.dirName(path)}
-                        disabled={false}
-                        onClick={() => {setPath(fspath.dirName(path))}}
-                    />
-                ) : null
-            }
-            {
-                (filesListVars.loading) ? (
-                    <Loading/>
-                ) : (filesListVars.error) ? (
-                    <div style={{color: "red"}}>Error: {filesListVars.error.message}</div>
-                ): (filesListVars.data.filesFilesByPath.children
-                    .filter((file: any) => {
-                        if (!props.showTypes) { return true; }
-                        return props.showTypes.includes(file.type);
-                    })
-                    .map((file: any) => {
-                    const filePath = fspath.join(null, [path, file.name]);
-                    return <PickerEntry
-                        key={file.id}
-                        file={file}
-                        path={filePath}
-                        disabled={props.disabledPaths && props.disabledPaths.includes(filePath) || false}
-                        onClick={() => {setPath(filePath)}}
-                    />
-                }))
-            }
+        <div style={{margin: "0.5rem"}}>
+            <div>{path}</div>
+            <div style={{ border: "solid 1px black" }}>
+                {
+                    (fspath.stripStorage(path)[1] !== "/") ? (
+                        <PickerEntry
+                            file={{name: ".."}}
+                            path={fspath.dirName(path)}
+                            disabled={false}
+                            onClick={() => {setPath(fspath.dirName(path))}}
+                        />
+                    ) : null
+                }
+                {
+                    (filesListVars.loading) ? (
+                        <Loading/>
+                    ) : (filesListVars.error) ? (
+                        <div style={{color: "red"}}>Error: {filesListVars.error.message}</div>
+                    ): (filesListVars.data.filesFilesByPath.children
+                        .filter((file: any) => {
+                            if (!props.showTypes) { return true; }
+                            return props.showTypes.includes(file.type);
+                        })
+                        .map((file: any) => {
+                        const filePath = fspath.join(null, [path, file.name]);
+                        return <PickerEntry
+                            key={file.id}
+                            file={file}
+                            path={filePath}
+                            disabled={props.disabledPaths && props.disabledPaths.includes(filePath) || false}
+                            onClick={() => {setPath(filePath)}}
+                        />
+                    }))
+                }
+            </div>
         </div>
         {
             props.input && <div>

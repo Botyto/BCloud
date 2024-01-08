@@ -199,7 +199,7 @@ export default function DirectoryContents(props: ContentsProps) {
     function onAddLink(path: string) {
         openPicker(
             [path],
-            t("files.browser.dir.file.link.prompt"),
+            t("files.browser.dir.file.link.prompt", { name: fspath.baseName(path) }),
             t("files.browser.dir.file.link.action"),
             doLink,
             t("files.browser.dir.file.link.input_label"),
