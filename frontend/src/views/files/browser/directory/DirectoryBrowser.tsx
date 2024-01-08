@@ -89,16 +89,35 @@ export default function DirectoryContents(props: ContentsProps) {
     // Actions
         
     const [renameFile, renameFileVars] = useFilesRenameMutation();
+    const [renameTitle, setRenameTitle] = useState<string>("");
+    const [renamePath, setRenamePath] = useState<string>("");
+    const [renameName, setRenameName] = useState<string>("");
+    const rename = useDialogState();
     function onRename(path: string) {
+        setRenamePath(path);
         const originalName = fspath.baseName(path);
-        const name = prompt(t("files.browser.dir.file.rename.prompt", {name: originalName}), originalName);
-        if (!name || name === originalName) { return; }
-        const dst = fspath.join(null, [props.path, name]);
+        setRenameName(originalName);
+        setRenameTitle(t("files.browser.dir.file.rename.prompt", { name: originalName }));
+        rename.open();
+    }
+    function doRename() {
+        const originalName = fspath.baseName(renamePath);
+        if (renameName == "" || renameName == originalName) {
+            return;
+        }
+        const dst = fspath.join(null, [props.path, renameName]);
         renameFile({
-            variables: { src: path, dst },
-            onCompleted: () => { setPathSelected(dst, isSelected(path)); setPathSelected(path, false); },
+            variables: { src: renamePath, dst },
+            onCompleted: () => {
+                setPathSelected(dst, isSelected(renamePath));
+                setPathSelected(renamePath, false);
+            },
             onError: (err) => { alert("Error:\n" + err); },
         });
+        rename.close();
+        setRenameName("");
+        setRenamePath("");
+        setRenameTitle("");
     }
 
     function onMove(paths: string[], single: boolean) {
@@ -255,6 +274,13 @@ export default function DirectoryContents(props: ContentsProps) {
                 )
             }
         </div>
+        <Dialog {...bindState(rename)}>
+            <div>{renameTitle}</div>
+            <form onSubmit={doRename}>
+                <input type="text" value={renameName} onChange={(e) => setRenameName(e.target.value)} />
+                <input type="submit" value="Save"/>
+            </form>
+        </Dialog>
         <Dialog {...bindState(share)}>
             <form onSubmit={doShare}>
                 <select value={shareAccess} onChange={(e) => setShareAccess(e.target.value)}>
