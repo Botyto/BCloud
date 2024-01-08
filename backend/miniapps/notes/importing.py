@@ -8,7 +8,7 @@ from core.data.sql.database import Session
 from core.data.blobs.base import OpenMode
 from miniapps.profile.importing.google import GoogleImporter, GoogleImportingContext
 
-from .data import NotesCollection, NotesNote
+from .data import NotesCollection, NotesNote, CollectionView, FileKind
 from .tools.collections import CollectionsManager
 from .tools.notes import NotesManager
 
@@ -132,10 +132,10 @@ class GoogleKeepImporter(GoogleImporter):
     COLLECTION_NAME = "Google Keep"
     def __get_gkeep_collection(self, context: GoogleImportingContext, session: Session):
         collections = CollectionsManager(context.user_id, session)
-        gkeep_collections = collections.by_name(self.COLLECTION_NAME)
+        gkeep_collections = collections.by_name(self.COLLECTION_NAME, True)
         if gkeep_collections:
             return gkeep_collections[0]  # type: ignore
-        return collections.create(self.COLLECTION_NAME)
+        return collections.create(self.COLLECTION_NAME, None, CollectionView.NOTES)
 
     def __checklist_to_md(self, checklist: List[GNoteListItem], indent: int = 0) -> str:
         output = []
@@ -148,7 +148,7 @@ class GoogleKeepImporter(GoogleImporter):
 
     def __download_attachment(self, context: KeepNoteContext, gattachment: GNoteAttachment, note: NotesNote):
         result = context.service.media().download_media(name=gattachment.name, mimeType=gattachment.mime_type).execute()
-        raise NotImplementedError()
+        context.notes.files.default_write(note.id, result, gattachment.mime_type, FileKind.ATTACHMENT)
 
     def __import_note(self, context: KeepNoteContext):
         logger.debug("Importing note %s - %s", context.note_n, context.google_name)
@@ -157,19 +157,23 @@ class GoogleKeepImporter(GoogleImporter):
         else:
             content = context.gnote.content
         note = context.notes.create(
-            collection_id=context.collection.id,
+            collection_id_or_slug=context.collection.id,
             title=context.gnote.title,
             content=content,
-            archived=context.gnote.trashed,
+            tags=[],
         )
-        for gattachment in context.gnote.attachments:
+        note.archived = context.gnote.trashed
+        for i, gattachment in enumerate(context.gnote.attachments):
             self.__download_attachment(context, gattachment, note)
+            if i > 1:
+                logger.warning("Note %s - %s has more than 1 attachment", context.note_n, context.google_name)
+                break
 
     def __create_notes(self, gnotes: List[GNote], context: GoogleImportingContext):
         logger.debug("Importing %d notes", len(gnotes))
         with context.database.make_session() as session:
             collection = self.__get_gkeep_collection(context, session)
-            notes = NotesManager(context.user_id, session)
+            notes = NotesManager(context.user_id, context, session)
             for i, gnote in enumerate(gnotes):
                 gnote_context = KeepNoteContext(context, i, len(gnotes), notes, session, collection, gnote)
                 self.__import_note(gnote_context)
