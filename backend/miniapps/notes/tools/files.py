@@ -80,6 +80,8 @@ class NoteFileManager:
         statement = select(NotesFile) \
             .filter(NotesFile.note_id == note_id, NotesFile.kind == self.kind) \
             .options(joinedload(NotesFile.file))
+        if self.user_id is not None:
+            statement = statement.filter(NotesFile.note.has(NotesNote.collection.has(NotesCollection.user_id == self.user_id)))
         return self.session.scalars(statement).first()
     
     def default_write(self, note: UUID|NotesNote, content: bytes|None, mime_type: str, kind: FileKind|None = None) -> NotesFile:
@@ -116,7 +118,12 @@ class NoteFileManager:
     def __delete_nocommit(self, note_file: UUID|NotesFile|None) -> NotesFile|None:
         note_file_obj: NotesFile|None
         if isinstance(note_file, UUID):
-            note_file_obj = self.session.get(NotesFile, note_file)
+            statement = select(NotesFile) \
+                .filter(NotesFile.id == note_file) \
+                .options(joinedload(NotesFile.file))
+            if self.user_id is not None:
+                statement = statement.filter(NotesFile.note.has(NotesNote.collection.has(NotesCollection.user_id == self.user_id)))
+            note_file_obj = self.session.scalars(statement).one()
         else:
             note_file_obj = note_file
         if note_file_obj is None:
@@ -152,6 +159,8 @@ class NoteFileManager:
             statement = select(NotesNote) \
                 .filter(NotesNote.id == note) \
                 .options(joinedload(NotesNote.files))
+            if self.user_id is not None:
+                statement = statement.filter(NotesNote.collection.has(NotesCollection.user_id == self.user_id))
             note_obj = self.session.scalars(statement).unique().one()
         for file in note_obj.files:
             self.__delete_nocommit(file)
