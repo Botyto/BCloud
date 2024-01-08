@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Loading from '../../../components/Loading';
 import { Dialog, useDialogState, bindState } from '../../../components/Dialog';
 import { CollectionViewProps } from './types';
-import { useNotesListQuery, useCreateNoteMutation } from './api';
+import { useNotesListQuery, useCreateNoteMutation, useEditNoteMutation } from './api';
 import NoteEditor from './NoteEditor';
 import NoteContent from './NoteContent';
 
@@ -36,8 +36,9 @@ export default function NotesView(props: CollectionViewProps) {
     const notesData = useNotesListQuery(props.collection.slug, 0);
     const [createNote, createNoteData] = useCreateNoteMutation();
     const [editedNote, setEditedNote] = React.useState<any>(null);
+    const [editNote, editNoteData] = useEditNoteMutation();
     
-    function editNote(note: any) {
+    function onEditNote(note: any) {
         setEditedNote(note);
         editorDlg.open();
     }
@@ -52,7 +53,13 @@ export default function NotesView(props: CollectionViewProps) {
 
     function saveNote() {
         if (editedNote.id) {
-            alert("editing not implemented");
+            editNote({
+                variables: {
+                    id: editedNote.id,
+                    title: editedNote.title,
+                    content: editedNote.content,
+                }
+            })
         } else {
             createNote({
                 variables: {
@@ -84,7 +91,7 @@ export default function NotesView(props: CollectionViewProps) {
                         return <Note
                             key={note.id}
                             note={note}
-                            onEdit={() => editNote(note)}
+                            onEdit={() => onEditNote(note)}
                         />
                     })
                 )

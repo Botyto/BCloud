@@ -76,11 +76,11 @@ class NotesManager:
         note.title = title
         return old_title, note
     
-    def edit(self, id: UUID, content: str):
+    def edit(self, id: UUID, title: str, content: str):
         ensure_str_fit("content", content, NotesNote.content)
         statement = update(NotesNote) \
             .where(NotesNote.id == id) \
-            .values(content=content) \
+            .values(content=content, title=title) \
             .returning(NotesNote)
         if self.user_id is not None:
             statement = statement.where(NotesNote.collection.has(NotesCollection.user_id == self.user_id))

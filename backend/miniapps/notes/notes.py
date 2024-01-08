@@ -69,8 +69,8 @@ class NotesModule(GqlMiniappModule):
         return note
     
     @mutation()
-    def edit(self, id: UUID, content: str) -> NotesNote:
-        note = self.notes.edit(id, content)
+    def edit(self, id: UUID, title: str, content: str) -> NotesNote:
+        note = self.notes.edit(id, title, content)
         self.log_activity("note.edit", {"id": str(id), "title": note.title})
         return note
     

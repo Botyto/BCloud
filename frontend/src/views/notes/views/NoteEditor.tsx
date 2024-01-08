@@ -44,6 +44,7 @@ export default function NoteEditor(props: NoteEditorProps) {
             <NoteContent
                 note={props.note}
                 editable={true}
+                listEdit={false}
                 onEdit={setNoteContent}
             />
         </div>

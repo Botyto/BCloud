@@ -83,6 +83,20 @@ export function useCreateNoteMutation() {
     });
 }
 
+const EDIT_NOTE = gql`
+${NOTE_PROPS}
+mutation EditNoteMutation($id: UUID!, $title: String!, $content: String!) {
+    notesNotesEdit(id: $id, title: $title, content: $content) {
+        ...NoteProps
+    }
+}`;
+
+export function useEditNoteMutation() {
+    return useMutation(EDIT_NOTE, {
+        refetchQueries: [NOTES_LIST],
+    });
+}
+
 const ATTACH_FILE = gql`
 ${NOTE_PROPS}
 mutation AttachNoteFile($noteId: UUID!, $kind: InputEnumNotesFileKind!, $mimeType: String!) {
