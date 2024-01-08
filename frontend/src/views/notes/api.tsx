@@ -36,7 +36,7 @@ export function useCollectionsTreeQuery(page: number) {
 
 const COLLECTIONS_NEW = gql`
 ${COLLECTION_PROPS}
-mutation CollectionsNew($name: String!, $view: InputEnumCollectionView) {
+mutation CollectionsNew($name: String!, $view: InputEnumNotesCollectionView) {
     notesCollectionsCreateWithSlug(name: $name, parentSlug: null, view: $view) {
         ...CollectionProps
     }

@@ -36,6 +36,7 @@ fragment NoteProps on NotesNote {
     sortKey
     title
     content
+    color
     files {
         ...NoteFileProps
     }
@@ -84,7 +85,7 @@ export function useCreateNoteMutation() {
 
 const ATTACH_FILE = gql`
 ${NOTE_PROPS}
-mutation AttachNoteFile($noteId: UUID!, $kind: InputEnumFileKind!, $mimeType: String!) {
+mutation AttachNoteFile($noteId: UUID!, $kind: InputEnumNotesFileKind!, $mimeType: String!) {
     notesNoteattachmentsAddAttachment(noteId: $noteId, kind: $kind, mimeType: $mimeType) {
         note {
             ...NoteProps

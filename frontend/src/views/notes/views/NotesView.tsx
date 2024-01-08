@@ -19,7 +19,7 @@ function Note(props: NoteProps) {
             border: "1px solid black",
             margin: "1rem",
             padding: "1rem",
-            backgroundColor: "#90e0e0",
+            backgroundColor: props.note.color,
         }}
         onClick={() => props.onEdit()}
     >

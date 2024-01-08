@@ -25,7 +25,10 @@ export default function NoteEditor(props: NoteEditorProps) {
         });
     }
 
-    return <div>
+    return <div style={{
+        backgroundColor: props.note.color,
+        padding: "1rem",
+    }}>
         <div>
             <input
                 type="text"
@@ -33,7 +36,11 @@ export default function NoteEditor(props: NoteEditorProps) {
                 onChange={setNoteTitle}
             />
         </div>
-        <div>
+        <div style={{
+            marginTop: "1rem",
+            marginBottom: "1rem",
+            border: "1px solid black",
+        }}>
             <NoteContent
                 note={props.note}
                 editable={true}
