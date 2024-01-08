@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from core.data.sql.columns import ensure_str_fit
 
-from ..data import NotesCollection, CollectionView
+from ..data import NotesCollection, NotesCollectionView
 
 
 class CollectionsManager:
@@ -41,7 +41,7 @@ class CollectionsManager:
             statement = statement.where(NotesCollection.user_id == self.user_id)
         return self.session.scalars(statement).first()
     
-    def create(self, name: str, parent_id_or_slug: UUID|str|None, view: CollectionView) -> NotesCollection:
+    def create(self, name: str, parent_id_or_slug: UUID|str|None, view: NotesCollectionView) -> NotesCollection:
         ensure_str_fit("name", name, NotesCollection.name)
         if isinstance(parent_id_or_slug, str):
             statement = select(NotesCollection.id) \

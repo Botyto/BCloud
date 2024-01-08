@@ -4,7 +4,7 @@ import requests
 
 from .background import NotePostprocessor
 from .data import NotesNote
-from .tools.files import NoteFileManager, FileKind
+from .tools.files import NoteFileManager, NotesFileKind
 
 
 @dataclass
@@ -56,5 +56,5 @@ class HtmlCachePostprocessor(NotePostprocessor):
         if cache.mime_type == "text/html":
             cache = self.prerender(cache)
         user_id = self.note.collection.user_id
-        files = NoteFileManager(FileKind.CACHE, user_id, self.context, self.session)
+        files = NoteFileManager(NotesFileKind.CACHE, user_id, self.context, self.session)
         files.default_write(self.note_id, cache.content, cache.mime_type)

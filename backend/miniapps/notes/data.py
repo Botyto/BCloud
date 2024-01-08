@@ -26,11 +26,12 @@ class NotesNote(Model):
     content: Mapped[str] = mapped_column(String(STRING_MAX))
     favorite: Mapped[bool] = mapped_column(Boolean, default=False)
     archived: Mapped[bool] = mapped_column(Boolean, default=False)
+    color: Mapped[str] = mapped_column(String(32), default="#dddddd")
     tags: Mapped[List["NotesTag"]] = relationship("NotesTag", uselist=True, back_populates="note")
     files: Mapped[List["NotesFile"]] = relationship("NotesFile", uselist=True, back_populates="note")
 
 
-class FileKind(PyEnum):
+class NotesFileKind(PyEnum):
     ATTACHMENT = "attachment"
     PREVIEW = "preview"
     CACHE = "cache"
@@ -41,7 +42,7 @@ class NotesFile(Model):
     id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True, default=uuid4)
     note_id: Mapped[PyUUID] = mapped_column(ForeignKey(NotesNote.id, onupdate="CASCADE", ondelete="CASCADE"))
     note: Mapped[NotesNote] = relationship(NotesNote, info={"owner": True}, back_populates="files")
-    kind: Mapped[FileKind] = mapped_column(Enum(FileKind))
+    kind: Mapped[NotesFileKind] = mapped_column(Enum(NotesFileKind))
     file_id: Mapped[PyUUID] = mapped_column(UUID, ForeignKey("FileMetadata.id", onupdate="CASCADE", ondelete="CASCADE"))
     file: Mapped["FileMetadata"] = relationship("FileMetadata", foreign_keys=[file_id])
 
@@ -54,7 +55,7 @@ class NotesTag(Model):
     tag: Mapped[str] = mapped_column(String(128))
 
 
-class CollectionView(PyEnum):
+class NotesCollectionView(PyEnum):
     NOTES = "notes"
     BOOKMARKS = "bookmarks"
     CHAT = "chat"
@@ -71,7 +72,7 @@ class NotesCollection(Model):
     children: Mapped[List["NotesCollection"]] = relationship("NotesCollection", uselist=True, back_populates="parent")
     slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info={"slug": True})
     name: Mapped[str] = mapped_column(String(128))
-    view: Mapped[CollectionView] = mapped_column(Enum(CollectionView), default=CollectionView.NOTES.value)
+    view: Mapped[NotesCollectionView] = mapped_column(Enum(NotesCollectionView), default=NotesCollectionView.NOTES.value)
     archived: Mapped[bool] = mapped_column(Boolean, default=False)
     access: Mapped[AccessLevel] = mapped_column(Enum(AccessLevel), default=AccessLevel.PRIVATE)
     notes: Mapped[List[NotesNote]] = relationship("NotesNote", uselist=True, back_populates="collection")

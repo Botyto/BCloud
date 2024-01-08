@@ -11,13 +11,13 @@ from miniapps.files.tools.contents import FileContents, NAMESPACE_CONTENT
 from miniapps.files.tools.files import FileManager
 from miniapps.files.tools.storage import StorageManager
 
-from ..data import NotesNote, FileKind, NotesFile, NotesCollection
+from ..data import NotesNote, NotesFileKind, NotesFile, NotesCollection
 
 
 class NoteFileManager:
     STORAGE_NAME = StorageManager.SERVICE_PREFIX + "notes"
 
-    kind: FileKind|None
+    kind: NotesFileKind|None
     user_id: UUID|None
     context: AsyncJobContext
     service: bool
@@ -46,7 +46,7 @@ class NoteFileManager:
             self._session = self.context.database.make_session()
         return self._session
 
-    def __init__(self, kind: FileKind|None, user_id: UUID|None, context: AsyncJobContext, session: Session, service: bool =False):
+    def __init__(self, kind: NotesFileKind|None, user_id: UUID|None, context: AsyncJobContext, session: Session, service: bool =False):
         self.user_id = user_id
         self.kind = kind
         self.context = context
@@ -54,7 +54,7 @@ class NoteFileManager:
         self.service = service
 
     @classmethod
-    def for_service(cls, kind: FileKind|None, user_id: UUID|None, context: AsyncJobContext, session: Session):
+    def for_service(cls, kind: NotesFileKind|None, user_id: UUID|None, context: AsyncJobContext, session: Session):
         return cls(kind, user_id, context, session, service=True)
     
     def _folder_path(self, storage: FileStorage, note: NotesNote):
@@ -72,7 +72,7 @@ class NoteFileManager:
             return self.session.scalars(statement).one_or_none()
         return note
 
-    def default_get(self, note: UUID|NotesNote, kind: FileKind|None = None) -> NotesFile|None:
+    def default_get(self, note: UUID|NotesNote, kind: NotesFileKind|None = None) -> NotesFile|None:
         if kind is None:
             kind = self.kind
         assert kind is not None, "Kind is not set"
@@ -84,7 +84,7 @@ class NoteFileManager:
             statement = statement.filter(NotesFile.note.has(NotesNote.collection.has(NotesCollection.user_id == self.user_id)))
         return self.session.scalars(statement).first()
     
-    def default_write(self, note: UUID|NotesNote, content: bytes|None, mime_type: str, kind: FileKind|None = None) -> NotesFile:
+    def default_write(self, note: UUID|NotesNote, content: bytes|None, mime_type: str, kind: NotesFileKind|None = None) -> NotesFile:
         if kind is None:
             kind = self.kind
         assert kind is not None, "Kind is not set"
@@ -111,7 +111,7 @@ class NoteFileManager:
         self.contents.write(file, content)
         return note_file
     
-    def default_delete(self, note: UUID|NotesNote, kind: FileKind|None) -> NotesFile|None:
+    def default_delete(self, note: UUID|NotesNote, kind: NotesFileKind|None) -> NotesFile|None:
         note_file = self.default_get(note, kind)
         return self.delete(note_file)
     

@@ -2,7 +2,7 @@ from uuid import UUID
 
 from core.api.modules.gql import GqlMiniappModule, mutation
 
-from .data import NotesNote, FileKind, NotesFile
+from .data import NotesNote, NotesFileKind, NotesFile
 
 from .tools.files import NoteFileManager
 
@@ -17,7 +17,7 @@ class NoteAttachmentsModule(GqlMiniappModule):
         return self._files
 
     @mutation()
-    def add_attachment(self, note_id: UUID, kind: FileKind, mime_type: str) -> NotesFile:
+    def add_attachment(self, note_id: UUID, kind: NotesFileKind, mime_type: str) -> NotesFile:
         return self.files.default_write(note_id, None, mime_type, kind)
 
     @mutation()

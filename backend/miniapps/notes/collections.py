@@ -8,7 +8,7 @@ from core.api.pages import PagesInput, PagesResult
 from core.data.sql.columns import ensure_str_fit
 from core.graphql.result import SuccessResult
 
-from .data import NotesCollection, CollectionView
+from .data import NotesCollection, NotesCollectionView
 from .tools.collections import CollectionsManager
 
 
@@ -53,17 +53,17 @@ class CollectionsModule(GqlMiniappModule):
     def list_by_slug(self, parent_slug: str|None, archived: ArchivedFilter, pages: PagesInput) -> PagesResult[NotesCollection]:
         return self._list(parent_slug, archived, pages)
 
-    def _create(self, name: str, parent_id_or_slug: UUID|str|None, view: CollectionView) -> NotesCollection:
+    def _create(self, name: str, parent_id_or_slug: UUID|str|None, view: NotesCollectionView) -> NotesCollection:
         collection = self.collections.create(name, parent_id_or_slug, view)
         self.log_activity("collection.create", {"id": str(collection.id), "name": name, "view": view.value})
         return collection
     
     @mutation()
-    def create_with_id(self, name: str, parent_id: UUID|None, view: CollectionView = CollectionView.NOTES) -> NotesCollection:
+    def create_with_id(self, name: str, parent_id: UUID|None, view: NotesCollectionView = NotesCollectionView.NOTES) -> NotesCollection:
         return self._create(name, parent_id, view)
 
     @mutation()
-    def create_with_slug(self, name: str, parent_slug: str|None, view: CollectionView = CollectionView.NOTES) -> NotesCollection:
+    def create_with_slug(self, name: str, parent_slug: str|None, view: NotesCollectionView = NotesCollectionView.NOTES) -> NotesCollection:
         return self._create(name, parent_slug, view)
     
     @query()
