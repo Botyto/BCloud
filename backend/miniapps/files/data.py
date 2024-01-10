@@ -6,8 +6,9 @@ from uuid import UUID as PyUUID, uuid4
 
 from .tools import fspath
 
-from core.auth.access import AccessLevel
+from core.auth.access import AccessLevel, access_info
 from core.auth.data import User
+from core.auth.owner import owner_info
 from core.data.sql.columns import DateTime, Integer, String, UUID
 from core.data.sql.columns import Mapped, mapped_column, relationship
 from core.data.sql.database import Model
@@ -36,13 +37,13 @@ class FileMetadata(Model):
     parent: Mapped["FileMetadata"] = relationship("FileMetadata", remote_side=[id])
     children: Mapped[List["FileMetadata"]] = relationship("FileMetadata", uselist=True, back_populates="parent")
     storage_id: Mapped[PyUUID] = mapped_column(ForeignKey("FileStorage.id", onupdate="CASCADE", ondelete="CASCADE"))
-    storage: Mapped["FileStorage"] = relationship("FileStorage", foreign_keys=[storage_id], info={"owner": True})
+    storage: Mapped["FileStorage"] = relationship("FileStorage", foreign_keys=[storage_id], info=owner_info())
     root_storage_id: Mapped[PyUUID] = mapped_column(ForeignKey("FileStorage.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=True, default=None)
     root_storage: Mapped[Optional["FileStorage"]] = relationship("FileStorage", foreign_keys=[root_storage_id])
     atime_utc: Mapped[datetime] = mapped_column(DateTime)
     mtime_utc: Mapped[datetime] = mapped_column(DateTime)
     ctime_utc: Mapped[datetime] = mapped_column(DateTime)
-    access: Mapped[AccessLevel] = mapped_column(SqlEnum(AccessLevel), default=AccessLevel.PRIVATE)
+    access: Mapped[AccessLevel] = mapped_column(SqlEnum(AccessLevel), default=AccessLevel.PRIVATE, info=access_info())
 
     @property
     def user_id(self) -> PyUUID:
@@ -122,7 +123,7 @@ class FileStorage(Model):
     __tablename__ = "FileStorage"
     id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True, default=uuid4)
     user_id: Mapped[PyUUID] = mapped_column(ForeignKey(User.id, onupdate="CASCADE", ondelete="CASCADE"))
-    user: Mapped[User] = relationship(User, info={"owner": True})
+    user: Mapped[User] = relationship(User, info=owner_info())
     name: Mapped[str] = mapped_column(String(512))
     slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info=slug_info())
     all_files: Mapped[List[FileMetadata]] = relationship(FileMetadata, uselist=True, back_populates="storage", foreign_keys=[FileMetadata.storage_id])

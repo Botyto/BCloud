@@ -58,6 +58,12 @@ ACCESS_ORDER = [
     AccessLevel.PUBLIC_WRITABLE,
 ]
 
+def access_info(**kwargs):
+    return {
+        "access": True,
+        **kwargs,
+    }
+
 
 class AccessInfo:
     key: str
@@ -68,23 +74,21 @@ class AccessInfo:
 NO_INFO = AccessInfo("")
 TYPE_ACCESS_INFO: Dict[Type, AccessInfo] = {}
 def find_access_info(entity_type: Type[Model]) -> AccessInfo:
-    access_info = TYPE_ACCESS_INFO.get(entity_type)
-    if access_info is None:
+    access_info_obj = TYPE_ACCESS_INFO.get(entity_type)
+    if access_info_obj is None:
         column_attrs = class_mapper(entity_type).column_attrs
         for column_attr in column_attrs:
             attr: InstrumentedAttribute = getattr(entity_type, column_attr.key)
             if attr.type.python_type == AccessLevel:
-                if access_info is not None:
+                if access_info_obj is not None:
                     raise ValueError(f"Multiple access fields for entity type {entity_type}")
                 attr_info = attr.info
                 if attr_info is None:
-                    access_info = AccessInfo(column_attr.key)
-                    attr.info = {"access": access_info}  # type: ignore
-                else:
-                    access_info = attr.info.get("access")
-        access_info = access_info or NO_INFO
-        TYPE_ACCESS_INFO[entity_type] = access_info
-    return access_info
+                    attr.info = access_info()  # type: ignore
+                access_info_obj = AccessInfo(column_attr.key)
+        access_info_obj = access_info_obj or NO_INFO
+        TYPE_ACCESS_INFO[entity_type] = access_info_obj
+    return access_info_obj
 
 def get_own_access_level(entity: Model) -> AccessLevel:
     access_info = find_access_info(type(entity))

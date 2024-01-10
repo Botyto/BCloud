@@ -3,7 +3,7 @@ import enum
 from uuid import UUID as PyUUID, uuid4
 from typing import List
 
-from core.auth.access import AccessLevel
+from core.auth.access import AccessLevel, access_info
 from core.auth.data import User
 from core.data.sql.columns import DateTime, Enum, Float, Integer, String, UUID, STRING_MAX, utcnow_tz
 from core.data.sql.columns import mapped_column, relationship, Mapped, ForeignKey
@@ -116,6 +116,6 @@ class PhotoAlbum(Model):
     user: Mapped[User] = relationship(User, backref="photos")
     kind: Mapped[PhotoAlbumKind] = mapped_column(Enum(PhotoAlbumKind), nullable=False)
     created_at_utc: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow_tz)
-    access: Mapped[AccessLevel] = mapped_column(Enum(AccessLevel), nullable=False, default=AccessLevel.PRIVATE)
+    access: Mapped[AccessLevel] = mapped_column(Enum(AccessLevel), nullable=False, default=AccessLevel.PRIVATE, info=access_info())
     name: Mapped[str] = mapped_column(String(512), nullable=False)
     slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), nullable=False, info=slug_info())
