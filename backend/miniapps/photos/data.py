@@ -95,13 +95,13 @@ class PhotoAlbumEntry(Model):
     album_id: Mapped[PyUUID] = mapped_column(UUID, ForeignKey("PhotoAlbum.id"), nullable=False)
     album: Mapped["PhotoAlbum"] = relationship("PhotoAlbum", backref="entries")
     kind: Mapped[PhotoAlbumEntryKind] = mapped_column(Enum(PhotoAlbumEntryKind), nullable=False)
-    asset_id: Mapped[PyUUID] = mapped_column(UUID, ForeignKey(PhotoAsset.id), nullable=True)
-    asset: Mapped[PhotoAsset] = relationship(PhotoAsset, backref="album_entries")
-    text: Mapped[str] = mapped_column(String(STRING_MAX), default=None, nullable=True)
-    src_latitude: Mapped[float] = mapped_column(Float, default=None, nullable=True)
-    src_longitude: Mapped[float] = mapped_column(Float, default=None, nullable=True)
-    dst_latitude: Mapped[float] = mapped_column(Float, default=None, nullable=True)
-    dst_longitude: Mapped[float] = mapped_column(Float, default=None, nullable=True)
+    asset_id: Mapped[PyUUID|None] = mapped_column(UUID, ForeignKey(PhotoAsset.id), nullable=True)
+    asset: Mapped[PhotoAsset|None] = relationship(PhotoAsset, backref="album_entries")
+    text: Mapped[str|None] = mapped_column(String(STRING_MAX), default=None, nullable=True)
+    src_latitude: Mapped[float|None] = mapped_column(Float, default=None, nullable=True)
+    src_longitude: Mapped[float|None] = mapped_column(Float, default=None, nullable=True)
+    dst_latitude: Mapped[float|None] = mapped_column(Float, default=None, nullable=True)
+    dst_longitude: Mapped[float|None] = mapped_column(Float, default=None, nullable=True)
 
 
 class PhotoAlbumKind(enum.Enum):
@@ -119,3 +119,4 @@ class PhotoAlbum(Model):
     access: Mapped[AccessLevel] = mapped_column(Enum(AccessLevel), nullable=False, default=AccessLevel.PRIVATE, info=access_info())
     name: Mapped[str] = mapped_column(String(512), nullable=False)
     slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), nullable=False, info=slug_info())
+    entries: Mapped[List[PhotoAlbumEntry]] = relationship(PhotoAlbumEntry, backref="album")
