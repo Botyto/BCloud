@@ -9,7 +9,7 @@ from core.auth.data import User
 from core.data.sql.columns import Boolean, DateTime, Enum, Float, Integer, String, UUID, STRING_MAX, utcnow_tz
 from core.data.sql.columns import mapped_column, relationship, Mapped
 from core.data.sql.database import Model
-from core.data.sql.slugs import SLUG_LENGTH
+from core.data.sql.slugs import SLUG_LENGTH, slug_info
 
 from miniapps.files.data import FileMetadata
 
@@ -20,7 +20,7 @@ class NotesNote(Model):
     collection_id: Mapped[PyUUID] = mapped_column(ForeignKey("NotesCollection.id", onupdate="CASCADE", ondelete="CASCADE"))
     collection: Mapped["NotesCollection"] = relationship("NotesCollection", info={"owner": True}, back_populates="notes")
     created_at_utc: Mapped[datetime] = mapped_column(DateTime, default=utcnow_tz)
-    slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info={"slug": True})
+    slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info=slug_info())
     sort_key: Mapped[float] = mapped_column(Float, default=0.0)
     title: Mapped[str] = mapped_column(String(4096))
     content: Mapped[str] = mapped_column(String(STRING_MAX))
@@ -70,7 +70,7 @@ class NotesCollection(Model):
     parent_id: Mapped[PyUUID|None] = mapped_column(UUID, ForeignKey("NotesCollection.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=True, default=None)
     parent: Mapped[Optional["NotesCollection"]] = relationship("NotesCollection", remote_side=[id])
     children: Mapped[List["NotesCollection"]] = relationship("NotesCollection", uselist=True, back_populates="parent")
-    slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info={"slug": True})
+    slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info=slug_info())
     name: Mapped[str] = mapped_column(String(128))
     view: Mapped[NotesCollectionView] = mapped_column(Enum(NotesCollectionView), default=NotesCollectionView.NOTES.value)
     archived: Mapped[bool] = mapped_column(Boolean, default=False)

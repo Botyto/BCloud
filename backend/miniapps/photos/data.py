@@ -8,7 +8,7 @@ from core.auth.data import User
 from core.data.sql.columns import DateTime, Enum, Float, Integer, String, UUID, STRING_MAX, utcnow_tz
 from core.data.sql.columns import mapped_column, relationship, Mapped, ForeignKey
 from core.data.sql.database import Model
-from core.data.sql.slugs import SLUG_LENGTH
+from core.data.sql.slugs import SLUG_LENGTH, slug_info
 
 from miniapps.files.data import FileMetadata
 
@@ -116,6 +116,6 @@ class PhotoAlbum(Model):
     user: Mapped[User] = relationship(User, backref="photos")
     kind: Mapped[PhotoAlbumKind] = mapped_column(Enum(PhotoAlbumKind), nullable=False)
     created_at_utc: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow_tz)
-    access: Mapped[AccessLevel] = mapped_column(Enum(AccessLevel), nullable=False)
+    access: Mapped[AccessLevel] = mapped_column(Enum(AccessLevel), nullable=False, default=AccessLevel.PRIVATE)
     name: Mapped[str] = mapped_column(String(512), nullable=False)
-    slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), nullable=False)
+    slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), nullable=False, info=slug_info())

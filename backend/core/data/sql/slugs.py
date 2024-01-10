@@ -15,17 +15,26 @@ SLUG_BASE_MAX_LENGTH = 32
 SLUG_SUFFIX_LENGTH = 8
 SLUG_LENGTH = SLUG_BASE_MAX_LENGTH + SLUG_SUFFIX_LENGTH + 1
 
+def slug_info(*origins: str|InstrumentedAttribute[String], once: bool = False, **kwargs):
+    return {
+        "slug": True,
+        "origins": origins,
+        "once": once,
+        **kwargs,
+    }
+
 
 class SlugInfo:
     key: str
     origins: List[str]|None
     generate_once: bool
 
-    def __init__(self, origins: List[str]|None, generate_once: bool):
-        self.origins = origins
+    def __init__(self, key: str, origins: List[str]|None, generate_once: bool):
+        self.key = key
+        self.origins = origins if origins else None
         self.generate_once = generate_once
 
-NO_SLUG = SlugInfo(None, False)
+NO_SLUG = SlugInfo("", None, False)
 
 TYPE_TO_SLUG_INFO: Dict[Type["Model"], SlugInfo] = {}
 def find_slug_info(entity_type: Type["Model"]) -> SlugInfo:
@@ -38,11 +47,9 @@ def find_slug_info(entity_type: Type["Model"]) -> SlugInfo:
             if attr_info is not None and "slug" in attr_info:
                 if slug_info is not None:
                     raise TypeError(f"Multiple slugs for `{entity_type}`")
-                origin = attr_info["slug"]
-                origin_list = [] if origin == True else [origin]
+                origins = attr_info["origins"]
                 once = attr_info.get("once", False)
-                slug_info = SlugInfo(origin_list, once)
-                slug_info.key = column_attr.key
+                slug_info = SlugInfo(column_attr.key, origins, once)
         slug_info = slug_info or NO_SLUG
         TYPE_TO_SLUG_INFO[entity_type] = slug_info
     return slug_info

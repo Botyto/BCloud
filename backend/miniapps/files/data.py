@@ -11,7 +11,7 @@ from core.auth.data import User
 from core.data.sql.columns import DateTime, Integer, String, UUID
 from core.data.sql.columns import Mapped, mapped_column, relationship
 from core.data.sql.database import Model
-from core.data.sql.slugs import SLUG_LENGTH
+from core.data.sql.slugs import SLUG_LENGTH, slug_info
 
 MIME_MAX_LENGTH = 127
 DIRECTORY_MIME = "application/x-bcloud-dir"
@@ -124,7 +124,7 @@ class FileStorage(Model):
     user_id: Mapped[PyUUID] = mapped_column(ForeignKey(User.id, onupdate="CASCADE", ondelete="CASCADE"))
     user: Mapped[User] = relationship(User, info={"owner": True})
     name: Mapped[str] = mapped_column(String(512))
-    slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info={"slug": True})
+    slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info=slug_info())
     all_files: Mapped[List[FileMetadata]] = relationship(FileMetadata, uselist=True, back_populates="storage", foreign_keys=[FileMetadata.storage_id])
     root_dir: Mapped[FileMetadata] = relationship(FileMetadata, uselist=False, back_populates="root_storage", foreign_keys=[FileMetadata.root_storage_id])
 
