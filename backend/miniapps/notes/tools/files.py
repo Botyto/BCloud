@@ -108,7 +108,7 @@ class NoteFileManager:
             self.session.commit()
         else:
             file = note_file.file
-        self.contents.write(file, content)
+        self.contents.write(file, content, mime_type)
         return note_file
     
     def default_delete(self, note: UUID|NotesNote, kind: NotesFileKind|None) -> NotesFile|None:
