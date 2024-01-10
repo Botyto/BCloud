@@ -4,6 +4,7 @@ from uuid import UUID
 from . import fspath
 from ..data import FileMetadata
 
+from core.data.sql.columns import ensure_str_fit
 from core.data.blobs.address import Address
 from core.data.blobs.base import Blobs, OpenMode
 
@@ -21,7 +22,7 @@ class FileContents:
     namespace: Namespace
     scramble: bool
 
-    def __init__(self, blobs: Blobs, namespace: Namespace, scramble: bool = False):
+    def __init__(self, blobs: Blobs, namespace: Namespace = NAMESPACE_CONTENT, scramble: bool = False):
         self.blobs = blobs
         self.namespace = namespace
         self.scramble = scramble
@@ -49,13 +50,17 @@ class FileContents:
             file.accessed()
         return result
     
-    def write(self, file: FileMetadata, content: bytes|None):
+    def write(self, file: FileMetadata, content: bytes|None, mime_type: str|None = None):
         if content is None:
             self.blobs.delete(self.address(file))
             file.size = None
+            file.mime_type = None
         else:
             self.blobs.write(self.address(file), content)
             file.size = len(content)
+            if mime_type is not None:
+                ensure_str_fit("MIME-Type", mime_type, FileMetadata.mime_type)
+                file.mime_type = mime_type
         if self.namespace.update_orm:
                 file.modified()
     
