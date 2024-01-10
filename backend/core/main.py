@@ -54,11 +54,13 @@ def load_miniapps():
     from miniapps.profile.app import ProfileMiniapp
     from miniapps.files.app import FilesMiniapp
     from miniapps.notes.app import NotesMiniapp
+    from miniapps.photos.app import PhotosMiniapp
     return [
         GraphQLMiniapp,
         ProfileMiniapp,
         FilesMiniapp,
         NotesMiniapp,
+        PhotosMiniapp,
     ]
 
 def build_app():
