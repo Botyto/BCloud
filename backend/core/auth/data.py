@@ -1,9 +1,7 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from enum import Enum as PyEnum
 from typing import List
 from uuid import UUID as PyUUID, uuid4
-
-from core.auth.owner import owner_info
 
 from ..data.sql.columns import Boolean, Bytes, DateTime, String, UUID, ForeignKey, Enum, Integer, JSON, utcnow_tz
 from ..data.sql.columns import Mapped, mapped_column, relationship
@@ -61,7 +59,7 @@ class Login(Model):
     last_used_utc: Mapped[datetime] = mapped_column(DateTime)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     user_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id", onupdate="CASCADE", ondelete="CASCADE"))
-    user: Mapped[User] = relationship(back_populates="logins", foreign_keys=[user_id], info=owner_info())
+    user: Mapped[User] = relationship(back_populates="logins", foreign_keys=[user_id], info={"owner": True})
 
     def __init__(self, user: User):
         if user.role == UserRole.NEW:
@@ -81,7 +79,7 @@ class Activity(Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     created_at_utc: Mapped[datetime] = mapped_column(DateTime)
     user_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id", onupdate="CASCADE", ondelete="CASCADE"))
-    user: Mapped[User] = relationship(back_populates="activities", foreign_keys=[user_id], info=owner_info())
+    user: Mapped[User] = relationship(back_populates="activities", foreign_keys=[user_id], info={"owner": True})
     issuer: Mapped[str] = mapped_column(String(64))
     type: Mapped[str] = mapped_column(String(512))
     payload: Mapped[dict] = mapped_column(JSON, nullable=True, default=None)

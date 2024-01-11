@@ -4,10 +4,10 @@ import inspect
 import sqlalchemy
 from sqlalchemy import Column, Enum
 from sqlalchemy.orm import Mapper, RelationshipProperty
-from sqlalchemy.sql.sqltypes import UUID as SqlUUID
+from sqlalchemy.sql.sqltypes import UUID
 import sqlalchemy.dialects.mysql
 from typing import Any, get_type_hints, List, Tuple, Type
-from uuid import UUID
+from uuid import UUID as PyUUID
 
 from .database import Model
 
@@ -32,7 +32,7 @@ SQL_TO_SCALAR = {
     sqlalchemy.Date: date,
     sqlalchemy.Time: time,
     sqlalchemy.Interval: timedelta,
-    SqlUUID: UUID,
+    UUID: PyUUID,
 }
 
 

@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
-from enum import Enum
-from sqlalchemy import ForeignKey, Enum as SqlEnum
+from enum import Enum as PyEnum
+from sqlalchemy import ForeignKey, Enum
 from typing import Generator, List, Tuple, Optional
 from uuid import UUID as PyUUID, uuid4
 
@@ -21,7 +21,7 @@ LINK_MIME = "application/x-bcloud-link"
 assert len(DIRECTORY_MIME) <= MIME_MAX_LENGTH
 
 
-class FileType(Enum):
+class FileType(PyEnum):
     FILE = 0
     DIRECTORY = 1
     LINK = 2
@@ -43,7 +43,7 @@ class FileMetadata(Model):
     atime_utc: Mapped[datetime] = mapped_column(DateTime)
     mtime_utc: Mapped[datetime] = mapped_column(DateTime)
     ctime_utc: Mapped[datetime] = mapped_column(DateTime)
-    access: Mapped[AccessLevel] = mapped_column(SqlEnum(AccessLevel), default=AccessLevel.PRIVATE, info=access_info())
+    access: Mapped[AccessLevel] = mapped_column(Enum(AccessLevel), default=AccessLevel.PRIVATE, info=access_info())
 
     @property
     def user_id(self) -> PyUUID:
