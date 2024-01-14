@@ -33,7 +33,7 @@ function Entry(props: EntryProps) {
     }}>
         {
             props.note.files
-                .filter((f: any) => (f.kind === "ATTACHMENT" && f.file.mimeType.startsWith("image/")) || f.kind == "PREVIEW")
+                .filter((f: any) => (f.kind === "ATTACHMENT" && f.file.mimeType?.startsWith("image/")) || f.kind == "PREVIEW")
                 .map((f: any) => {
                     const contentUrl = fspath.pathToUrl(`${SERVER_HOST}/api/files/contents/:storageId/*`, f.file.abspath);
                     return (
@@ -69,7 +69,7 @@ export default function ChatView(props: CollectionViewProps) {
     const [imagePreviewUrl, setImagePreviewUrl] = useState<string>("");
     const [imageUploadState, setImageUploadState] = useState<FileUploadState|null>(null);
     const [createNote, createNoteData] = useCreateNoteMutation();
-    const [attachNote, attachNoteData] = useAttachFileMutation();
+    const [attachFile, attachFileData] = useAttachFileMutation();
     const container = useRef<HTMLDivElement>(null);
 
     if (container.current) {
@@ -95,7 +95,7 @@ export default function ChatView(props: CollectionViewProps) {
             onCompleted: (!imagePreviewFile) ? (data) => {
                 setNewNoteContent("");
             } : (data) => {
-                attachNote({
+                attachFile({
                     variables: {
                         noteId: data.notesNotesCreateWithSlug.id,
                         kind: "ATTACHMENT",

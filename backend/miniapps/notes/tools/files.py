@@ -29,7 +29,7 @@ class NoteFileManager:
     def files(self):
         if self._files is None:
             if self.user_id:
-                self._files = FileManager(self.context.blobs, self.user_id, self.session, service=self.service)
+                self._files = FileManager(self.context.blobs, self.user_id, self.session, service=True)
             else:
                 self._files = FileManager.for_service(self.context.blobs, self.session)
         return self._files
