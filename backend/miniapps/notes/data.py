@@ -44,7 +44,7 @@ class NotesFile(Model):
     note_id: Mapped[PyUUID] = mapped_column(ForeignKey(NotesNote.id, onupdate="CASCADE", ondelete="CASCADE"))
     note: Mapped[NotesNote] = relationship(NotesNote, info=owner_info(), back_populates="files")
     kind: Mapped[NotesFileKind] = mapped_column(Enum(NotesFileKind))
-    file_id: Mapped[PyUUID] = mapped_column(UUID, ForeignKey("FileMetadata.id", onupdate="CASCADE", ondelete="CASCADE"))
+    file_id: Mapped[PyUUID] = mapped_column(ForeignKey("FileMetadata.id", onupdate="CASCADE", ondelete="CASCADE"))
     file: Mapped["FileMetadata"] = relationship("FileMetadata", foreign_keys=[file_id])
 
 
@@ -68,7 +68,7 @@ class NotesCollection(Model):
     user_id: Mapped[PyUUID] = mapped_column(ForeignKey("User.id", onupdate="CASCADE", ondelete="CASCADE"))
     user: Mapped[User] = relationship(User, info=owner_info())
     created_at_utc: Mapped[datetime] = mapped_column(DateTime, default=utcnow_tz)
-    parent_id: Mapped[PyUUID|None] = mapped_column(UUID, ForeignKey("NotesCollection.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=True, default=None)
+    parent_id: Mapped[PyUUID|None] = mapped_column(ForeignKey("NotesCollection.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=True, default=None)
     parent: Mapped[Optional["NotesCollection"]] = relationship("NotesCollection", remote_side=[id])
     children: Mapped[List["NotesCollection"]] = relationship("NotesCollection", uselist=True, back_populates="parent")
     slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), info=slug_info())
