@@ -15,6 +15,8 @@ from ..data import PhotoAsset
 from .importing import PhotoImporter
 
 
+UNSET_MIME = object()
+
 class PhotoFileManager:
     STORAGE_NAME = StorageManager.SERVICE_PREFIX + "photos"
 
@@ -65,12 +67,15 @@ class PhotoFileManager:
             return self.session.scalars(statement).one_or_none()
         return asset
 
-    def write(self, asset: PhotoAsset, content: bytes, mime_type: str):
-        return self.write_any(asset, PhotoAsset.file, content, mime_type)
+    def get(self, asset: PhotoAsset, *, create: bool = False, mime_type: str|None = UNSET_MIME):  # type: ignore
+        return self.get_any(asset, PhotoAsset.file, create=create, mime_type=mime_type)
 
-    def write_any(self, asset: PhotoAsset, attr: InstrumentedAttribute[FileMetadata|None], content: bytes, mime_type: str):
-        file: FileMetadata
+    def get_any(self, asset: PhotoAsset, attr: InstrumentedAttribute[FileMetadata|None], *, create: bool = False, mime_type: str|None = UNSET_MIME):  # type: ignore
+        if create and mime_type is UNSET_MIME:
+            raise ValueError("mime_type must be specified when creating a file")
         if asset.file is None:
+            if not create:
+                return
             storage = self.files.storage.get_or_create(self.STORAGE_NAME)
             if self.session.is_modified(storage):
                 self.session.commit()
@@ -79,7 +84,14 @@ class PhotoFileManager:
             setattr(asset, attr.key, file)
             self.session.add(file)
         else:
-            file = getattr(asset, attr.key)
+            file: FileMetadata = getattr(asset, attr.key)
+        return file
+
+    def write(self, asset: PhotoAsset, content: bytes, mime_type: str):
+        return self.write_any(asset, PhotoAsset.file, content, mime_type)
+
+    def write_any(self, asset: PhotoAsset, attr: InstrumentedAttribute[FileMetadata|None], content: bytes, mime_type: str):
+        file: FileMetadata = self.get_any(asset, attr, create=True, mime_type=mime_type)  # type: ignore
         self.contents.write(file, content, mime_type)
         if attr is PhotoAsset.file:
             importing = PhotoImporter(self.context, self.session)
