@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from enum import Enum as PyEnum
 from typing import List
 from uuid import UUID as PyUUID, uuid4

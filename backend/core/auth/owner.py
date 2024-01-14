@@ -8,9 +8,16 @@ from .data import User
 from ..data.sql.database import Model
 
 __all__ = [
+    "owner_info",
     "resolve_owner_info",
     "traverse_chain",
 ]
+
+def owner_info(**kwargs):
+    return {
+        "owner": True,
+        **kwargs,
+    }
 
 
 @dataclass

@@ -1,11 +1,10 @@
 from enum import Enum
 from uuid import UUID
 
-from sqlalchemy import delete, select, update, Select
+from sqlalchemy import select, Select
 
 from core.api.modules.gql import GqlMiniappModule, query, mutation
 from core.api.pages import PagesInput, PagesResult
-from core.data.sql.columns import ensure_str_fit
 from core.graphql.result import SuccessResult
 
 from .data import NotesCollection, NotesCollectionView
