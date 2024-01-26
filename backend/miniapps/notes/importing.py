@@ -94,7 +94,10 @@ class NoteHelper:
 # As of writing this, the Google Keep API is intended only for enterprise users.
 # This question mentions a link to a ticket addressing this:
 # https://stackoverflow.com/questions/70312083/google-keep-api-responds-with-invalid-scope-when-using-documented-scopes
-class KeepItemImporter(GoogleItemImporter):
+class KeepItemImporter(GoogleItemImporter[GNote, NoteHelper]):
+    ITEM_NAME = "note"
+    PAGINATED = True
+
     def gather_page_next(self, page_token: str|None):
         return self.context.service.notes().list(filter="", pageSize=100, pageToken=page_token).execute()
     
