@@ -65,6 +65,9 @@ class PhotoAsset(Model):
     latitude: Mapped[float|None] = mapped_column(Float, default=None, nullable=True)
     longitude: Mapped[float|None] = mapped_column(Float, default=None, nullable=True)
     altitude: Mapped[float|None] = mapped_column(Float, default=None, nullable=True)
+    fps: Mapped[int|None] = mapped_column(Integer, default=None, nullable=True)
+    duration: Mapped[float|None] = mapped_column(Float, default=None, nullable=True)
+    bitrate: Mapped[int|None] = mapped_column(Integer, default=None, nullable=True)
 
 
 class PhotoAssetTagAssoc(Model):

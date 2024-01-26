@@ -21,15 +21,15 @@ class GoogleItemContext(GoogleImportingContext, Generic[ItemType, HelperType]):
     i: int
     n: int
     session: Session
-    manager: HelperType|None
+    helper: HelperType
     item: ItemType
 
-    def __init__(self, base: GoogleImportingContext, i: int, n: int, session: Session, helper: HelperType|None, item: ItemType):
+    def __init__(self, base: GoogleImportingContext, i: int, n: int, session: Session, helper: HelperType, item: ItemType):
         self._extend(base)
         self.i = i
         self.n = n
         self.session = session
-        self.manager = helper
+        self.helper = helper
         self.item = item
 
     @property
@@ -60,12 +60,15 @@ class GoogleItemImporter(Generic[ItemType, HelperType]):
     def gather_page_process(self, output: List[ItemType], response: dict):
         raise NotImplementedError()
     
-    def create_helper(self, session: Session) -> HelperType|None:
-        pass
+    def create_helper(self, session: Session) -> HelperType:
+        raise NotImplementedError()
 
     def import_item(self, gitem_context: GoogleItemContext[ItemType, HelperType]):
         raise NotImplementedError()
     
+    def items_created(self, gitems: List[ItemType], helper: HelperType):
+        pass
+
     def __gather_paginated(self, output: List[ItemType]):
         page_token: str|None = None
         while True:
@@ -80,10 +83,11 @@ class GoogleItemImporter(Generic[ItemType, HelperType]):
     def __create_items(self, gitems: List[ItemType]):
         self.log.debug("Importing %d %s", len(gitems), self.ITEM_NAME)
         with self.context.database.make_session() as session:
-            manager = self.create_helper(session)
+            helper = self.create_helper(session)
             for i, gitem in enumerate(gitems):
-                gitem_context = GoogleItemContext(self.context, i, len(gitems), session, manager, gitem)
+                gitem_context = GoogleItemContext(self.context, i, len(gitems), session, helper, gitem)
                 self.__import_item(gitem_context)
+            self.items_created(gitems, helper)
 
     def __import_item(self, context: GoogleItemContext[ItemType, HelperType]):
         self.log.debug("Importing %s %s - %s", self.ITEM_NAME, context.item_num, context.item.google_name)

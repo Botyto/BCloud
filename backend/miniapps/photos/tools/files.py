@@ -10,7 +10,7 @@ from miniapps.files.tools import fspath
 from miniapps.files.tools.files import FileManager
 from miniapps.files.tools.storage import StorageManager
 
-from ..data import PhotoAsset
+from ..data import PhotoAsset, PhotoAssetKind
 
 from .importing import PhotoImporter
 
@@ -94,9 +94,12 @@ class PhotoFileManager:
         file: FileMetadata = self.get_any(asset, attr, create=True, mime_type=mime_type)  # type: ignore
         self.contents.write(file, content, mime_type)
         if attr is PhotoAsset.file:
-            importing = PhotoImporter(self.context, self.session)
-            importing.update_exif_info(asset)
-            importing.update_previews(asset)
+            if asset.kind == PhotoAssetKind.PHOTO:
+                importing = PhotoImporter(self.context, self.session)
+                importing.update_exif_info(asset)
+                importing.update_previews(asset)
+            else:
+                raise NotImplementedError()
 
     def read(self, asset: PhotoAsset):
         return self.read_any(asset, PhotoAsset.file)

@@ -2,10 +2,19 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 import logging
-from typing import List
+import requests
+from typing import List, Dict
+from uuid import UUID
+
+from core.data.sql.database import Session
 
 from miniapps.profile.importing.google import GoogleImporter, GoogleImportingContext
 from miniapps.profile.importing.google_items import GoogleItem, GoogleItemContext, GoogleItemImporter
+
+from .data import PhotoAsset, PhotoAssetKind, PhotoAlbumKind
+from .tools.album import PhotoAlbumManager
+from .tools.asset import PhotoAssetManager
+from .tools.files import PhotoFileManager
 
 logger = logging.getLogger(__name__)
 
@@ -101,9 +110,23 @@ class GPhoto(GoogleItem):
         return self.filename
 
 
-class PhotoItemImporter(GoogleItemImporter[GPhoto, None]):
+@dataclass
+class PhotoHelper:
+    assets: PhotoAssetManager
+    files: PhotoFileManager
+
+
+class PhotoItemImporter(GoogleItemImporter[GPhoto, PhotoHelper]):
     ITEM_NAME = "photo"
     PAGINATED = True
+
+    mapping: Dict[str, UUID]
+    _internal_mapping: Dict[str, PhotoAsset]
+
+    def __init__(self, logger: logging.Logger, context: GoogleImportingContext, mapping: Dict[str, UUID]):
+        super().__init__(logger, context)
+        self.mapping = mapping
+        self._internal_mapping = dict()
 
     def gather_page_next(self, page_token: str|None):
         return self.context.service.photos().list(filter="", pageSize=100, pageToken=page_token).execute()
@@ -122,7 +145,7 @@ class PhotoItemImporter(GoogleItemImporter[GPhoto, None]):
                 )
             note = GPhoto(
                 id=item["id"],
-                description=item.get("description", ""),
+                description=item["description"],
                 product_url=item["productUrl"],
                 base_url=item["baseUrl"],
                 mime_type=item["mimeType"],
@@ -132,8 +155,45 @@ class PhotoItemImporter(GoogleItemImporter[GPhoto, None]):
             )
             output.append(note)
 
-    def import_item(self, gphoto_context: GoogleItemContext[GPhoto, None]):
-        raise NotImplementedError()
+    def create_helper(self, session: Session):
+        return PhotoHelper(
+            assets=PhotoAssetManager(self.context.user_id, self.context, session),
+            files=PhotoFileManager(self.context.user_id, self.context, session),
+        )
+
+    def import_item(self, gphoto_context: GoogleItemContext[GPhoto, PhotoHelper]):
+        is_photo = gphoto_context.item.metadata.media_type == GPhotoType.PHOTO
+        if not is_photo and gphoto_context.item.metadata.status != GVideoStatus.READY:
+            self.log.warning(f"Skipping {self.ITEM_NAME} {gphoto_context.item_num} because it is not ready yet")
+            return
+        asset = gphoto_context.helper.assets.create(PhotoAssetKind.PHOTO if is_photo else PhotoAssetKind.VIDEO)
+        asset.created_at_utc = gphoto_context.item.metadata.creation_time
+        asset.width = gphoto_context.item.metadata.width
+        asset.height = gphoto_context.item.metadata.height
+        asset.camera_make = gphoto_context.item.metadata.camera_make
+        asset.camera_model = gphoto_context.item.metadata.camera_model
+        if is_photo:
+            asset.focal_length = gphoto_context.item.metadata.focal_length
+            asset.fnumber = gphoto_context.item.metadata.aperature_f
+            asset.iso = gphoto_context.item.metadata.iso
+            asset.exposure_time = gphoto_context.item.metadata.exposure_time
+        else:
+            asset.fps = gphoto_context.item.metadata.fps
+        download_url = gphoto_context.item.base_url + "=d"
+        response = requests.get(download_url)
+        if response.status_code != 200:
+            self.log.error("Failed to download %s %s: %d %s", self.ITEM_NAME, gphoto_context.item_num, response.status_code, response.reason)
+            return
+        gphoto_context.helper.files.write(asset, response.content, gphoto_context.item.mime_type)
+        gphoto_context.session.commit()
+        self._internal_mapping[gphoto_context.item.id] = asset
+
+    def items_created(self, gitems: List[GPhoto], helper: PhotoHelper):
+        helper.assets.session.commit()
+        for gitem in gitems:
+            if gitem.id in self.mapping:
+                self.mapping[gitem.id] = self._internal_mapping[gitem.id].id
+        del self._internal_mapping
 
 
 @dataclass
@@ -158,14 +218,91 @@ class GAlbum(GoogleItem):
     title: str
     product_url: str
     is_writable: bool
-    share_info: GAlbumShareInfo
+    is_shared: bool
+    share_info: GAlbumShareInfo|None
     media_items_count: int
+    media_item_ids: List[str]
     cover_base_url: str
     cover_media_item_id: str
 
 
-class AlbumItemImporter(GoogleItemImporter[GAlbum, None]):
-    pass
+class AlbumItemImporter(GoogleItemImporter[GAlbum, PhotoAlbumManager]):
+    ITEM_NAME = "album"
+    PAGINATED = True
+
+    mapping: Dict[str, UUID]
+
+    def __init__(self, logger: logging.Logger, context: GoogleImportingContext, mapping: Dict[str, UUID]):
+        super().__init__(logger, context)
+        self.mapping = mapping
+
+    def gather_page_next(self, page_token: str|None):
+        return self.context.service.albums().list(filter="", pageSize=100, pageToken=page_token).execute()
+    
+    def find_photo_ids(self, galbum_id: str):
+        result = []
+        page_token: str|None = None
+        while True:
+            response = self.context.service.mediaItems() \
+                .search(albumId=galbum_id, filter="", pageSize=100, pageToken=page_token) \
+                .execute()
+            items = response.get("mediaItems", [])
+            result.extend(item["id"] for item in items)
+            page_token = response.get("nextPageToken")
+            if page_token is None or not items:
+                break
+        return result
+
+    def gather_page_process(self, output: List[GAlbum], response: dict):
+        items = response.get("albums", [])
+        for item in items:
+            share_info: GAlbumShareInfo|None = None
+            if "shareInfo" in item:
+                share_info = GAlbumShareInfo(
+                    options=GAlbumShareOptions(
+                        is_collaborative=item["shareInfo"]["shareableUrl"],
+                        is_commentable=item["shareInfo"]["shareToken"],
+                    ),
+                    sherable_url=item["shareInfo"]["shareableUrl"],
+                    share_token=item["shareInfo"]["shareToken"],
+                    is_joined=item["shareInfo"]["isJoined"],
+                    is_owned=item["shareInfo"]["isOwned"],
+                    is_joinable=item["shareInfo"]["isJoinable"],
+                )
+            media_item_ids = self.find_photo_ids(item["id"])
+            album = GAlbum(
+                id=item["id"],
+                title=item["title"],
+                product_url=item["productUrl"],
+                is_writable=item["isWritable"],
+                is_shared=False,
+                share_info=share_info,
+                media_items_count=item["mediaItemsCount"],
+                media_item_ids=media_item_ids,
+                cover_base_url=item["coverPhotoBaseUrl"],
+                cover_media_item_id=item["coverPhotoMediaItemId"],
+            )
+            output.append(album)
+
+    def create_helper(self, session: Session):
+        return PhotoAlbumManager(self.context.user_id, self.context, session)
+
+    def import_item(self, galbum_context: GoogleItemContext[GAlbum, PhotoAlbumManager]):
+        album_kind = PhotoAlbumKind.SHARED if galbum_context.item.is_shared else PhotoAlbumKind.DEFAULT
+        asset_ids = [self.mapping[gasset_id] for gasset_id in galbum_context.item.media_item_ids]
+        galbum_context.helper.create(galbum_context.item.title, album_kind, asset_ids)
+
+
+class SharedAlbumItemImporter(AlbumItemImporter):
+    ITEM_NAME = "shared album"
+
+    def gather_page_next(self, page_token: str|None):
+        return self.context.service.sharedAlbums().list(filter="", pageSize=100, pageToken=page_token).execute()
+    
+    def gather_page_process(self, output: List[GAlbum], response: dict):
+        super().gather_page_process(output, response)
+        for album in output:
+            album.is_shared = True
 
 
 class GooglePhotosImporter(GoogleImporter):
@@ -174,8 +311,14 @@ class GooglePhotosImporter(GoogleImporter):
     VERSION = "v1"
     SCOPES = {
         "https://www.googleapis.com/auth/photoslibrary.readonly",
+        "https://www.googleapis.com/auth/photoslibrary.sharing",
     }
 
     async def run(self, context: GoogleImportingContext):
-        photos = PhotoItemImporter(logger, context)
+        mapping: Dict[str, UUID] = dict()
+        photos = PhotoItemImporter(logger, context, mapping)
         await photos.run()
+        albums = AlbumItemImporter(logger, context, mapping)
+        await albums.run()
+        shared_albums = SharedAlbumItemImporter(logger, context, mapping)
+        await shared_albums.run()
