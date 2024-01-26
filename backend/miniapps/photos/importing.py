@@ -87,12 +87,26 @@ class GPhotoMetadata:
             status=GVideoStatus(raw_meta["video"]["status"]),
         )
 
+    @classmethod
+    def from_response(cls, item: dict):
+        is_photo = "photo" in item
+        raw_metadata = item["mediaMetadata"]
+        return cls.photo(raw_metadata) if is_photo else cls.video(raw_metadata)
+
 
 @dataclass
 class GPhotoContributor:
     profile_picture_base_url: str
     display_name: str
 
+    @classmethod
+    def from_response(cls, item: dict|None):
+        if item is None:
+            return
+        return cls(
+            profile_picture_base_url=item["contributorInfo"]["profilePictureBaseUrl"],
+            display_name=item["contributorInfo"]["displayName"],
+        )
 
 @dataclass
 class GPhoto(GoogleItem):
@@ -108,6 +122,19 @@ class GPhoto(GoogleItem):
     @property
     def google_name(self):
         return self.filename
+    
+    @classmethod
+    def from_response(cls, item: dict):
+        return cls(
+            id=item["id"],
+            description=item["description"],
+            product_url=item["productUrl"],
+            base_url=item["baseUrl"],
+            mime_type=item["mimeType"],
+            metadata=GPhotoMetadata.from_response(item["mediaMetadata"]),
+            contributor=GPhotoContributor.from_response(item.get("contributorInfo")),
+            filename=item["filename"],
+        )
 
 
 @dataclass
@@ -134,26 +161,8 @@ class PhotoItemImporter(GoogleItemImporter[GPhoto, PhotoHelper]):
     def gather_page_process(self, output: List[GPhoto], response: dict):
         items = response.get("mediaItems", [])
         for item in items:
-            is_photo = "photo" in item["mediaMetadata"]
-            raw_metadata = item["mediaMetadata"]
-            metadata = GPhotoMetadata.photo(raw_metadata) if is_photo else GPhotoMetadata.video(raw_metadata)
-            contributor: GPhotoContributor|None = None
-            if "contributorInfo" in item:
-                contributor = GPhotoContributor(
-                    profile_picture_base_url=item["contributorInfo"]["profilePictureBaseUrl"],
-                    display_name=item["contributorInfo"]["displayName"],
-                )
-            note = GPhoto(
-                id=item["id"],
-                description=item["description"],
-                product_url=item["productUrl"],
-                base_url=item["baseUrl"],
-                mime_type=item["mimeType"],
-                metadata=metadata,
-                contributor=contributor,
-                filename=item["filename"],
-            )
-            output.append(note)
+            photo = GPhoto.from_response(item)
+            output.append(photo)
 
     def create_helper(self, session: Session):
         return PhotoHelper(
@@ -201,6 +210,13 @@ class GAlbumShareOptions:
     is_collaborative: bool
     is_commentable: bool
 
+    @classmethod
+    def from_response(cls, item: dict):
+        return cls(
+            is_collaborative=item["shareInfo"]["shareableUrl"],
+            is_commentable=item["shareInfo"]["shareToken"],
+        )
+
 
 @dataclass
 class GAlbumShareInfo:
@@ -210,6 +226,19 @@ class GAlbumShareInfo:
     is_joined: bool
     is_owned: bool
     is_joinable: bool
+
+    @classmethod
+    def from_response(cls, item: dict|None):
+        if item is None:
+            return
+        return cls(
+            options=GAlbumShareOptions.from_response(item["sharedAlbumOptions"]),
+            sherable_url=item["shareableUrl"],
+            share_token=item["shareToken"],
+            is_joined=item["isJoined"],
+            is_owned=item["isOwned"],
+            is_joinable=item["isJoinable"],
+        )
 
 
 @dataclass
@@ -225,6 +254,36 @@ class GAlbum(GoogleItem):
     cover_base_url: str
     cover_media_item_id: str
 
+    @classmethod
+    def __find_media_items(cls, album_id: str, context: GoogleImportingContext):
+        result: List[str] = []
+        page_token: str|None = None
+        while True:
+            response = context.service.mediaItems() \
+                .search(albumId=album_id, filter="", pageSize=100, pageToken=page_token) \
+                .execute()
+            items = response.get("mediaItems", [])
+            result.extend(item["id"] for item in items)
+            page_token = response.get("nextPageToken")
+            if page_token is None or not items:
+                break
+        return result
+
+    @classmethod
+    def from_response(cls, item: dict, context: GoogleImportingContext):
+        return cls(
+            id=item["id"],
+            title=item["title"],
+            product_url=item["productUrl"],
+            is_writable=item["isWritable"],
+            is_shared=False,
+            share_info=GAlbumShareInfo.from_response(item.get("shareInfo")),
+            media_items_count=item["mediaItemsCount"],
+            media_item_ids=cls.__find_media_items(item["id"], context),
+            cover_base_url=item["coverPhotoBaseUrl"],
+            cover_media_item_id=item["coverPhotoMediaItemId"],
+        )
+
 
 class AlbumItemImporter(GoogleItemImporter[GAlbum, PhotoAlbumManager]):
     ITEM_NAME = "album"
@@ -239,49 +298,10 @@ class AlbumItemImporter(GoogleItemImporter[GAlbum, PhotoAlbumManager]):
     def gather_page_next(self, page_token: str|None):
         return self.context.service.albums().list(filter="", pageSize=100, pageToken=page_token).execute()
     
-    def find_photo_ids(self, galbum_id: str):
-        result = []
-        page_token: str|None = None
-        while True:
-            response = self.context.service.mediaItems() \
-                .search(albumId=galbum_id, filter="", pageSize=100, pageToken=page_token) \
-                .execute()
-            items = response.get("mediaItems", [])
-            result.extend(item["id"] for item in items)
-            page_token = response.get("nextPageToken")
-            if page_token is None or not items:
-                break
-        return result
-
     def gather_page_process(self, output: List[GAlbum], response: dict):
         items = response.get("albums", [])
         for item in items:
-            share_info: GAlbumShareInfo|None = None
-            if "shareInfo" in item:
-                share_info = GAlbumShareInfo(
-                    options=GAlbumShareOptions(
-                        is_collaborative=item["shareInfo"]["shareableUrl"],
-                        is_commentable=item["shareInfo"]["shareToken"],
-                    ),
-                    sherable_url=item["shareInfo"]["shareableUrl"],
-                    share_token=item["shareInfo"]["shareToken"],
-                    is_joined=item["shareInfo"]["isJoined"],
-                    is_owned=item["shareInfo"]["isOwned"],
-                    is_joinable=item["shareInfo"]["isJoinable"],
-                )
-            media_item_ids = self.find_photo_ids(item["id"])
-            album = GAlbum(
-                id=item["id"],
-                title=item["title"],
-                product_url=item["productUrl"],
-                is_writable=item["isWritable"],
-                is_shared=False,
-                share_info=share_info,
-                media_items_count=item["mediaItemsCount"],
-                media_item_ids=media_item_ids,
-                cover_base_url=item["coverPhotoBaseUrl"],
-                cover_media_item_id=item["coverPhotoMediaItemId"],
-            )
+            album = GAlbum.from_response(item, self.context)
             output.append(album)
 
     def create_helper(self, session: Session):

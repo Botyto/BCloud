@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import logging
-from typing import Any, List
+from typing import List
 
 from core.data.sql.database import Session
 
@@ -19,12 +19,30 @@ class GNoteAttachment:
     name: str
     mime_type: str
 
+    @classmethod
+    def from_response(cls, item: dict):
+        return cls(
+            name=item["name"],
+            mime_type=item["mimeType"],
+        )
+
 
 @dataclass
 class GNoteListItem:
     text: str
     checked: bool
     children: List["GNoteListItem"]
+
+    @classmethod
+    def from_response(cls, item: dict):
+        children = []
+        if "childListItems" in item:
+            children = [cls.from_response(i) for i in item["childListItems"]]
+        return cls(
+            text=item["text"]["text"],
+            checked=item["checked"],
+            children=children,
+        )
 
 
 @dataclass
@@ -39,6 +57,32 @@ class GNote(GoogleItem):
     @property
     def google_name(self):
         return self.name
+    
+    @classmethod
+    def from_response(cls, item: dict):
+        attachments = [
+            GNoteAttachment.from_response(att)
+            for att in item.get("attachments", [])
+        ]
+        content: str = ""
+        checklist: List[GNoteListItem] = []
+        if "text" in item["body"]:
+            content = item["body"]["text"]["text"]
+            checklist = []
+        elif "list" in item["body"]:
+            content = ""
+            checklist = [
+                GNoteListItem.from_response(list_item)
+                for list_item in item["body"]["list"]["listItems"]
+            ]
+        return cls(
+            name=item["name"],
+            title=item["title"],
+            content=content,
+            checklist=checklist,
+            trashed=item["trashed"],
+            attachments=attachments,
+        )
 
 
 @dataclass
@@ -54,45 +98,10 @@ class KeepItemImporter(GoogleItemImporter):
     def gather_page_next(self, page_token: str|None):
         return self.context.service.notes().list(filter="", pageSize=100, pageToken=page_token).execute()
     
-    def __parse_list_item(self, item: Any) -> GNoteListItem:
-        children = []
-        if "childListItems" in item:
-            children = [self.__parse_list_item(i) for i in item["childListItems"]]
-        return GNoteListItem(
-            text=item["text"]["text"],
-            checked=item["checked"],
-            children=children,
-        )
-
     def gather_page_process(self, output: List[GNote], response: dict):
         items = response.get("notes", [])
         for item in items:
-            attachments = [
-                GNoteAttachment(
-                    name=att["name"],
-                    mime_type=att["mimeType"],
-                )
-                for att in item.get("attachments", [])
-            ]
-            content: str = ""
-            checklist: List[GNoteListItem] = []
-            if "text" in item["body"]:
-                content = item["body"]["text"]["text"]
-                checklist = []
-            elif "list" in item["body"]:
-                content = ""
-                checklist = [
-                    self.__parse_list_item(list_item)
-                    for list_item in item["body"]["list"]["listItems"]
-                ]
-            note = GNote(
-                name=item["name"],
-                title=item["title"],
-                content=content,
-                checklist=checklist,
-                trashed=item["trashed"],
-                attachments=attachments,
-            )
+            note = GNote.from_response(item)
             output.append(note)
 
     COLLECTION_NAME = "Google Keep"
