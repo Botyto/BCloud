@@ -94,13 +94,9 @@ class PhotoFileManager:
         file: FileMetadata = self.get_any(asset, attr, create=True, mime_type=mime_type)  # type: ignore
         self.contents.write(file, content, mime_type)
         if attr is PhotoAsset.file:
-            if asset.kind == PhotoAssetKind.PHOTO:
-                importing = PhotoImporter(self.context, self.session)
-                importing.update_exif_info(asset)
-                importing.update_previews(asset)
-            else:
-                raise NotImplementedError()
-
+            importing = PhotoImporter(self.context, self.session)
+            importing.update_metadata(asset)
+            importing.update_previews(asset)
     def read(self, asset: PhotoAsset):
         return self.read_any(asset, PhotoAsset.file)
 

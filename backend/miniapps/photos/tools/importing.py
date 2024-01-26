@@ -130,9 +130,8 @@ class PhotoImporter:
             case _:
                 raise ValueError(f"Unknown asset kind '{asset.kind}'")
 
-    def update_exif_info(self, asset: PhotoAsset):
-        if asset.kind != PhotoAssetKind.PHOTO:
-            return
+    def __update_photo_metadata(self, asset: PhotoAsset):
+        assert asset.kind == PhotoAssetKind.PHOTO
         assert asset.file is not None
         with self.contents.open(asset.file, OpenMode.READ) as fh:
             image = PIL.Image.open(fh)
@@ -182,3 +181,42 @@ class PhotoImporter:
                 if altitude_ref[0] == 1:
                     altitude = -altitude
                 asset.altitude = altitude
+
+    def __update_video_metadata(self, asset: PhotoAsset):
+        assert asset.kind == PhotoAssetKind.VIDEO
+        assert asset.file is not None
+        raise NotImplementedError()
+        asset.width = None
+        asset.height = None
+        asset.taken_at_utc = None
+        asset.camera_make = None
+        asset.camera_model = None
+        asset.orientation = None
+        asset.iso = None
+        asset.focal_length = None
+        asset.latitude = None
+        asset.longitude = None
+        asset.altitude = None
+        asset.fps = None
+        asset.duration = None
+    
+    def __update_audio_metadata(self, asset: PhotoAsset):
+        assert asset.kind == PhotoAssetKind.AUDIO
+        assert asset.file is not None
+        raise NotImplementedError()
+        asset.latitude = None
+        asset.longitude = None
+        asset.altitude = None
+        asset.duration = None
+        asset.bitrate = None
+
+    def update_metadata(self, asset: PhotoAsset):
+        match asset.kind:
+            case PhotoAssetKind.PHOTO:
+                return self.__update_photo_metadata(asset)
+            case PhotoAssetKind.VIDEO:
+                return self.__update_video_metadata(asset)
+            case PhotoAssetKind.AUDIO:
+                return self.__update_audio_metadata(asset)
+            case _:
+                raise ValueError(f"Unknown asset kind '{asset.kind}'")
