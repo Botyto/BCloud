@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from enum import Enum
 from typing import BinaryIO
 
@@ -9,7 +10,7 @@ class OpenMode(Enum):
     APPEND = "append"
 
 
-class BlobIO(BinaryIO):
+class BlobIO(ABC, BinaryIO):
     _manager: "Blobs"
     _address: Address
     _mode: OpenMode
@@ -19,11 +20,13 @@ class BlobIO(BinaryIO):
         self._address = address
         self._mode = mode
 
+    @abstractmethod
     def close(self):
-        raise NotImplementedError()
+        ...
 
+    @abstractmethod
     def flush(self):
-        raise NotImplementedError()
+        ...
     
     @property
     def mode(self):
@@ -36,22 +39,27 @@ class BlobIO(BinaryIO):
                 return "ab"
         return "rb"
 
+    @abstractmethod
     def read(self, n: int = -1) -> bytes:
-        raise NotImplementedError()
+        ...
 
+    @abstractmethod
     def seek(self, offset: int, whence: int = 0) -> int:
-        raise NotImplementedError()
+        ...
 
+    @abstractmethod
     def tell(self) -> int:
-        raise NotImplementedError()
+        ...
 
+    @abstractmethod
     def write(self, data: bytes|bytearray) -> int:
-        raise NotImplementedError()
+        ...
 
 
-class Blobs:
+class Blobs(ABC):
+    @abstractmethod
     def exists(self, address: Address) -> bool:
-        raise NotImplementedError()
+        ...
 
     def read(self, address: Address) -> bytes:
         with self.open(address, OpenMode.READ) as fh:
@@ -61,14 +69,18 @@ class Blobs:
         with self.open(address, OpenMode.WRITE) as fh:
             return fh.write(data)
 
+    @abstractmethod
     def delete(self, address: Address):
-        raise NotImplementedError()
+        ...
     
+    @abstractmethod
     def open(self, address: Address, mode: OpenMode) -> BlobIO:
-        raise NotImplementedError()
+        ...
     
+    @abstractmethod
     def copy(self, src: Address, dst: Address):
-        raise NotImplementedError()
+        ...
     
+    @abstractmethod
     def rename(self, src: Address, dst: Address):
-        raise NotImplementedError()
+        ...

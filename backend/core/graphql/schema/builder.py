@@ -1,9 +1,10 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import inspect
 import itertools
 import sys
 from types import ModuleType
-from typing import Any, Callable, List, Type
+from typing import Callable, List, Type
 
 from .methods import MethodBuildInfo, WrapMethodType
 from .types import TypesBuilder
@@ -62,7 +63,7 @@ class MethodChain:
 
 
 
-class MethodBuilder:
+class MethodBuilder(ABC):
     types: TypesBuilder
     methods: List[MethodBuildInfo]
     package_prefix: str
@@ -107,5 +108,6 @@ class MethodBuilder:
                     chains.append(MethodChain(method_info, class_node.class_type, package.module))
         return chains
     
+    @abstractmethod
     def build(self) -> Type:
-        raise NotImplementedError()
+        ...

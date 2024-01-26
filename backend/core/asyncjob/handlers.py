@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import Dict, List, Type
 
 import typeguard
@@ -10,7 +11,7 @@ from ..data.blobs.address import Address
 MISSING_VALUE = object()
 
 
-class AsyncJobHandler:
+class AsyncJobHandler(ABC):
     TYPE: str
     PAYLOAD_SCHEMA: List[str]|Type|None = None
     context: AsyncJobRuntimeContext
@@ -62,8 +63,9 @@ class AsyncJobHandler:
             case _:
                 raise ValueError("Unkown asyncjob action")
 
+    @abstractmethod
     def run(self):
-        raise NotImplementedError()
+        ...
     
     def delete(self):
         pass

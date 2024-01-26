@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import sqlalchemy.event
 from typing import Type, TYPE_CHECKING
 
@@ -8,7 +9,7 @@ if TYPE_CHECKING:
     from .miniapp import Miniapp
 
 
-class MiniappSqlEvent:
+class MiniappSqlEvent(ABC):
     TARGET: Type
     IDENTIFIER: str
 
@@ -19,8 +20,9 @@ class MiniappSqlEvent:
         self.miniapp = miniapp
         self.context = context
 
+    @abstractmethod
     def run(self, *args, **kwargs):
-        raise NotImplementedError()
+        ...
 
 
 class SqlEventRegistry(MiniappRegistry):

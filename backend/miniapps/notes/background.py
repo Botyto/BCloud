@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from uuid import UUID
 
 from sqlalchemy import select
@@ -39,7 +40,7 @@ class NotePostprocessorContext(AsyncJobRuntimeContext):
         self.session = session
 
 
-class NotePostprocessor:
+class NotePostprocessor(ABC):
     context: NotePostprocessorContext
 
     @property
@@ -57,11 +58,13 @@ class NotePostprocessor:
     def __init__(self, context: NotePostprocessorContext):
         self.context = context
 
+    @abstractmethod
     def should_run(self) -> bool:
-        raise NotImplementedError()
+        ...
 
+    @abstractmethod
     def run(self):
-        raise NotImplementedError()
+        ...
 
 
 class PostprocessHandler(AsyncJobHandler):

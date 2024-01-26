@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import asyncio
 from dataclasses import dataclass
 import itertools
@@ -26,14 +27,15 @@ class GoogleImportingContext(ImportingContext):
         self.service = service
 
 
-class GoogleImporter:
+class GoogleImporter(ABC):
     NAME: str
     SERVICE: str
     VERSION: str
     SCOPES: Set[str]
 
+    @abstractmethod
     async def run(self, context: GoogleImportingContext):
-        raise NotImplementedError()
+        ...
 
 
 @dataclass

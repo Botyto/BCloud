@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import logging
 import pickle
 from typing import Generic, List, TypeVar
@@ -8,10 +9,11 @@ from core.data.sql.database import Session
 from .google import GoogleImportingContext
 
 
-class GoogleItem:
+class GoogleItem(ABC):
     @property
+    @abstractmethod
     def google_name(self):
-        raise NotImplementedError()
+        ...
 
 HelperType = TypeVar("HelperType")
 ItemType = TypeVar("ItemType", bound=GoogleItem)
@@ -37,7 +39,7 @@ class GoogleItemContext(GoogleImportingContext, Generic[ItemType, HelperType]):
         return f"{self.i + 1}/{self.n}"
 
 
-class GoogleItemImporter(Generic[ItemType, HelperType]):
+class GoogleItemImporter(ABC, Generic[ItemType, HelperType]):
     ITEM_NAME: str
     PAGINATED: bool = False
 
@@ -54,17 +56,21 @@ class GoogleItemImporter(Generic[ItemType, HelperType]):
         else:
             raise NotImplementedError()
     
-    def gather_page_next(self, page_token: str|None):
-        raise NotImplementedError()
+    @abstractmethod
+    def gather_page_next(self, page_token: str|None) -> dict:
+        ...
     
+    @abstractmethod
     def gather_page_process(self, output: List[ItemType], response: dict):
-        raise NotImplementedError()
+        ...
     
+    @abstractmethod
     def create_helper(self, session: Session) -> HelperType:
-        raise NotImplementedError()
+        ...
 
+    @abstractmethod
     def import_item(self, gitem_context: GoogleItemContext[ItemType, HelperType]):
-        raise NotImplementedError()
+        ...
     
     def items_created(self, gitems: List[ItemType], helper: HelperType):
         pass

@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import Callable, Type, TYPE_CHECKING
 
 from .context import MiniappContext
@@ -8,9 +9,10 @@ if TYPE_CHECKING:
     from .miniapp import Miniapp
 
 
-class MiniappRegistry:
+class MiniappRegistry(ABC):
+    @abstractmethod
     def start(self, miniapp: "Miniapp", context: MiniappContext):
-        raise NotImplementedError()
+        ...
     
 
 class ClassRegistry(MiniappRegistry):

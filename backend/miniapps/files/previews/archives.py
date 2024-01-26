@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import io
 from typing import List, BinaryIO
@@ -29,7 +30,7 @@ class UnknownArchiveError(Exception):
         super().__init__("Unknown archive type")
 
 
-class ArchivePreview:
+class ArchivePreview(ABC):
     MULTIFILE: bool
 
     blob: BinaryIO
@@ -37,14 +38,17 @@ class ArchivePreview:
     def __init__(self, blob: BinaryIO):
         self.blob = blob
 
+    @abstractmethod
     def _unarchive(self) -> BinaryIO:
-        raise NotImplementedError()
+        ...
 
+    @abstractmethod
     def _list_files(self) -> List[ArchiveFile]:
-        raise NotImplementedError()
+        ...
     
+    @abstractmethod
     def _read_file(self, path: str) -> ArchiveFileContent:
-        raise NotImplementedError()
+        ...
     
     @classmethod
     def _open(cls, blob: BinaryIO) -> "ArchivePreview":
