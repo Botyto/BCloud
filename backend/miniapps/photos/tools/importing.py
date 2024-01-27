@@ -2,9 +2,13 @@ from datetime import datetime, timedelta, timezone
 import io
 import math
 
-from sqlalchemy.orm import Session
+import matplotlib.pyplot as pyplot
+from moviepy.editor import VideoFileClip
+import numpy
 import PIL.ExifTags
 import PIL.Image
+from pydub import AudioSegment
+from sqlalchemy.orm import Session
 
 from core.asyncjob.context import AsyncJobContext
 from core.data.sql.columns import fit_str
@@ -106,16 +110,40 @@ class PhotoImporter:
     def __update_video_previews(self, asset: PhotoAsset):
         assert asset.kind == PhotoAssetKind.VIDEO
         assert asset.file is not None
-        raise NotImplementedError()
-        preview_frame = None  # TODO extract from video
+        with self.contents.open(asset.file, OpenMode.READ) as fh:
+            video = VideoFileClip(fh)
+            preview_frame = PIL.Image.fromarray(video.get_frame(0))
+            video.close()
+        preview_frame.thumbnail((PREVIEW_MAX_W, PREVIEW_MAX_H))
         self.__generate_previews(asset, preview_frame)
         preview_frame.close()
 
     def __update_audio_previews(self, asset: PhotoAsset):
         assert asset.kind == PhotoAssetKind.AUDIO
         assert asset.file is not None
-        raise NotImplementedError()
-        wave_preview = None  # TODO extract from audio
+        with self.contents.open(asset.file, OpenMode.READ) as fh:
+            audio = AudioSegment.from_file(fh)
+            num_channels = audio.channels
+            data = numpy.array(audio.get_array_of_samples())
+            del audio
+        # collapse to mono
+        if num_channels == 2:
+            data = data.reshape((-1, 2))
+            data = data.sum(axis=1) / 2
+        # downsample
+        data = data[::int(len(data)/50000)]
+        # plot
+        figure, axes = pyplot.subplots(figsize=(PREVIEW_MAX_H/100, PREVIEW_MAX_H/100), dpi=100)
+        axes.plot(data, color='#3b7aaa', linewidth=2)
+        axes.fill_between(range(len(data)), data, color='#3b7aaa', alpha=0.3)
+        del data
+        axes.set_axis_off()
+        figure.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+        axes.margins(0, 0)
+        buffer = io.BytesIO()
+        figure.savefig(buffer, format='png', bbox_inches='tight', pad_inches=0, transparent=True)
+        buffer.seek(0)
+        wave_preview = PIL.Image.open(buffer)
         self.__generate_previews(asset, wave_preview)
         wave_preview.close()
 
@@ -185,30 +213,22 @@ class PhotoImporter:
     def __update_video_metadata(self, asset: PhotoAsset):
         assert asset.kind == PhotoAssetKind.VIDEO
         assert asset.file is not None
-        raise NotImplementedError()
-        asset.width = None
-        asset.height = None
-        asset.taken_at_utc = None
-        asset.camera_make = None
-        asset.camera_model = None
-        asset.orientation = None
-        asset.iso = None
-        asset.focal_length = None
-        asset.latitude = None
-        asset.longitude = None
-        asset.altitude = None
-        asset.fps = None
-        asset.duration = None
+        with self.contents.open(asset.file, OpenMode.READ) as fh:
+            video = VideoFileClip(fh)
+            asset.width = video.w
+            asset.height = video.h
+            asset.fps = video.fps
+            asset.duration = video.duration
+            video.close()
     
     def __update_audio_metadata(self, asset: PhotoAsset):
         assert asset.kind == PhotoAssetKind.AUDIO
         assert asset.file is not None
-        raise NotImplementedError()
-        asset.latitude = None
-        asset.longitude = None
-        asset.altitude = None
-        asset.duration = None
-        asset.bitrate = None
+        with self.contents.open(asset.file, OpenMode.READ) as fh:
+            audio = AudioSegment.from_file(fh)
+            asset.duration = len(audio) / 1000.0
+            # convert bits per sec to kbps
+            asset.bitrate = audio.frame_rate * audio.sample_width * 8 * audio.channels / 1000
 
     def update_metadata(self, asset: PhotoAsset):
         match asset.kind:
