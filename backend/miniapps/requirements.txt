@@ -1,1 +1,3 @@
 -r profile/requirements.txt
+-r photos/requirements.txt
+-r schedule/requirements.txt
