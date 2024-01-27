@@ -6,7 +6,7 @@ Create the `photos` folder.
 Create a `app.py` file inside.
 Define a class that inherits from `core.miniapp.miniapp.Miniapp`.
 In the `__init__()` method call the super construction with a unique `id` and fill in the `dependencies`.
-In the `core/main.py` file there are lists that mention every app. Add your newly created class to those.
+In the `core/entry/server.py` file there are lists that mention every app. Add your newly created class to those.
 
 ## Setting up the data model
 Next you'll need a way to persistently store user data.
@@ -27,7 +27,7 @@ from core.auth.data import User
 from core.data.sql.columns import Boolean, DateTime, Enum, Float, Integer, String, UUID, STRING_MAX, utcnow_tz
 from core.data.sql.columns import mapped_column, relationship, Mapped
 from core.data.sql.database import Model
-from core.data.sql.slugs import SLUG_LENGTH
+from core.data.sql.slugs import SLUG_LENGTH, slug_info
 ```
 
 For readability, make sure all models begin with a common prefix, making them easily distinguishable.
