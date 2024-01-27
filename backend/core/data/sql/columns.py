@@ -27,38 +27,38 @@ def strmaxlen(column_or_size: InstrumentedAttribute|int) -> int:
 
 def ensure_str_fit(
         name: str,
-        text: str,
+        value: str,
         column_or_size: InstrumentedAttribute|int,
         accept_empty: bool = False,
         accept_none: bool = True,
         should_raise: bool = False
     ) -> str|bool:
-    if text is None:
+    if value is None:
         if not accept_none:
             if not should_raise:
                 return False
             raise TypeError(f"{name} is None")
-        return text
-    if not isinstance(text, str):
+        return value
+    if not isinstance(value, str):
         if not should_raise:
             return False
         raise TypeError(f"{name} is not a string")
     if not accept_empty:
-        if len(text) == 0:
+        if len(value) == 0:
             if not should_raise:
                 return False
             raise ValueError(f"{name} is empty")
     maxlen = strmaxlen(column_or_size)
-    if len(text) > maxlen:
+    if len(value) > maxlen:
         if not should_raise:
             return False
         raise ValueError(f"{name} is too long (max {maxlen} chars)")
     if not should_raise:
         return True
-    return text
+    return value
 
-def fit_str(text: str, column: InstrumentedAttribute|int):
+def fit_str(value: str, column: InstrumentedAttribute|int):
     maxlen = strmaxlen(column)
-    if len(text) > maxlen:
-        return text[:maxlen - 1] + "…"
-    return text
+    if len(value) > maxlen:
+        return value[:maxlen - 1] + "…"
+    return value
