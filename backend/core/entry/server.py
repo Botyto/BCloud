@@ -25,6 +25,7 @@ def load_miniapps(context: MiniappContext):
     from miniapps.files.app import FilesMiniapp
     from miniapps.notes.app import NotesMiniapp
     from miniapps.photos.app import PhotosMiniapp
+    from miniapps.schedule.app import ScheduleMiniapp
     logger.info(f"Miniapp load time: %.3fs", time.time() - context.miniapp_init_time)
     return [
         GraphQLMiniapp,
@@ -32,6 +33,7 @@ def load_miniapps(context: MiniappContext):
         FilesMiniapp,
         NotesMiniapp,
         PhotosMiniapp,
+        ScheduleMiniapp,
     ]
 
 def build_manager(env: Environment, context: BaseContext):
