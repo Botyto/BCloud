@@ -22,7 +22,7 @@ class ScheduleCalendar(Model):
     name: Mapped[str] = mapped_column(String(512), nullable=False)
     slug: Mapped[str] = mapped_column(String(SLUG_LENGTH), nullable=False, info=slug_info())
     color: Mapped[str] = mapped_column(String(32), nullable=False, default="#dddddd")
-    events: Mapped[List["ScheduleEvent"]] = relationship("ScheduleEvent", backref="calendar")
+    events: Mapped[List["ScheduleEvent"]] = relationship("ScheduleEvent", back_populates="calendar")
 
 
 class ScheduleEventKind(PyEnum):
@@ -52,7 +52,7 @@ class ScheduleEvent(Model):
     __tablename__ = "ScheduleEvent"
     id: Mapped[PyUUID] = mapped_column(UUID, primary_key=True, default=uuid4)
     calendar_id: Mapped[PyUUID] = mapped_column(ForeignKey(ScheduleCalendar.id), nullable=False, info=owner_info())
-    calendar: Mapped[ScheduleCalendar] = relationship(ScheduleCalendar, backref="events")
+    calendar: Mapped[ScheduleCalendar] = relationship(ScheduleCalendar, back_populates="events")
     kind: Mapped[ScheduleEventKind] = mapped_column(Enum(ScheduleEventKind), nullable=False, default=ScheduleEventKind.EVENT)
     name: Mapped[str] = mapped_column(String(512), nullable=False, default="")
     description: Mapped[str] = mapped_column(String(4096), nullable=False, default="")
@@ -60,8 +60,8 @@ class ScheduleEvent(Model):
     color: Mapped[str] = mapped_column(String(32), nullable=False, default="#dddddd")
     datetime_from_utc: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow_tz)
     datetime_to_utc: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow_tz)
-    reminders: Mapped[List["ScheduleEventReminder"]] = relationship("ScheduleEventReminder", backref="event")
-    attachments: Mapped[List[FileMetadata]] = relationship("ScheduleEventFileAssoc", backref="event")
+    reminders: Mapped[List["ScheduleEventReminder"]] = relationship("ScheduleEventReminder", back_populates="event")
+    attachments: Mapped[List[FileMetadata]] = relationship("ScheduleEventFileAssoc", back_populates="event")
     # repetition
     repeat_period: Mapped[ScheduleEventRepeatPeriod] = mapped_column(Enum(ScheduleEventRepeatPeriod), nullable=False, default=ScheduleEventRepeatPeriod.NONE)
     repeat_interval: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
@@ -80,14 +80,14 @@ class ScheduleEvent(Model):
 class ScheduleEventFileAssoc(Model):
     __tablename__ = "ScheduleEventFileAssoc"
     event_id: Mapped[PyUUID] = mapped_column(ForeignKey(ScheduleEvent.id), primary_key=True)
-    event: Mapped[ScheduleEvent] = relationship(ScheduleEvent, backref="attachments", lazy="joined")
+    event: Mapped[ScheduleEvent] = relationship(ScheduleEvent, back_populates="attachments", lazy="joined")
     file_id: Mapped[PyUUID] = mapped_column(ForeignKey(FileMetadata.id), nullable=False)
-    file: Mapped[FileMetadata] = relationship("FileMetadata", backref="photo_asset", lazy="joined", foreign_keys=[file_id])
+    file: Mapped[FileMetadata] = relationship(FileMetadata, backref="calendar_event", lazy="joined", foreign_keys=[file_id])
 
 
 class ScheduleEventReminder(Model):
     __tablename__ = "ScheduleEventReminder"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     event_id: Mapped[PyUUID] = mapped_column(ForeignKey(ScheduleEvent.id), nullable=False, info=owner_info())
-    event: Mapped[ScheduleEvent] = relationship(User, backref="reminders")
+    event: Mapped[ScheduleEvent] = relationship(ScheduleEvent, back_populates="reminders")
     time_ahead: Mapped[timedelta] = mapped_column(Interval, nullable=False, default=timedelta)
