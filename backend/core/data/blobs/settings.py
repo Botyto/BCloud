@@ -33,7 +33,7 @@ class BlobSettings:
         sql_conn_str = cast(Optional[str], env.get("BLOB_SQL"))
         if sql_conn_str is not None:
             return cls(sql_conn_str=sql_conn_str)
-        s3_bucket = cast(Optional[str], env.get("BLOB_S3_BUCKET"))
+        s3_bucket = cast(Optional[str], env.get("BLOB_S3"))
         if s3_bucket is not None:
             return cls(s3_bucket=s3_bucket)
         return cls()
