@@ -8,6 +8,4 @@ There are a few implementations of the Blobs manager:
 - There's an abstract base class
 - The FS blobs manager (env: `BLOB_FS_ROOT`) that stores files on the local machine
 - SQL blobs manager (env: `BLOB_SQL`) that will store the blobs on the SQL database - this is not recommended because it's slow and restricted in blob address length
-- AWS S3 blobs manager (env: `BLOB_S3_BUCKET`; required permissions: get/put/replicate/delete object)
-
-When setting up the `env.json` file, you must specify only one manager.
+- AWS S3 blobs manager (env: `BLOB_S3`; required permissions: ListBucket, Get/Put/Replicate/DeleteObject)

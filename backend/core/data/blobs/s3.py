@@ -34,10 +34,10 @@ class S3BlobIO(BlobIO):
         self.temp_file = cast(BinaryIO, tempfile.TemporaryFile(mode_str))
         try:
             self.client.download_fileobj(self.bucket, self.key, self.internal_file)
-            self.internal_file.seek(0)
         except botocore.exceptions.ClientError as e:
-            if e.response["Error"]["Code"] != "404":  # type: ignore
+            if e.response["Error"]["Code"] not in ("404", "403"):  # type: ignore
                 raise
+        self.internal_file.seek(0)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
