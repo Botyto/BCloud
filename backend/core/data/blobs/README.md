@@ -5,6 +5,9 @@ This abstraction allows using the local file system, but could also store the da
 Fill in the BlobSettings object, call the `build_manager()` method and you'll get an object that allows using this system.
 
 There are a few implementations of the Blobs manager:
-First off - there's a base class that only throws NotImplemented errors.
-Then there's the FS blobs manager that stores files on the local machine.
-There is an SQL blobs manager that will store the blobs on the SQL database - this is not recommended because it's slow and restricted in blob address length.
+- There's an abstract base class
+- The FS blobs manager (env: `BLOB_FS_ROOT`) that stores files on the local machine
+- SQL blobs manager (env: `BLOB_SQL`) that will store the blobs on the SQL database - this is not recommended because it's slow and restricted in blob address length
+- AWS S3 blobs manager (env: `BLOB_S3_BUCKET`; required permissions: get/put/replicate/delete object)
+
+When setting up the `env.json` file, you must specify only one manager.
