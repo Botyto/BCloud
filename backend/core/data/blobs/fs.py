@@ -80,7 +80,7 @@ class FsBlobs(Blobs):
     
     def open(self, address: Address, mode: OpenMode):
         path = self._addr_to_path(address, create_dirs=mode != OpenMode.READ)
-        return FsBlobIO(path, self, address, mode)
+        return FsBlobIO(path, self, address, mode)  # type: ignore
     
     def copy(self, src: Address, dst: Address):
         src_path = self._addr_to_path(src, create_dirs=False)

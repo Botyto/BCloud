@@ -98,7 +98,7 @@ class SqlBlobs(Blobs):
     def open(self, address: Address, mode: OpenMode):
         statement = select(Blob).where(Blob.address == addr_to_id(address))
         blob = self.session.scalars(statement).one()
-        return SqlBlobIO(blob, self, address, mode)
+        return SqlBlobIO(blob, self, address, mode)  # type: ignore
 
     def copy(self, src: Address, dst: Address):
         src_statement = select(Blob).where(Blob.address == addr_to_id(src))
