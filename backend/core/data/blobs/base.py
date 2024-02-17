@@ -34,9 +34,9 @@ class BlobIO(ABC, BinaryIO):
             case OpenMode.READ:
                 return "rb"
             case OpenMode.WRITE:
-                return "wb"
+                return "w+b"
             case OpenMode.APPEND:
-                return "ab"
+                return "a+b"
         return "rb"
 
     @abstractmethod

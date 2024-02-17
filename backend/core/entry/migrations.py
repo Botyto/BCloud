@@ -20,10 +20,7 @@ def run_migration(env: Environment, context: BaseContext, action: MigrationActio
     sql_settings = SqlSettings(
         cast(str, env.get("DB_ADMIN_CONNECTION", "sqlite:///./data.db")),
     )
-    blob_settings = BlobSettings(
-        fs_root=cast(str, env.get("BLOB_FS_ROOT", ".")),
-        sql_conn_str=cast(str, env.get("BLOB_SQL")),
-    )
+    blob_settings = BlobSettings.from_env(env)
     context = DataContext(context, sql_settings, blob_settings)
     load_miniapps()
     manager = Migrations(context)
