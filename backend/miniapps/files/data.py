@@ -111,12 +111,12 @@ class FileMetadata(Model):
             stack.extend(dirs)
 
     def accessed(self):
-        self.atime = datetime.now().astimezone(timezone.utc)
+        self.atime_utc = datetime.now().astimezone(timezone.utc)
 
     def modified(self):
         now = datetime.now().astimezone(timezone.utc)
-        self.atime = now
-        self.mtime = now
+        self.atime_utc = now
+        self.mtime_utc = now
 
 
 class FileStorage(Model):
