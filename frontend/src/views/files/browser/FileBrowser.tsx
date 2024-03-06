@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import fspath from '../fspath';
 import { ContentsProps } from './common';
-import { GetPreview } from '../previews/preview';
+import { GetPreviewMeta } from '../previews/preview';
 import TxtPreview from '../previews/TxtPreview';
 import AudioPreview from '../previews/AudioPreview';
 import VideoPreview from '../previews/VideoPreview';
@@ -14,6 +14,11 @@ import { SERVER_HOST } from '../../../ApiManagement';
 
 export default function FileBrowser(props: ContentsProps) {
     const { t } = useTranslation("common");
+
+    if (props.file.size === null) {
+        return <div>{t("files.browser.file.no_content")}</div>;
+    }
+
     function download(e: React.MouseEvent, url: string, name: string) {
         e.preventDefault();
         axios.get(url, {
@@ -37,25 +42,25 @@ export default function FileBrowser(props: ContentsProps) {
             alert(e.message);
         });
     }
-    
+
     const downloadUrl = fspath.pathToUrl(`${SERVER_HOST}/api/files/download/:storageId/*`, props.path)
     const contentUrl = fspath.pathToUrl(`${SERVER_HOST}/api/files/contents/:storageId/*`, props.path)
     const name = fspath.baseName(props.path);
-    const Preview = GetPreview(props.file, [
+    const allPreviews = [
         TxtPreview,
         AudioPreview,
         VideoPreview,
         ImagePreview,
         PdfPreview,
         ArchivePreview,
-    ]);
-
-    if (props.file.size === null) {
-        return <div>{t("files.browser.file.no_content")}</div>;
-    }
+    ];
+    const preview = GetPreviewMeta(props.file, allPreviews);
 
     return <>
         <button onClick={e => download(e, downloadUrl, name)}>{t("files.browser.file.download")}</button>
-        <Preview file={props.file} path={props.path} contentUrl={contentUrl}/>
+        <button onClick={e => save(e, downloadUrl, name)}>{t("files.browser.file.save")}</button>
+        <div>
+            <preview.component file={props.file} path={props.path} contentUrl={contentUrl} editing={preview.canEdit}/>
+        </div>
     </>;
 }

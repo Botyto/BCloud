@@ -81,6 +81,7 @@ export default {
         file: {
             no_content: "No file contents...",
             download: "Download",
+            save: "Save",
             preview: {
                 unknown_file_type: "Unknown file type",
                 video_not_supported: "Your browser doesn't support the video playback!",
