@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
-from sqlalchemy import delete, select, update
+import mimetypes
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from uuid import UUID
 
@@ -10,7 +11,6 @@ from .storage import StorageManager
 from ..data import FileMetadata, FileType
 from ..data import DIRECTORY_MIME, LINK_MIME
 
-from core.auth.handlers import AuthError
 from core.data.blobs.base import Blobs
 from core.data.sql.columns import ensure_str_fit
 
@@ -92,6 +92,8 @@ class FileManager:
             i += 1
     
     def makefile(self, path: str, mime_type: str|None = None, make_dirs: bool = False):
+        if not mime_type:
+            mime_type = mimetypes.guess_type(path)[0]
         if mime_type is not None:
             ensure_str_fit("MIME-Type", mime_type, FileMetadata.mime_type)
         basename = fspath.basename(path)

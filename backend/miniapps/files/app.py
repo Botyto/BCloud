@@ -1,4 +1,6 @@
-from core.miniapp.miniapp import Miniapp, ModuleRegistry, SqlEventRegistry, ClassRegistry
+import mimetypes
+
+from core.miniapp.miniapp import Miniapp, ModuleRegistry, SqlEventRegistry, ClassRegistry, MiniappContext
 
 from .storage import StorageModule
 from .files import FilesModule, DeleteFileEvent
@@ -18,3 +20,7 @@ class FilesMiniapp(Miniapp):
             ClassRegistry(GoogleDriveImporter),
             dependencies=["profile"],
         )
+
+    def start(self, context: MiniappContext):
+        mimetypes.add_type("text/markdown", ".md")
+        return super().start(context)

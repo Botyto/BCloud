@@ -58,7 +58,7 @@ class FileContents:
         else:
             self.blobs.write(self.address(file), content)
             file.size = len(content)
-            if mime_type is not None:
+            if mime_type:
                 ensure_str_fit("MIME-Type", mime_type, FileMetadata.mime_type)
                 file.mime_type = mime_type
         if self.namespace.update_orm:
