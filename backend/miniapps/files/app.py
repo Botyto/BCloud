@@ -7,9 +7,12 @@ from .files import FilesModule, DeleteFileEvent
 from .contents import ContentsModule
 from .previews.module import PreviewModule
 from .importing import GoogleDriveImporter
+from .wopi import WopiModule, WopiMapping
 
 
 class FilesMiniapp(Miniapp):
+    wopi: WopiMapping
+
     def __init__(self):
         super().__init__("files",
             ModuleRegistry(StorageModule),
@@ -23,4 +26,5 @@ class FilesMiniapp(Miniapp):
 
     def start(self, context: MiniappContext):
         mimetypes.add_type("text/markdown", ".md")
+        self.wopi = WopiMapping()
         return super().start(context)
