@@ -26,17 +26,15 @@ class ContentsModule(RestMiniappModule):
         return fspath.join(storage_id, path)
 
     def _read_internal(self, path: str, disposition_fmt: str) -> ApiResponse:
-        response = ApiResponse()
         file = self.manager.by_path(path)
         if file is None:
-            response.set_status(404)
-            return response
+            return ApiResponse(status=404)
         try:
             content = self.contents.read(file)
         except FileNotFoundError:
-            response.set_status(204)
-            return response
+            return ApiResponse(status=204)
         disposition = disposition_fmt.format(file.name)
+        response = ApiResponse()
         response.set_header("Content-Disposition", disposition)
         if file.mime_type:
             response.set_header("Content-Type", file.mime_type)
@@ -64,14 +62,11 @@ class ContentsModule(RestMiniappModule):
             raise ValueError("No content provided")
         path = self._url_to_path(path)
         file = self.manager.by_path(path)
-        response = ApiResponse()
         if file is None:
-            response.set_status(404)
-            return response
+            return ApiResponse(status=404)
         mime_type = self.request.headers.get("Content-Type")
         self.contents.write(file, content, mime_type=mime_type)
         self.log_activity("files.write", {"path": file.abspath, "mime": file.mime_type, "size": len(content)})
-        return response
 
     @get("/api/files/download/(.*)", name="files.contents.download")
     def download_content(self, path: str) -> ApiResponse:

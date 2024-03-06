@@ -20,11 +20,18 @@ class ApiResponse:
     headers: Dict[str, List[str]]
     status: int|None
     content: bytes|str|None
-    
-    def __init__(self):
-        self.headers = {}
-        self.status = None
-        self.content = None
+
+    def __init__(self, *, status: int|None = None, content: bytes|str|None = None, **headers: List[str]|str):
+        # parse headers
+        parsed_headers: Dict[str, List[str]] = {}
+        for name, values in headers.items():
+            if isinstance(values, str):
+                values = [values]
+            parsed_headers[name] = values
+        # init members
+        self.headers = parsed_headers
+        self.status = status
+        self.content = content
 
     def add_header(self, name: str, value: str):
         values_list = self.headers.get(name)

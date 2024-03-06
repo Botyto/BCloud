@@ -20,6 +20,8 @@ from ...typeinfo import MethodInfo, TypeInfo
 class RestVerb(Enum):
     GET = "GET"
     POST = "POST"
+    DELETE = "DELETE"
+    PUT = "PUT"
 
 
 @dataclass
@@ -42,6 +44,20 @@ def get(pattern: str|Pattern, kwargs: Dict[str, Any]|None = None, name: str|None
 def post(pattern: str|Pattern, kwargs: Dict[str, Any]|None = None, name: str|None = None):
     def decorator(fn):
         internals = RestMethodInternals(RestVerb.POST, PartialURLSpec(pattern, kwargs, name))
+        setattr(fn, "__rest__", internals)
+        return fn
+    return decorator
+
+def delete(pattern: str|Pattern, kwargs: Dict[str, Any]|None = None, name: str|None = None):
+    def decorator(fn):
+        internals = RestMethodInternals(RestVerb.DELETE, PartialURLSpec(pattern, kwargs, name))
+        setattr(fn, "__rest__", internals)
+        return fn
+    return decorator
+
+def put(pattern: str|Pattern, kwargs: Dict[str, Any]|None = None, name: str|None = None):
+    def decorator(fn):
+        internals = RestMethodInternals(RestVerb.PUT, PartialURLSpec(pattern, kwargs, name))
         setattr(fn, "__rest__", internals)
         return fn
     return decorator
