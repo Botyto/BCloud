@@ -1,23 +1,32 @@
-import React from 'react';
+import React, { useRef, MutableRefObject } from 'react';
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable';
 import { mdToHtml, htmlToMd } from './Markdown';
 
 interface NoteContentProps {
-    note: any;
     editable?: boolean;
-    onEdit?: (newContent: string) => void;
+    content: MutableRefObject<string>;
 }
 
 export default function NoteContent(props: NoteContentProps) {
-    const handleChange = (e: ContentEditableEvent) => {
-        props.onEdit(htmlToMd(e.target.value));
+    const editor = useRef<HTMLDivElement>();
+    const html = useRef(mdToHtml(props.content.current, true));
+
+    function handleChange() {
+        const htmlRoot: HTMLElement = editor.current.el.current;
+        const md = htmlToMd(htmlRoot);
+        props.content.current = md;
     };
 
-    const html = mdToHtml(props.note.content);
-    const canEdit = Boolean(props.editable && props.onEdit);
+    function handleBlur() {
+        handleChange();
+        html.current = mdToHtml(props.content.current, true);
+    }
+    
     return <ContentEditable
-        html={html}
+        ref={editor}
+        html={html.current}
         onChange={handleChange}
-        disabled={!canEdit}
+        onBlur={handleBlur}
+        disabled={!props.editable}
     />;
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import Loading from '../../../components/Loading';
 import { Dialog, useDialogState, bindState } from '../../../components/Dialog';
@@ -13,6 +13,7 @@ interface NoteProps {
 }
 
 function Note(props: NoteProps) {
+    const noteContent = useRef(props.note.content);
     return <div
         style={{
             display: "inline-block",
@@ -26,7 +27,7 @@ function Note(props: NoteProps) {
         <div style={{textDecoration: "underline", fontWeight: "bold"}}>
             {props.note.title}
         </div>
-        <NoteContent note={props.note}/>
+        <NoteContent content={noteContent}/>
     </div>
 }
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import NoteContent from './NoteContent';
 
@@ -10,6 +10,7 @@ interface NoteEditorProps {
 
 export default function NoteEditor(props: NoteEditorProps) {
     const { t } = useTranslation("common");
+    const noteContent = useRef(props.note.content);
 
     function setNoteTitle(e: React.ChangeEvent<HTMLInputElement>) {
         props.setNote({
@@ -18,11 +19,12 @@ export default function NoteEditor(props: NoteEditorProps) {
         });
     }
 
-    function setNoteContent(newContent: string) {
+    function onSave() {
         props.setNote({
             ...props.note,
-            content: newContent,
+            content: noteContent.current,
         });
+        props.onSave();
     }
 
     return <div style={{
@@ -42,14 +44,12 @@ export default function NoteEditor(props: NoteEditorProps) {
             border: "1px solid black",
         }}>
             <NoteContent
-                note={props.note}
                 editable={true}
-                listEdit={false}
-                onEdit={setNoteContent}
+                content={noteContent}
             />
         </div>
         <div>
-            <button onClick={() => props.onSave()}>
+            <button onClick={onSave}>
                 {t("notes.view.notes.edit.save")}
             </button>
         </div>
